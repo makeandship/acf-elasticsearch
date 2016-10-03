@@ -1,5 +1,7 @@
 <?php
 
+namespace makeandship\elasticsearch;
+
 class MappingBuilderFactory {
 	
 	public static final create( $o ) {

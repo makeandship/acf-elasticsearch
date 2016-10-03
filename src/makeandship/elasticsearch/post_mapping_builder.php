@@ -1,5 +1,7 @@
 <?php
 
+namespace makeandship\elasticsearch;
+
 class PostMappingBuilder extends MappingBuilder {
 
 	const CORE_FIELDS = array(

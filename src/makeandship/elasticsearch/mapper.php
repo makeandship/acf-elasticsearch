@@ -1,5 +1,7 @@
 <?php
 
+namespace makeandship\elasticsearch;
+
 class Mapper {
 	public function __construct() {
 		$this->mapping_builder_factory = new MappingBuilderFactory();
@@ -22,7 +24,7 @@ class Mapper {
 	public function map_post_type( $post_type ) {
 
 		$builder = new PostMappingBuilder();
-		$properties = $builder.build( $post_type );
+		$properties = $builder->build( $post_type );
 
 		if (isset($properties)) {
 
@@ -33,6 +35,14 @@ class Mapper {
 	}
 
 	public function map_taxonomy( $taxonomy ) {
+		$builder = new TermMappingBuilder();
+		$properties = $builder->build( $taxonomy );
 
+		if (isset($properties)) {
+
+			$mapping = new \Elastica\Type\Mapping( $post_type, $properties );
+			$mapping->send();
+
+		}
 	}
 }

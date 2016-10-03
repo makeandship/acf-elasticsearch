@@ -1,5 +1,10 @@
 <?php
 
+namespace makeandship\elasticsearch;
+
+check_and_require( 'DocumentBuilderFactory', dirname( __FILE__ ) . '/document_builder_factory.php' );
+check_and_require( 'TypeFactory', dirname( __FILE__ ) . '/type_factory.php' );
+
 class Indexer {
 	
 	public function __construct() {

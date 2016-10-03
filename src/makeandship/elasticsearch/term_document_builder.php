@@ -1,6 +1,10 @@
 <?php
 
-class TermDocumentBuilder extends Builder {
+namespace makeandship\elasticsearch;
+
+check_and_require( 'DocumentBuilder', dirname( __FILE__ ) . '/document_builder.php' );
+
+class TermDocumentBuilder extends DocumentBuilder {
 	
 	/**
 	 * 
