@@ -84,7 +84,8 @@ require_once plugin_dir_path(__DIR__).'../html-utils.php';
 						array(
 							'value' => 'Save', 
 							'name' => 'acf_elasticsearch_save_button',
-							'class' => 'button-primary'
+							'class' => 'button-primary',
+							'id' => 'save'
 						)
 					]); 
 					?>
@@ -98,7 +99,8 @@ require_once plugin_dir_path(__DIR__).'../html-utils.php';
 						array(
 							'value'=>'Create mappings', 
 							'name' => 'acf_elasticsearch_create_mappings_button',
-							'class' => 'button'
+							'class' => 'button',
+							'id' => 'create-mappings'
 						)
 					]); 
 				?>
@@ -112,12 +114,14 @@ require_once plugin_dir_path(__DIR__).'../html-utils.php';
 						array(
 							'value' => 'Index posts', 
 							'name' => 'acf_elasticsearch_index_posts_button',
-							'class' => 'button'
+							'class' => 'button',
+							'id' => 'index-posts'
 						),
 						array(
 							'value' => 'Clear index', 
 							'name' => 'acf_elasticsearch_clear_index_button',
-							'class' => 'button'
+							'class' => 'button',
+							'id' => 'clear-index'
 						)
 					]); 
 				?>

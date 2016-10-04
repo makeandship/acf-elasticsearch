@@ -428,9 +428,12 @@ class UIManager {
 	public function enqueue_scripts() {
 		
 		$styles = plugins_url('acf-elasticsearch/css/style.css');
+		$scripts = plugins_url('acf-elasticsearch/js/main.js');
 		
-		wp_register_style('acf_elasticsearch', $styles);
-		wp_enqueue_style('acf_elasticsearch');
+		wp_register_style('acf-elasticsearch', $styles);
+		wp_enqueue_style('acf-elasticsearch');
+		wp_register_script('acf-elasticsearch', $scripts);
+		wp_enqueue_script('acf-elasticsearch');
 	}
 
 }
