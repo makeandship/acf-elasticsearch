@@ -16,8 +16,41 @@ class UIManager {
 		'page_position' => 100
 	);
 
-	function __construct() {
-		
+	function __construct($version, $db_version) {
+		$this->version = $version;
+		$this->db_version = $db_version;
+	}
+
+	public function initialise_options() {
+		error_log('initialise options');
+		$multisite = is_multisite();
+		$network_enabled = is_plugin_active_for_network(plugin_basename(__FILE__));
+		error_log($multisite);
+		error_log($network_enabled); 
+		if ($multisite) { // && $network_enabled
+			error_log('multisite');
+			add_site_option('acf_elasticsearch_version', $this->version);
+			add_site_option('acf_elasticsearch_db_version', $this->db_version);
+			
+			add_site_option('acf_elasticsearch_server', '');
+			add_site_option('acf_elasticsearch_primary_index', '');
+			add_site_option('acf_elasticsearch_secondary_index', '');
+
+			add_site_option('acf_elasticsearch_read_timeout', 30);
+			add_site_option('acf_elasticsearch_write_timeout', 30);
+		}
+		else {
+			error_log('not multisite');
+			add_option('acf_elasticsearch_version', $this->version);
+			add_option('acf_elasticsearch_db_version', $this->db_version);
+
+			add_option('acf_elasticsearch_server', '');
+			add_option('acf_elasticsearch_primary_index', '');
+			add_option('acf_elasticsearch_secondary_index', '');
+
+			add_option('acf_elasticsearch_read_timeout', 30);
+			add_option('acf_elasticsearch_write_timeout', 30);
+		}
 	}
 
 	public function initialise_settings() {

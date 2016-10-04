@@ -17,7 +17,7 @@ class ACFElasticSearchPlugin {
 	public function __construct() {
 		$this->indexer = new Indexer();
 
-		$this->ui = new wp\UIManager();
+		$this->ui = new wp\UIManager(self::VERSION, self::DB_VERSION);
 
 		$this->multisite = (function_exists('is_multisite') && is_multisite());
 
@@ -161,6 +161,8 @@ class ACFElasticSearchPlugin {
 	 * ---------------------
 	 */
 	public function initialise() {
+		error_log('initialise');
+		$this->ui->initialise_options();
 		$this->ui->initialise_settings();
 	}
 
@@ -187,17 +189,6 @@ class ACFElasticSearchPlugin {
 
 	public function uninstall() {
 
-	}
-
-	private function initialise_options() {
-		add_option('acf_elasticsearch_version', self::VERSION);
-		add_option('acf_elasticsearch_db_version', self::DB_VERSION);
-		add_option('acf_elasticsearch_server', '');
-		add_option('acf_elasticsearch_primary_index', '');
-		add_option('acf_elasticsearch_secondary_index', '');
-
-		add_option('acf_elasticsearch_read_timeout', 30);
-		add_option('acf_elasticsearch_write_timeout', 30);
 	}
 
 }

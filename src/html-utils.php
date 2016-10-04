@@ -41,10 +41,10 @@ class HtmlUtils {
 			$option = get_site_option( $name );
 		}
 		else {
-			$option = '';
+			$option = get_option( $name );
 		}
 
-		if (isset($option) && empty($option)) {
+		if (isset($option)) {
 			$value = $option;
 		}
 		else {

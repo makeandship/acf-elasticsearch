@@ -4,8 +4,31 @@ require_once plugin_dir_path(__DIR__).'../html-utils.php';
 <div class="wrap">
 <?php
 	if ( !empty( $_POST ) ) {
+		
 		// save incoming options
-		error_log('save post data');
+		$server = esc_url($_POST['acf_elasticsearch_server']);
+		$primary_index = trim($_POST['acf_elasticsearch_primary_index']);
+		$secondary_index = trim($_POST['acf_elasticsearch_secondary_index']);
+		$read_timeout = intval(trim($_POST['acf_elasticsearch_read_timeout']));
+		$write_timeout = intval(trim($_POST['acf_elasticsearch_write_timeout']));
+
+		if (is_multisite()) { //  && is_plugin_active_for_network(plugin_basename(__FILE__))
+		error_log('save multisite');
+			// store at network level
+			update_site_option('acf_elasticsearch_server', $server);
+			update_site_option('acf_elasticsearch_primary_index', $primary_index);
+			update_site_option('acf_elasticsearch_secondary_index', $secondary_index);
+			update_site_option('acf_elasticsearch_read_timeout', $read_timeout);
+			update_site_option('acf_elasticsearch_write_timeout', $write_timeout);
+		}
+		else {
+			// store at site level
+			update_option('acf_elasticsearch_server', $server);
+			update_option('acf_elasticsearch_primary_index', $server);
+			update_option('acf_elasticsearch_secondary_index', $server);
+			update_option('acf_elasticsearch_read_timeout', $server);
+			update_option('acf_elasticsearch_write_timeout', $server);
+		}
 	}
 ?>
 <h1>ACF Elasticsearch</h1>
@@ -19,7 +42,7 @@ require_once plugin_dir_path(__DIR__).'../html-utils.php';
 						'Server', 
 						'acf_elasticsearch_server',
 						array(
-							'class' => 'long',
+							'class' => '',
 							'placeholder' => 'e.g. http://www.yourserver.com:9200/'
 						)
 					);
