@@ -118,6 +118,12 @@ require_once plugin_dir_path(__DIR__).'../html-utils.php';
 							'id' => 'index-posts'
 						),
 						array(
+							'value' => 'Index taxonomies', 
+							'name' => 'acf_elasticsearch_index_taxonomies_button',
+							'class' => 'button',
+							'id' => 'index-taxonomies'
+						),
+						array(
 							'value' => 'Clear index', 
 							'name' => 'acf_elasticsearch_clear_index_button',
 							'class' => 'button',

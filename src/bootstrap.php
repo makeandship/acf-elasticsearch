@@ -41,9 +41,10 @@ class ACFElasticSearchPlugin {
 
 	public function initialise_index_hooks() {
 		// plugin
-		add_action('wp_ajax_esreindextaxonomies', array(&$this, 'reindex_taxonomies'));
-		add_action('wp_ajax_esreindex', array(&$this, 'reindex'));
-		add_action('wp_ajax_esswap', array(&$this, 'swap'));
+		add_action('wp_ajax_create_mappings', array(&$this, 'create_mappings'));
+		add_action('wp_ajax_index_posts', array(&$this, 'index_posts'));
+		add_action('wp_ajax_index_taxonomies', array(&$this, 'index_taxonomies'));
+		add_action('wp_ajax_clear_index', array(&$this, 'clear_index'));
 
 		// posts
 		add_action('save_post', array(&$this, 'save_post'));
@@ -56,6 +57,39 @@ class ACFElasticSearchPlugin {
 		add_action('edit_term', array(&$this, 'edit_term'), 10, 3);
 		add_action('delete_term', array(&$this, 'delete_term'), 10, 3);
 		add_action('registered_taxonomy', array(&$this, 'registered_taxonomy'), 10, 3);
+	}
+
+	/**
+	 * -------------------
+	 * Index Administration
+	 * -------------------
+	 */
+	function create_mappings() {
+		$json = json_encode(array(
+			'message' => 'Mappings were created successfully'
+			));
+		die($json);
+	}
+
+	function index_posts() {
+		$json = json_encode(array(
+			'message' => 'Posts were indexed successfully'
+			));
+		die($json);
+	}
+
+	function index_taxonomies() {
+		$json = json_encode(array(
+			'message' => 'Taxonomies were indexed successfully'
+			));
+		die($json);
+	}
+
+	function clear_index() {
+		$json = json_encode(array(
+			'message' => 'Index was cleared successfully'
+			));
+		die($json);
 	}
 
 	/**
