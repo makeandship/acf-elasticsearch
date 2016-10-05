@@ -4,49 +4,22 @@ namespace makeandship\elasticsearch;
 
 require_once 'mapping_builder.php';
 
-class PostMappingBuilder extends MappingBuilder {
-
-	const EXCLUDE_POST_TYPES = array(
-		'revision',
-		'attachment',
-		'json_consumer',
-		'nav_menu',
-		'nav_menu_item',
-		'post_format',
-		'link_category',
-		'acf-field-group',
-		'acf-field'
-	);
+class SiteMappingBuilder extends MappingBuilder {
 
 	const CORE_FIELDS = array(
-		'post_content' => array( 
-			'type' => 'string', 
-			'suggest' => true 
-		),
-		'post_title' => 'string',
-		'post_type' => array( 
-			'type' => 'string', 
-			'index' => 'not_analyzed' 
-		),
-		'post_date' => 'date'
-	);
-
-	const CORE_DATE_FIELDS = array(
+		'blog_id' => array( 
+			'type' => 'integer'
+		)
 	);
 
 	/**
 	 *
 	 */
-	public function build ( $post_type ) {
-		error_log($post_type.' is '.$this->valid($post_type));
-		if (!$this->valid( $post_type )) {
-			return null;
-		}
-
+	public function build ( $name ) {
 		$properties = array();
 
 		// base post fields
-		foreach( PostMappingBuilder::CORE_FIELDS as $field => $options) {
+		foreach( SiteMappingBuilder::CORE_FIELDS as $field => $options) {
 			if (isset( $field ) && isset($options)) {
 				$properties = array_merge( 
 					$properties, 
@@ -55,19 +28,21 @@ class PostMappingBuilder extends MappingBuilder {
 			}
 		}
 
-		// acf fields
+		// options - acf fields
 		if( class_exists('acf') ) {
-			$field_groups = acf_get_field_groups();
+			$options = get_fields('options');
+			foreach( $options as $option_name => $option_value) {
+				$field_object = get_field_object( $option_name, 'options');
+				if (isset($field_object)) {
+					$properties = array_merge(
+						$properties, 
+						$this->build_option( $field_object )
+					);
+				}
+			}
 		}
 
 		return $properties;
-	}
-
-	public function valid( $post_type ) {
-		if (in_array( $post_type, self::EXCLUDE_POST_TYPES)) {
-			return false;
-		}
-		return true;
 	}
 
 	private function build_field( $field, $options ) {
@@ -109,6 +84,31 @@ class PostMappingBuilder extends MappingBuilder {
 			}
 		}
 
+		return $properties;
+	}
+
+	private function build_option( $field_object ) {
+		$properties = array();
+
+		if (isset($field_object)) {
+			
+			$name = $field_object['name'];
+
+			// string, color_picker, select
+			$type = 'string';
+			switch($field_object['type']) {
+				case 'date_picker':
+					$type = 'date';
+					break; 
+
+			}
+
+			$properties[$name] = array(
+				'type' => $type,
+				'index' => 'analyzed'
+			);
+		}
+		
 		return $properties;
 	}
 }
