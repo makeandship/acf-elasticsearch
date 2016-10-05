@@ -3,6 +3,9 @@
 namespace makeandship\elasticsearch;
 
 require_once 'mapping_builder_factory.php';
+require_once 'type_factory.php';
+
+use \Elastica\Type\Mapping;
 
 class Mapper {
 	public function __construct( $config ) {
@@ -10,6 +13,9 @@ class Mapper {
 
 		// factory to manage individual mappers
 		$this->mapping_builder_factory = new MappingBuilderFactory();
+
+		// factory to manage types
+		$this->type_factory = new TypeFactory( $this->config );
 	}
 
 	public function map() {
@@ -33,7 +39,9 @@ class Mapper {
 
 		if (isset($properties)) {
 
-			$mapping = new \Elastica\Type\Mapping( $post_type, $properties );
+			$type = $this->type_factory->create($post_type);
+
+			$mapping = new Mapping( $type, $properties );
 			$mapping->send();
 
 		}
@@ -44,8 +52,9 @@ class Mapper {
 		$properties = $builder->build( $taxonomy );
 
 		if (isset($properties)) {
+			$type = $this->type_factory->create($taxonomy);
 
-			$mapping = new \Elastica\Type\Mapping( $post_type, $properties );
+			$mapping = new Mapping( $type, $properties );
 			$mapping->send();
 
 		}

@@ -6,6 +6,12 @@ require_once 'mapping_builder.php';
 
 class TermMappingBuilder extends MappingBuilder {
 
+	const EXCLUDE_TAXONOMIES = array(
+		'nav_menu',
+		'post_format',
+		'link_category',
+	);
+
 	const CORE_FIELDS = array(
 		'post_content' => array(
 			'type' => 'string', 
@@ -25,6 +31,11 @@ class TermMappingBuilder extends MappingBuilder {
 	public function build ( $taxonomy ) {
 		$properties = array();
 
+		error_log($taxonomy.' is '.$this->valid($taxonomy));
+		if (!$this->valid( $taxonomy )) {
+			return null;
+		}
+
 		// TODO implement (this is post)
 
 		// base post fields
@@ -38,6 +49,13 @@ class TermMappingBuilder extends MappingBuilder {
 		}
 
 		return $properties;
+	}
+
+	public function valid( $taxonomy ) {
+		if (in_array( $taxonomy, self::EXCLUDE_TAXONOMIES)) {
+			return false;
+		}
+		return true;
 	}
 
 	function build_field( $field, $options) {

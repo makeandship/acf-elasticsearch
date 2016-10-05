@@ -2,10 +2,11 @@
 
 namespace makeandship\elasticsearch;
 
-require 'utils.php';
-require 'wp/admin/ui-manager.php';
-require 'makeandship/elasticsearch/indexer.php';
-require 'makeandship/elasticsearch/mapper.php';
+require_once 'utils.php';
+require_once 'wp/admin/ui-manager.php';
+require_once 'makeandship/elasticsearch/indexer.php';
+require_once 'makeandship/elasticsearch/mapper.php';
+require_once __DIR__.'/../vendor/autoload.php';
 
 class ACFElasticSearchPlugin {
 
@@ -22,7 +23,7 @@ class ACFElasticSearchPlugin {
 	const OPTION_WRITE_TIMEOUT = 'acf_elasticsearch_write_timeout';
 
 	public function __construct() {
-		$this->indexer = new Indexer();
+		$this->indexer = new Indexer( $this->get_options() );
 
 		$this->ui = new wp\UIManager(self::VERSION, self::DB_VERSION, $this);
 
@@ -115,9 +116,22 @@ class ACFElasticSearchPlugin {
 	 * -------------------
 	 */
 	function create_mappings() {
-		// initialise the mapper with config
-		$mapper = new Mapper($this->get_options());
-		$result = $mapper->map();
+		$options = $this->get_options();
+
+		if (isset($options) && array_key_exists(ACFElasticSearchPlugin::OPTION_PRIMARY_INDEX, $options)) {
+			$primary_index = $options[ACFElasticSearchPlugin::OPTION_PRIMARY_INDEX];
+
+			// (re)create the index
+			$indexer = new Indexer( $options );
+			$indexer->create( $primary_index );
+
+			// initialise the mapper with config
+			$mapper = new Mapper( $options );
+			$result = $mapper->map();
+		}
+		else {
+
+		}
 
 		$json = json_encode(array(
 			'message' => 'Mappings were created successfully'

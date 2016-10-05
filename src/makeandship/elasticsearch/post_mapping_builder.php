@@ -6,6 +6,18 @@ require_once 'mapping_builder.php';
 
 class PostMappingBuilder extends MappingBuilder {
 
+	const EXCLUDE_POST_TYPES = array(
+		'revision',
+		'attachment',
+		'json_consumer',
+		'nav_menu',
+		'nav_menu_item',
+		'post_format',
+		'link_category',
+		'acf-field-group',
+		'acf-field'
+	);
+
 	const CORE_FIELDS = array(
 		'post_content' => array( 
 			'type' => 'string', 
@@ -26,6 +38,10 @@ class PostMappingBuilder extends MappingBuilder {
 	 *
 	 */
 	public function build ( $post_type ) {
+		error_log($post_type.' is '.$this->valid($post_type));
+		if (!$this->valid( $post_type )) {
+			return null;
+		}
 
 		$properties = array();
 
@@ -45,6 +61,13 @@ class PostMappingBuilder extends MappingBuilder {
 		}
 
 		return $properties;
+	}
+
+	public function valid( $post_type ) {
+		if (in_array( $post_type, self::EXCLUDE_POST_TYPES)) {
+			return false;
+		}
+		return true;
 	}
 
 	private function build_field( $field, $options ) {
