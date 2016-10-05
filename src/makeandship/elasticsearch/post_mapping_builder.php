@@ -28,7 +28,11 @@ class PostMappingBuilder extends MappingBuilder {
 			'type' => 'string', 
 			'index' => 'not_analyzed' 
 		),
-		'post_date' => 'date'
+		'post_date' => 'date',
+		'link' => array(
+			'type' => 'string',
+			'index' => 'not_analysed'
+		)
 	);
 
 	const CORE_DATE_FIELDS = array(
