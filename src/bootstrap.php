@@ -5,6 +5,7 @@ namespace makeandship\elasticsearch;
 require 'utils.php';
 require 'wp/admin/ui-manager.php';
 require 'makeandship/elasticsearch/indexer.php';
+require 'makeandship/elasticsearch/mapper.php';
 
 class ACFElasticSearchPlugin {
 
@@ -14,18 +15,67 @@ class ACFElasticSearchPlugin {
 	const STATUS_PUBLISH = 'publish';
 	const INDEX_POST_STATUSES = [ACFElasticSearchPlugin::STATUS_PUBLISH];
 
+	const OPTION_SERVER = 'acf_elasticsearch_server';
+	const OPTION_PRIMARY_INDEX = 'acf_elasticsearch_primary_index';
+	const OPTION_SECONDARY_INDEX = 'acf_elasticsearch_secondary_index';
+	const OPTION_READ_TIMEOUT = 'acf_elasticsearch_read_timeout';
+	const OPTION_WRITE_TIMEOUT = 'acf_elasticsearch_write_timeout';
+
 	public function __construct() {
 		$this->indexer = new Indexer();
 
-		$this->ui = new wp\UIManager(self::VERSION, self::DB_VERSION);
+		$this->ui = new wp\UIManager(self::VERSION, self::DB_VERSION, $this);
 
 		$this->multisite = (function_exists('is_multisite') && is_multisite());
 
 		$this->plugin_dir = plugin_dir_path(__FILE__);
-		$this->pligin_url = plugin_dir_url(__FILE__);
+		$this->plugin_url = plugin_dir_url(__FILE__);
 
 		$this->initialise_plugin_hooks();
 		$this->initialise_index_hooks();
+	}
+
+	/**
+	 * Get the current configuration.  Configuration values
+	 * are cached.  Use the $fresh parameter to get an updated
+	 * set 
+	 *
+	 * @param $fresh - true to get updated values
+	 * @return array of options
+	 */
+	public function get_options( $fresh=false ) {
+
+		if (!isset($this->options) || $fresh) {
+			$this->options = array();
+
+			$this->get_option( $this->options, ACFElasticSearchPlugin::OPTION_SERVER);
+			$this->get_option( $this->options, ACFElasticSearchPlugin::OPTION_PRIMARY_INDEX);
+			$this->get_option( $this->options, ACFElasticSearchPlugin::OPTION_SECONDARY_INDEX);
+			$this->get_option( $this->options, ACFElasticSearchPlugin::OPTION_READ_TIMEOUT);
+			$this->get_option( $this->options, ACFElasticSearchPlugin::OPTION_WRITE_TIMEOUT); 
+		}
+		
+		return $this->options;
+	}
+
+	/**
+	 * Add a single option to an options array.  Detects multisite
+	 * and pulls from multisite options when it is 
+	 *
+	 * @param $options array (passed by reference)
+	 * @param $name the option name
+	 */ 
+	private function get_option( &$options, $name ) {
+		if (!isset($options)) {
+			$options = array();
+		}
+
+		if (is_multisite()) {
+			$options[$name] = get_site_option($name);
+		}
+		else {
+			$options[$name] = get_option($name);
+		}
 	}
 
 	public function initialise_plugin_hooks() {
@@ -65,6 +115,10 @@ class ACFElasticSearchPlugin {
 	 * -------------------
 	 */
 	function create_mappings() {
+		// initialise the mapper with config
+		$mapper = new Mapper($this->get_options());
+		$result = $mapper->map();
+
 		$json = json_encode(array(
 			'message' => 'Mappings were created successfully'
 			));

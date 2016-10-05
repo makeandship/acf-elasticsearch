@@ -2,12 +2,20 @@
 
 namespace makeandship\elasticsearch;
 
+require_once 'mapping_builder.php';
+
 class TermMappingBuilder extends MappingBuilder {
 
 	const CORE_FIELDS = array(
-		'post_content' => { 'type' => 'string', 'suggest' => true },
+		'post_content' => array(
+			'type' => 'string', 
+			'suggest' => true
+		),
 		'post_title' => 'string',
-		'post_type' => { 'type' => 'string', 'index' => 'not_analyzed' }
+		'post_type' => array(
+			'type' => 'string', 
+			'index' => 'not_analyzed'
+		),
 		'post_date' => 'date'
 	);
 
@@ -17,8 +25,10 @@ class TermMappingBuilder extends MappingBuilder {
 	public function build ( $taxonomy ) {
 		$properties = array();
 
+		// TODO implement (this is post)
+
 		// base post fields
-		foreach( CORE_FIELDS as $field => $options) {
+		foreach( TermMappingBuilder::CORE_FIELDS as $field => $options) {
 			if (isset( $field ) && isset($options)) {
 				$properties = array_merge( 
 					$properties, 
@@ -27,11 +37,17 @@ class TermMappingBuilder extends MappingBuilder {
 			}
 		}
 
-		$type = $index->getType( $type_name );
+		return $properties;
+	}
+
+	function build_field( $field, $options) {
+		$properties = array();
+
+		if (isset( $field ) && isset( $options )) {
 			$properties = array( 
 				'name_suggest' => array(
 					'analyzer' => 'ngram_analyzer',
-	        		'search_analyzer' => 'whitespace_analyzer',
+					'search_analyzer' => 'whitespace_analyzer',
 					'type' => 'string'
 				),
 				'name' => array(
@@ -42,9 +58,8 @@ class TermMappingBuilder extends MappingBuilder {
 					'index' => 'not_analyzed'
 					)
 			);
-
-			$mapping = new \Elastica\Type\Mapping($type, $properties);
-			$mapping->send();
 		}
+
+		return $properties;
 	}
 }

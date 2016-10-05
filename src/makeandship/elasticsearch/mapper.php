@@ -2,8 +2,13 @@
 
 namespace makeandship\elasticsearch;
 
+require_once 'mapping_builder_factory.php';
+
 class Mapper {
-	public function __construct() {
+	public function __construct( $config ) {
+		$this->config = $config;
+
+		// factory to manage individual mappers
 		$this->mapping_builder_factory = new MappingBuilderFactory();
 	}
 
@@ -11,7 +16,7 @@ class Mapper {
 		// create mappings for each post type
 		$post_types = get_post_types();
 		foreach( $post_types as $post_type ) {
-			$this=>map_post_type( $post_type );
+			$this->map_post_type( $post_type );
 		}
 
 		// create mappings for each taxonomy

@@ -2,6 +2,6 @@
 
 namespace makeandship\elasticsearch;
 
-abstract class DocumentBuilder {
+abstract class MappingBuilder {
 	abstract function build( $o );
 }

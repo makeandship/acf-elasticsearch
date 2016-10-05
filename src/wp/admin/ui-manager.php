@@ -16,9 +16,10 @@ class UIManager {
 		'page_position' => 100
 	);
 
-	function __construct($version, $db_version) {
+	function __construct($version, $db_version, $plugin) {
 		$this->version = $version;
 		$this->db_version = $db_version;
+		$this->plugin = $plugin;
 	}
 
 	public function initialise_options() {

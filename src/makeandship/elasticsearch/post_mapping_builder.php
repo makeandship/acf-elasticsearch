@@ -2,12 +2,20 @@
 
 namespace makeandship\elasticsearch;
 
+require_once 'mapping_builder.php';
+
 class PostMappingBuilder extends MappingBuilder {
 
 	const CORE_FIELDS = array(
-		'post_content' => { 'type' => 'string', 'suggest' => true },
+		'post_content' => array( 
+			'type' => 'string', 
+			'suggest' => true 
+		),
 		'post_title' => 'string',
-		'post_type' => { 'type' => 'string', 'index' => 'not_analyzed' }
+		'post_type' => array( 
+			'type' => 'string', 
+			'index' => 'not_analyzed' 
+		),
 		'post_date' => 'date'
 	);
 
@@ -22,7 +30,7 @@ class PostMappingBuilder extends MappingBuilder {
 		$properties = array();
 
 		// base post fields
-		foreach( POST_FIELDS as $field => $options) {
+		foreach( PostMappingBuilder::CORE_FIELDS as $field => $options) {
 			if (isset( $field ) && isset($options)) {
 				$properties = array_merge( 
 					$properties, 
@@ -35,6 +43,8 @@ class PostMappingBuilder extends MappingBuilder {
 		if( class_exists('acf') ) {
 			
 		}
+
+		return $properties;
 	}
 
 	private function build_field( $field, $options ) {
@@ -48,9 +58,18 @@ class PostMappingBuilder extends MappingBuilder {
 				$suggest = null;
 			}
 			else {
-				$type = $options['type'];
-				$index = $options['index'];
-				$suggest = $options['suggest'];
+				if (array_key_exists('type', $options)) {
+					$type = $options['type'];
+				}
+				if (array_key_exists('index', $options)) {
+					$index = $options['index'];
+				}
+				else{
+					$index = 'analyzed';
+				}
+				if (array_key_exists('suggest', $options)) {
+					$suggest = $options['suggest'];
+				}
 			}
 
 			$properties[$field] = array(
