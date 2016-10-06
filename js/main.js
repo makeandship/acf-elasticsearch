@@ -24,7 +24,7 @@ jQuery(document).ready(function($) {
 	$('#index-posts').click(function(e) {
 		console.log('index posts');
 
-		indexPosts();
+		indexPosts(true);
 		
 		return false;
 	});
@@ -63,10 +63,15 @@ jQuery(document).ready(function($) {
 		return false;
 	});
 
-	function indexPosts() {
+	function indexPosts(fresh) {
 		var data = {
 			'action': 'index_posts'
 		};
+
+		if (fresh) {
+			data.fresh = true;
+		}
+
 		adminAjax(
 			data, 
 			function(response) {

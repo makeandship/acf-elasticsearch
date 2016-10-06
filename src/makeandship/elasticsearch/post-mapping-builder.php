@@ -19,14 +19,18 @@ class PostMappingBuilder extends MappingBuilder {
 	const CORE_FIELDS = array(
 		'post_content' => array( 
 			'type' => 'string', 
-			'suggest' => true 
+			'suggest' => true,
+			'transformer' => 'makeandship\elasticsearch\transformer\HtmlFieldTransformer'
 		),
 		'post_title' => 'string',
 		'post_type' => array( 
 			'type' => 'string', 
 			'index' => 'not_analyzed' 
 		),
-		'post_date' => 'date',
+		'post_date' => array(
+			'type' => 'date',
+			'transformer' => 'makeandship\elasticsearch\transformer\DateFieldTransformer'
+		),
 		'link' => array(
 			'type' => 'string',
 			'index' => 'not_analyzed'

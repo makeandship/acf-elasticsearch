@@ -129,16 +129,14 @@ class AcfElasticsearchPlugin {
 	}
 
 	function index_posts( ) {
-		$page = isset($_POST['page']) ? intval($_POST['page']) : 1;
-		$count = isset($_POST['count']) ? intval($_POST['count']) : 0;
+		$fresh = isset($_POST['fresh']) ? ($_POST['fresh'] === 'true') : false;
 
 		$options = $this->get_options();
 
 		if (isset($options)) {
 			$indexer = new Indexer( $options );
-			$status = $indexer->index_posts( $page, Constants::DEFAULT_POSTS_PER_PAGE, $count );
+			$status = $indexer->index_posts( $fresh );
 		}
-
 
 		$response = array(
 			'message' => 'Posts were indexed successfully',

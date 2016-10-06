@@ -2,8 +2,7 @@
 
 namespace makeandship\elasticsearch\transformer;
 
-abstract class HtmlFieldTransformer {
-	
+class HtmlFieldTransformer  extends FieldTransformer {	
 	public function transform( $value ) {
 		return strip_tags( $value );
 	}

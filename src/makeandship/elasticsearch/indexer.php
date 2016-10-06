@@ -93,24 +93,24 @@ class Indexer {
 		return $index->create( $settings );
 	}
 
-	public function index_posts( $page, $per, $count=0 ) {
+	public function index_posts( $fresh ) {
 		if (is_multisite()) {
-			$status = $this->index_posts_multisite( );
+			$status = $this->index_posts_multisite( $fresh );
 		}
 		else {
-			$status = $this->index_posts_singlesite( );
+			$status = $this->index_posts_singlesite( $fresh );
 		}
 
 		return $status;
 	}
 
-	public function index_posts_multisite() {
+	public function index_posts_multisite( $fresh ) {
 		$status = $this->config[Constants::OPTION_INDEX_STATUS];
 
 		$posts_manager = new PostsManager();
 		$options_manager = new OptionsManager();
 
-		if (!isset($status) || empty($status)) {
+		if ($fresh || (!isset($status) || empty($status))) {
 			$status = $posts_manager->initialise_status();
 
 			// store initial state
@@ -143,7 +143,7 @@ class Indexer {
 		return $status;
 	}
 
-	public function index_posts_singlesite() {
+	public function index_posts_singlesite( $fresh ) {
 		/*
 		$post_mapping_builder = new PostMappingBuilder();
 		$post_types = $post_mapping_builder->get_valid_post_types();
@@ -226,8 +226,8 @@ class Indexer {
 		if (isset($document) && !empty($document) &&
 			isset($id) && !empty($id)) {
 
-			$type = $this->type_factory->create( $o );
-			$type->addDocument(new \Elastica\Document($o->ID, $data));
+			$type = $this->type_factory->create( $o->post_type );
+			$type->addDocument(new \Elastica\Document($o->ID, $document));
 
 			// response ?
 		}

@@ -2,8 +2,7 @@
 
 namespace makeandship\elasticsearch\transformer;
 
-abstract class DateFieldTransformer {
-	
+class DateFieldTransformer extends FieldTransformer {	
 	public function transform( $value ) {
 		return date('c', strtotime( $value ));
 	}
