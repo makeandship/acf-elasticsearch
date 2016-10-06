@@ -29,7 +29,7 @@ class PostMappingBuilder extends MappingBuilder {
 		'post_date' => 'date',
 		'link' => array(
 			'type' => 'string',
-			'index' => 'not_analysed'
+			'index' => 'not_analyzed'
 		)
 	);
 
