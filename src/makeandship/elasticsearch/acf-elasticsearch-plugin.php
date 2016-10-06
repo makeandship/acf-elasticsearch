@@ -2,22 +2,14 @@
 
 namespace makeandship\elasticsearch;
 
-require_once 'utils.php';
-require_once 'constants.php';
+use makeandship\elasticsearch\admin\UserInterfaceManager;
 
-//check_and_require( 'Constants', dirname( __FILE__ ) . '/constants.php' );
-check_and_require( 'UIManager', dirname( __FILE__ ) . '/wp/admin/ui-manager.php' );
-check_and_require( 'Indexer', dirname( __FILE__ ) . '/makeandship/elasticsearch/indexer.php' );
-check_and_require( 'Mapper', dirname( __FILE__ ) . '/makeandship/elasticsearch/mapper.php' );
-
-require_once __DIR__.'/../vendor/autoload.php';
-
-class AcfElasticSearchPlugin {
+class AcfElasticsearchPlugin {
 
 	public function __construct() {
 		$this->indexer = new Indexer( $this->get_options() );
 
-		$this->ui = new wp\UIManager(Constants::VERSION, Constants::DB_VERSION, $this);
+		$this->ui = new UserInterfaceManager(Constants::VERSION, Constants::DB_VERSION, $this);
 
 		$this->multisite = (function_exists('is_multisite') && is_multisite());
 
@@ -303,5 +295,3 @@ class AcfElasticSearchPlugin {
 	}
 
 }
-
-new ACFElasticSearchPlugin();

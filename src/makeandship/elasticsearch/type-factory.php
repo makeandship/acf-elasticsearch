@@ -6,12 +6,6 @@ use \Elastica\Client;
 
 class TypeFactory {
 
-	const SETTING_URL = 'url';
-	const SETTING_TIMEOUT = 'timeout';
-
-	const DEFAULT_WRITE_TIMEOUT = 30;
-	const DEFAULT_READ_TIMEOUT = 30;
-
 	private static $clients;
 
 	function __construct( $config ) {
@@ -27,21 +21,21 @@ class TypeFactory {
 		}
 		else {
 
-			$settings[TypeFactory::SETTING_URL] = 
-				$this->config[ACFElasticSearchPlugin::OPTION_SERVER];
+			$settings[Constants::SETTING_URL] = 
+				$this->config[Constants::OPTION_SERVER];
 
 			if ($writable) {
-				$settings[TypeFactory::SETTING_TIMEOUT] = $this->use_attribute_or_default(
+				$settings[Constants::SETTING_TIMEOUT] = $this->use_attribute_or_default(
 					$this->config,
-					ACFElasticSearchPlugin::OPTION_WRITE_TIMEOUT,
-					TypeFactory::DEFAULT_WRITE_TIMEOUT
+					Constants::OPTION_WRITE_TIMEOUT,
+					Constants::DEFAULT_WRITE_TIMEOUT
 				);
 			}
 			else {
-				$settings[TypeFactory::SETTING_TIMEOUT] = $this->use_attribute_or_default(
+				$settings[Constants::SETTING_TIMEOUT] = $this->use_attribute_or_default(
 					$this->config,
-					ACFElasticSearchPlugin::OPTION_READ_TIMEOUT,
-					TypeFactory::DEFAULT_READ_TIMEOUT
+					Constants::OPTION_READ_TIMEOUT,
+					Constants::DEFAULT_READ_TIMEOUT
 				);
 			}
 
@@ -78,8 +72,8 @@ class TypeFactory {
 
 		$client = $this->get_client( $writable );
 		
-		if (isset($client) && array_key_exists(ACFElasticSearchPlugin::OPTION_PRIMARY_INDEX, $this->config)) {
-			$index_name = $this->config[ACFElasticSearchPlugin::OPTION_PRIMARY_INDEX];
+		if (isset($client) && array_key_exists(Constants::OPTION_PRIMARY_INDEX, $this->config)) {
+			$index_name = $this->config[Constants::OPTION_PRIMARY_INDEX];
 			$index = $client->getIndex($index_name);
 
 			if (isset($index)) {

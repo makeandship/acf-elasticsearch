@@ -1,8 +1,10 @@
 <?php
 
-namespace makeandship\elasticsearch\wp;
+namespace makeandship\elasticsearch\admin;
 
-class UIManager {
+use makeandship\elasticsearch\Constants;
+
+class UserInterfaceManager {
 
 	const MENU_SPECIFICATION = array(
 		'page_icon' => 'icon-themes',
@@ -23,34 +25,35 @@ class UIManager {
 	}
 
 	public function initialise_options() {
-		error_log('initialise options');
+		
 		$multisite = is_multisite();
 		$network_enabled = is_plugin_active_for_network(plugin_basename(__FILE__));
-		error_log($multisite);
-		error_log($network_enabled); 
+		
 		if ($multisite) { // && $network_enabled
-			error_log('multisite');
-			add_site_option('acf_elasticsearch_version', $this->version);
-			add_site_option('acf_elasticsearch_db_version', $this->db_version);
+			add_site_option(Constants::VERSION, $this->version);
+			add_site_option(Constants::DB_VERSION, $this->db_version);
 			
-			add_site_option('acf_elasticsearch_server', '');
-			add_site_option('acf_elasticsearch_primary_index', '');
-			add_site_option('acf_elasticsearch_secondary_index', '');
+			add_site_option(Constants::OPTION_SERVER, '');
+			add_site_option(Constants::OPTION_PRIMARY_INDEX, '');
+			add_site_option(Constants::OPTION_SECONDARY_INDEX, '');
 
-			add_site_option('acf_elasticsearch_read_timeout', 30);
-			add_site_option('acf_elasticsearch_write_timeout', 30);
+			add_site_option(Constants::OPTION_READ_TIMEOUT, 30);
+			add_site_option(Constants::OPTION_WRITE_TIMEOUT, 30);
+
+			add_site_option(Constants::OPTION_INDEX_STATUS, array());
 		}
 		else {
-			error_log('not multisite');
-			add_option('acf_elasticsearch_version', $this->version);
-			add_option('acf_elasticsearch_db_version', $this->db_version);
+			add_option(Constants::VERSION, $this->version);
+			add_option(Constants::DB_VERSION, $this->db_version);
 
-			add_option('acf_elasticsearch_server', '');
-			add_option('acf_elasticsearch_primary_index', '');
-			add_option('acf_elasticsearch_secondary_index', '');
+			add_option(Constants::OPTION_SERVER, '');
+			add_option(Constants::OPTION_PRIMARY_INDEX, '');
+			add_option(Constants::OPTION_SECONDARY_INDEX, '');
 
-			add_option('acf_elasticsearch_read_timeout', 30);
-			add_option('acf_elasticsearch_write_timeout', 30);
+			add_option(Constants::OPTION_READ_TIMEOUT, 30);
+			add_option(Constants::OPTION_WRITE_TIMEOUT, 30);
+
+			add_option(Constants::OPTION_INDEX_STATUS, array());
 		}
 	}
 
@@ -172,10 +175,10 @@ class UIManager {
 	public function initialise_menu() {
 		
 		$this->menu = add_options_page(
-			UIManager::MENU_SPECIFICATION['page_title'], 
-			UIManager::MENU_SPECIFICATION['menu_title'], 
-			UIManager::MENU_SPECIFICATION['page_cap'], 
-			UIManager::MENU_SPECIFICATION['page_slug'], 
+			UserInterfaceManager::MENU_SPECIFICATION['page_title'], 
+			UserInterfaceManager::MENU_SPECIFICATION['menu_title'], 
+			UserInterfaceManager::MENU_SPECIFICATION['page_cap'], 
+			UserInterfaceManager::MENU_SPECIFICATION['page_slug'], 
 			array(&$this, 'render_settings_page')
 		);
 	}

@@ -24,11 +24,12 @@ jQuery(document).ready(function($) {
 	$('#index-posts').click(function(e) {
 		console.log('index posts');
 		var data = {
-			'action': 'index_posts'
+			'action': 'index_posts',
+			'page': 1
 		};
 		adminAjax(
 			data, 
-			function() {
+			function(response) {
 				console.log('success');
 			},
 			function() {
@@ -45,7 +46,7 @@ jQuery(document).ready(function($) {
 		};
 		adminAjax(
 			data, 
-			function() {
+			function(response) {
 				console.log('success');
 			},
 			function() {
@@ -62,7 +63,7 @@ jQuery(document).ready(function($) {
 		};
 		adminAjax(
 			data, 
-			function() {
+			function(response) {
 				console.log('success');
 			},
 			function() {

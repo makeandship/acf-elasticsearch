@@ -2,15 +2,9 @@
 
 namespace makeandship\elasticsearch;
 
-check_and_require( 'DocumentBuilderFactory', dirname( __FILE__ ) . '/document_builder_factory.php' );
-check_and_require( 'TypeFactory', dirname( __FILE__ ) . '/type_factory.php' );
-
 use \Elastica\Client;
 
 class Indexer {
-	
-	const DEFAULT_SHARDS = 1;
-	const DEFAULT_REPLICAS = 1;
 
 	public function __construct( $config ) {
 		$this->config = $config;
@@ -26,12 +20,12 @@ class Indexer {
 	public function create( $name ) {
 		$errors = array();
 
-		$shards = Indexer::DEFAULT_SHARDS;
-		$replicas = Indexer::DEFAULT_REPLICAS;
+		$shards = Constants::DEFAULT_SHARDS;
+		$replicas = Constants::DEFAULT_REPLICAS;
 
 		// elastic client to the cluster/server
 		$settings = array(
-			'url' => $this->config[ACFElasticSearchPlugin::OPTION_SERVER]
+			'url' => $this->config[Constants::OPTION_SERVER]
 		);
 		$client = new Client($settings);
 
@@ -93,6 +87,91 @@ class Indexer {
 		return $index->create( $settings );
 	}
 
+	public function index_posts( $page, $per, $count=0 ) {
+		if (is_multisite()) {
+			$this->index_posts_multisite( );
+		}
+		else {
+			$this->index_posts_singlesite( );
+		}
+	}
+
+	public function index_posts_multisite() {
+		$status = $this->config[Constants::OPTION_INDEX_STATUS];
+
+		if (!isset($status) || empty($status)) {
+			$posts_manager = new PostsManager();
+			$status = $posts_manager->initialise_status();
+
+			// store initial state
+			$options_manager = new OptionsManager();
+			$options_manager->set(Constants::OPTION_INDEX_STATUS, $status);
+		}
+	}
+
+	public function index_posts_singlesite() {
+		/*
+		$post_mapping_builder = new PostMappingBuilder();
+		$post_types = $post_mapping_builder->get_valid_post_types();
+
+		// args for count only 
+		$args = array(
+			'post_type' => $post_types,
+			'post_status' => 'publish',
+			'fields'=> 'count'
+		);
+
+		$total = get_posts( $args);
+
+		// adjust arguments to retrieve full posts
+		unset($args['fields']);
+		$args['paged'] = $page;
+		$args['posts_per_page'] = $per;
+
+		$posts = get_posts( $args);
+
+		// bulk update on a group of posts
+		$indexed_total = $indexer->add_or_update_documents( $posts );
+
+		$updated_count = $indexed_total + $total;
+
+		return array(
+			'total' => $total,
+			'count' => $updated_count
+		);
+		*/
+	}
+
+	public function index_taxonomies( $page, $per ) {
+
+	}
+
+	public function index_sites( $page, $per ) {
+
+	}
+
+	/**
+	 * Add a set of wordpress objects to an index
+	 * 
+	 * Supported objects are
+	 * - WP_Post
+	 * - WP_Term
+	 * - WP_Site
+	 *
+	 * @param $o the wordpress object to add
+	 */
+	public function add_or_update_documents( $o ) {
+		$count = 0;
+
+		// TODO for now go one by one - later switch to bulk
+		foreach( $o as $item ) {
+			$this->add_or_update_document( $item );
+
+			$count++;
+		}
+
+		return $count;
+	}
 
 	/**
 	 * Add a wordpress object to an index
@@ -100,6 +179,7 @@ class Indexer {
 	 * Supported objects are
 	 * - WP_Post
 	 * - WP_Term
+	 * - WP_Site
 	 *
 	 * @param $o the wordpress object to add
 	 */
@@ -115,6 +195,7 @@ class Indexer {
 			$type = $this->type_factory->create( $o );
 			$type->addDocument(new \Elastica\Document($o->ID, $data));
 
+			// response ?
 		}
 	}
 

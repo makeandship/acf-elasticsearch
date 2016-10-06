@@ -1,8 +1,7 @@
-<?php
-require_once plugin_dir_path(__DIR__).'../html-utils.php';
-?>
 <div class="wrap">
 <?php
+	use makeandship\elasticsearch\admin\HtmlUtils;
+	
 	if ( !empty( $_POST ) ) {
 		
 		// save incoming options

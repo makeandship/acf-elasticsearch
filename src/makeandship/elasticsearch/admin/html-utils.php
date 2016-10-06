@@ -1,5 +1,7 @@
 <?php
 
+namespace makeandship\elasticsearch\admin;
+
 class HtmlUtils {
 	protected function __construct() {
 

@@ -74,6 +74,22 @@ class PostMappingBuilder extends MappingBuilder {
 		return true;
 	}
 
+	// TODO right place?
+	public function get_valid_post_types() {
+		$post_types = get_post_types(array(
+			'public' => true
+		));
+		
+		$valid_post_types = array();
+		foreach($post_types as $post_type) {
+			if ($this->valid($post_type)) {
+				$valid_post_types[] = $post_type;
+			}
+		}
+
+		return $valid_post_types;
+	}
+
 	private function build_field( $field, $options ) {
 		$properties = array();
 
