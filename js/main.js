@@ -23,24 +23,14 @@ jQuery(document).ready(function($) {
 
 	$('#index-posts').click(function(e) {
 		console.log('index posts');
-		var data = {
-			'action': 'index_posts',
-			'page': 1
-		};
-		adminAjax(
-			data, 
-			function(response) {
-				console.log('success');
-			},
-			function() {
-				console.log('error');
-			}
-		);
+
+		indexPosts();
+		
 		return false;
 	});
 
 	$('#index-taxonomies').click(function(e) {
-		console.log('index posts');
+		console.log('index taxonomies');
 		var data = {
 			'action': 'index_taxonomies'
 		};
@@ -73,6 +63,40 @@ jQuery(document).ready(function($) {
 		return false;
 	});
 
+	function indexPosts() {
+		var data = {
+			'action': 'index_posts'
+		};
+		adminAjax(
+			data, 
+			function(response) {
+				var status = response.status;
+				if (status) {
+					var complete = true;
+
+					for (var blogId in status) {
+						var site = status[blogId];
+						if (site.count < site.total) {
+							complete = false;
+							break;
+						}
+					}
+
+					if (!complete) {
+						console.log('More posts to index');
+						indexPosts();
+					}
+					else {
+						console.log('All posts indexed');
+					}
+				}
+			},
+			function() {
+				console.log('error');
+			}
+		);
+	}
+
 	function adminAjax(data, success, error) {
 		var url = window.acfElasticsearchManager.ajaxUrl;
 		$.ajax({
@@ -80,7 +104,8 @@ jQuery(document).ready(function($) {
             type: 'post',
             data: data,
             success: success,
-            error: error
+            error: error,
+            dataType: 'json'
         });
 	}
 });

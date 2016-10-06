@@ -2,6 +2,12 @@
 
 namespace makeandship\elasticsearch;
 
+use makeandship\elasticsearch\Constants;
+
+use makeandship\elasticsearch\domain\OptionsManager;
+use makeandship\elasticsearch\domain\SitesManager;
+use makeandship\elasticsearch\domain\PostsManager;
+
 use \Elastica\Client;
 
 class Indexer {
@@ -89,24 +95,52 @@ class Indexer {
 
 	public function index_posts( $page, $per, $count=0 ) {
 		if (is_multisite()) {
-			$this->index_posts_multisite( );
+			$status = $this->index_posts_multisite( );
 		}
 		else {
-			$this->index_posts_singlesite( );
+			$status = $this->index_posts_singlesite( );
 		}
+
+		return $status;
 	}
 
 	public function index_posts_multisite() {
 		$status = $this->config[Constants::OPTION_INDEX_STATUS];
 
+		$posts_manager = new PostsManager();
+		$options_manager = new OptionsManager();
+
 		if (!isset($status) || empty($status)) {
-			$posts_manager = new PostsManager();
 			$status = $posts_manager->initialise_status();
 
 			// store initial state
-			$options_manager = new OptionsManager();
 			$options_manager->set(Constants::OPTION_INDEX_STATUS, $status);
 		}
+
+		// find the next site to index (or next page in a site to index)
+		$target_site = null;
+		foreach( $status as $site_status ) {
+			if ($site_status['count'] < $site_status['total']) {
+				$target_site = $site_status;
+				break;
+			}
+		}
+
+		$blog_id = $target_site['blog_id'];
+		$page = $target_site['page'];
+		$per = Constants::DEFAULT_POSTS_PER_PAGE;
+
+		// get and update posts
+		$posts = $posts_manager->get_posts( $blog_id, $page, $per );
+		$count = $this->add_or_update_documents( $posts );
+
+		// update status
+		$target_site['page'] = $page + 1;
+		$target_site['count'] = $target_site['count'] + $count;
+		$status[$blog_id] = $target_site;
+		$options_manager->set(Constants::OPTION_INDEX_STATUS, $status);
+
+		return $status;
 	}
 
 	public function index_posts_singlesite() {

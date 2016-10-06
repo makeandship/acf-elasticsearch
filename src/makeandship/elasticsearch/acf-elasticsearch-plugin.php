@@ -38,6 +38,7 @@ class AcfElasticsearchPlugin {
 			$this->get_option( $this->options, Constants::OPTION_SECONDARY_INDEX);
 			$this->get_option( $this->options, Constants::OPTION_READ_TIMEOUT);
 			$this->get_option( $this->options, Constants::OPTION_WRITE_TIMEOUT); 
+			$this->get_option( $this->options, Constants::OPTION_INDEX_STATUS); 
 		}
 		
 		return $this->options;
@@ -135,13 +136,14 @@ class AcfElasticsearchPlugin {
 
 		if (isset($options)) {
 			$indexer = new Indexer( $options );
-			$result = $indexer->index_posts( $page, Constants::DEFAULT_POSTS_PER_PAGE, $count );
+			$status = $indexer->index_posts( $page, Constants::DEFAULT_POSTS_PER_PAGE, $count );
 		}
 
+
 		$response = array(
-			'message' => 'Posts were indexed successfully'
+			'message' => 'Posts were indexed successfully',
+			'status' => $status
 		);
-		$response = array_merge($response, $result);
 
 		$json = json_encode( $response );
 		die($json);
@@ -264,7 +266,6 @@ class AcfElasticsearchPlugin {
 	 * ---------------------
 	 */
 	public function initialise() {
-		error_log('initialise');
 		$this->ui->initialise_options();
 		$this->ui->initialise_settings();
 	}
