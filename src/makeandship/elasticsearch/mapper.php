@@ -2,9 +2,6 @@
 
 namespace makeandship\elasticsearch;
 
-require_once 'mapping_builder_factory.php';
-require_once 'type_factory.php';
-
 use \Elastica\Type\Mapping;
 
 class Mapper {

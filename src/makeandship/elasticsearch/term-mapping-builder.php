@@ -2,8 +2,6 @@
 
 namespace makeandship\elasticsearch;
 
-require_once 'mapping_builder.php';
-
 class TermMappingBuilder extends MappingBuilder {
 
 	const EXCLUDE_TAXONOMIES = array(

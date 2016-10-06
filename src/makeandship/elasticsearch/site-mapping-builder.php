@@ -2,8 +2,6 @@
 
 namespace makeandship\elasticsearch;
 
-require_once 'mapping_builder.php';
-
 class SiteMappingBuilder extends MappingBuilder {
 
 	const CORE_FIELDS = array(

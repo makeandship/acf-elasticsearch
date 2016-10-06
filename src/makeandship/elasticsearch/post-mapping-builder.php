@@ -2,8 +2,6 @@
 
 namespace makeandship\elasticsearch;
 
-require_once 'mapping_builder.php';
-
 class PostMappingBuilder extends MappingBuilder {
 
 	const EXCLUDE_POST_TYPES = array(
