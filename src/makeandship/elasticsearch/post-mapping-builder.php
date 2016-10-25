@@ -164,7 +164,7 @@ class PostMappingBuilder extends MappingBuilder {
 				$name = $field['name'];
 
 				// default to index each field
-				$type = 'text';
+				$type = 'string';
 				$index = 'analyzed';
 
 				// default to text 
@@ -173,13 +173,16 @@ class PostMappingBuilder extends MappingBuilder {
 				switch($acf_type) {
 					case 'checkbox':
 						$type = 'boolean';
+						$index = 'not_analyzed';
 						break;
 					case 'date_picker':
 						$type = 'date';
+						$index = 'not_analyzed';
 						break;
 
 					case 'date_time_picker':
 						$type = 'date';
+						$index = 'not_analyzed';
 						break;
 
 					case 'file':
@@ -198,6 +201,7 @@ class PostMappingBuilder extends MappingBuilder {
 
 					case 'number':
 						$type = 'long';
+						$index = 'not_analyzed';
 						break;
 
 					case 'oembed':
@@ -220,10 +224,12 @@ class PostMappingBuilder extends MappingBuilder {
 
 					case 'time_picker':
 						$type = 'long';
+						$index = 'not_analyzed';
 						break;
 
 					case 'true_false':
 						$type = 'boolean';
+						$index = 'not_analyzed';
 						break;
 
 					case 'user':
