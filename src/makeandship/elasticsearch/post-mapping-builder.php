@@ -63,7 +63,27 @@ class PostMappingBuilder extends MappingBuilder {
 
 		// acf fields
 		if( class_exists('acf') ) {
-			$field_groups = acf_get_field_groups();
+			// field groups for this post type
+			$args = array(
+				'post_type' => $post_type
+			);
+			$field_groups = acf_get_field_groups( $args );
+
+			if (isset( $field_groups ) && !empty( $field_groups )) {
+				foreach( $field_groups as $field_group ) {
+					$field_group_id = $field_group['ID'];
+					if ($field_group_id) {
+						$fields = acf_get_fields( $field_group_id );
+
+						foreach($fields as $field) {
+							$properties = array_merge( 
+								$properties, 
+								$this->build_acf_field( $field ) 
+							);
+						}
+					}
+				}
+			}
 		}
 
 		return $properties;
@@ -129,6 +149,34 @@ class PostMappingBuilder extends MappingBuilder {
 	    			'search_analyzer' => 'whitespace_analyzer',
 				);
 			}
+		}
+
+		return $properties;
+	}
+
+	private function build_acf_field( $field ) {
+		$properties = array();
+
+		if (isset( $field )) {
+			if (array_key_exists('type', $field) && array_key_exists('name', $field)) {
+				$type = $field['type'];
+				$name = $field['name'];
+
+				// default to index each field
+				$index = 'analyzed';
+
+				switch($type) {
+					
+				}
+
+				$properties[$field] = array(
+					'type' => $type,
+					'index' => $index
+				);
+
+			}
+			
+			
 		}
 
 		return $properties;

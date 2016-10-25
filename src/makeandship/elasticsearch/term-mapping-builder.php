@@ -11,16 +11,14 @@ class TermMappingBuilder extends MappingBuilder {
 	);
 
 	const CORE_FIELDS = array(
-		'post_content' => array(
+		'name' => array(
 			'type' => 'string', 
 			'suggest' => true
 		),
-		'post_title' => 'string',
-		'post_type' => array(
-			'type' => 'string', 
+		'slug' => array(
+			'type' => 'string',
 			'index' => 'not_analyzed'
 		),
-		'post_date' => 'date'
 	);
 
 	/**

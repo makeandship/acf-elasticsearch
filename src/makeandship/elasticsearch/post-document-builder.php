@@ -27,13 +27,10 @@ class PostDocumentBuilder extends DocumentBuilder {
 					// transform if required
 					if (is_array($definition) && array_key_exists('transformer', $definition)) {
 						$transformer = new $definition['transformer'];
-						//if ($definition['transformer'] === 'HtmlFieldTransformer') { $transformer = new HtmlFieldTransformer(); }
-						//if ($definition['transformer'] === 'DateFieldTransformer') { $transformer = new DateFieldTransformer(); }
 
 						if (isset($transformer)) {
 							$value = $transformer->transform($value);
 						}
-
 					}
 
 					$document[$name] = $value; 

@@ -101,6 +101,7 @@ class AcfElasticsearchPlugin {
 	 * -------------------
 	 */
 	function create_mappings() {
+		error_log('create_mappings()');
 		$options = $this->get_options();
 
 		if (isset($options) && array_key_exists(Constants::OPTION_PRIMARY_INDEX, $options)) {
