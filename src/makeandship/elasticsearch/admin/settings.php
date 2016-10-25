@@ -23,10 +23,10 @@
 		else {
 			// store at site level
 			update_option('acf_elasticsearch_server', $server);
-			update_option('acf_elasticsearch_primary_index', $server);
-			update_option('acf_elasticsearch_secondary_index', $server);
-			update_option('acf_elasticsearch_read_timeout', $server);
-			update_option('acf_elasticsearch_write_timeout', $server);
+			update_option('acf_elasticsearch_primary_index', $primary_index);
+			update_option('acf_elasticsearch_secondary_index', $secondary_index);
+			update_option('acf_elasticsearch_read_timeout', $read_timeout);
+			update_option('acf_elasticsearch_write_timeout', $write_timeout);
 		}
 	}
 ?>

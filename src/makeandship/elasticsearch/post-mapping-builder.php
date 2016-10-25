@@ -167,7 +167,7 @@ class PostMappingBuilder extends MappingBuilder {
 				$index = 'analyzed';
 
 				// default to text 
-				// color_picker, email, page_link, radio, select, text, textarea
+				// color_picker, email, page_link, radio, select, text, textarea, url, wysiwyg
 
 				switch($acf_type) {
 					case 'checkbox':
@@ -218,26 +218,25 @@ class PostMappingBuilder extends MappingBuilder {
 						break;
 
 					case 'time_picker':
+						$type = 'long';
 						break;
 
 					case 'true_false':
-						break;
-
-					case 'url':
+						$type = 'boolean';
 						break;
 
 					case 'user':
-						break;
-
-					case 'wysiwyg':
+						// custom
 						break;
   
 				}
 
-				$properties[$field] = array(
-					'type' => $type,
-					'index' => $index
-				);
+				if (isset($type)) {
+					$properties[$field] = array(
+						'type' => $type,
+						'index' => $index
+					);
+				}
 
 			}
 			
