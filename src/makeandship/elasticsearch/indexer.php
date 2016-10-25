@@ -9,6 +9,8 @@ use makeandship\elasticsearch\domain\SitesManager;
 use makeandship\elasticsearch\domain\PostsManager;
 
 use \Elastica\Client;
+use \Elastica\Exception\ResponseException;
+use \Elastica\Response;
 
 class Indexer {
 
@@ -39,9 +41,16 @@ class Indexer {
 		$index = $client->getIndex( $name );
 		try {
 			$index->delete();
-		} catch (\Exception $ex) {
-			// likely index doesn't exist
-			$errors[] = $ex->getActionExceptionsAsString();
+		} 
+		catch (ResponseException $ex) {
+			$response = $ex->getResponse();
+			$error = $response->getFullError();
+
+			// ignore if there's no index as that's the state we want
+			$is_index_error = strpos($error, 'IndexMissingException'); 
+			if ($is_index_error === false) {
+				$errors = $ex;
+			}
 		}
 
 		$analysis = array(
@@ -90,7 +99,20 @@ class Indexer {
 		);
 
         // create the index
-		return $index->create( $settings );
+		try {
+			$response = $index->create( $settings );
+		} 
+		catch (\Exception $ex) {
+			// likely index doesn't exist
+			$errors[] = $ex;
+		}
+		
+		if (isset($errors) && !empty($errors)) {
+			return $errors;
+		}
+		else {
+			return $response;
+		}
 	}
 
 	public function index_posts( $fresh ) {

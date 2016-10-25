@@ -76,9 +76,10 @@ class PostMappingBuilder extends MappingBuilder {
 						$fields = acf_get_fields( $field_group_id );
 
 						foreach($fields as $field) {
+							$field_properties = $this->build_acf_field( $field );
 							$properties = array_merge( 
 								$properties, 
-								$this->build_acf_field( $field ) 
+								$field_properties
 							);
 						}
 					}
@@ -231,16 +232,13 @@ class PostMappingBuilder extends MappingBuilder {
   
 				}
 
-				if (isset($type)) {
-					$properties[$field] = array(
+				if (isset($type) && isset($name)) {
+					$properties[$name] = array(
 						'type' => $type,
 						'index' => $index
 					);
 				}
-
-			}
-			
-			
+			}	
 		}
 
 		return $properties;
