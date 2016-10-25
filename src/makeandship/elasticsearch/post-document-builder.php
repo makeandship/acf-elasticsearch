@@ -42,6 +42,55 @@ class PostDocumentBuilder extends DocumentBuilder {
 					}
 				}
 			}
+
+			// acf fields
+			if( class_exists('acf') ) {
+				$post_type = $post->post_type;
+				
+				// field groups for this post type
+				$args = array(
+					'post_type' => $post_type
+				);
+				$field_groups = acf_get_field_groups( $args );
+
+				if (isset( $field_groups ) && !empty( $field_groups )) {
+					foreach( $field_groups as $field_group ) {
+						$field_group_id = $field_group['ID'];
+						if ($field_group_id) {
+							$fields = acf_get_fields( $field_group_id );
+
+							foreach($fields as $field) {
+								$field_document = $this->build_acf_field( $field, $post );
+								if (isset($field_document)) {
+									$document = array_merge( 
+										$document, 
+										$field_document
+									);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return $document;
+	}
+
+	private function build_acf_field( $field, $post ) {
+		$document = null;
+
+		if (isset($field) && isset($post)) {
+			if (array_key_exists('name', $field)) {
+				$name = $field['name'];
+				$value = get_field( $name, $post->ID );
+				
+				if (isset($value) && !empty($value)) {
+					// transform value based on field type
+					$document = array();
+					$document[$name] = $value;
+				}
+			}
 		}
 
 		return $document;
