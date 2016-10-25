@@ -24,12 +24,19 @@ class PostsManager {
 			return $this->initialise_status_multisite();
 		}
 		else {
-			return $this->initialise_status_multisite();
+			return $this->initialise_status_singlesite();
 		}
 	}
 
 	private function initialise_status_singlesite() {
+		$total = $this->get_posts_count( $blog_id );
+		$status = array(
+			'page' => 1,
+			'count' => 0,
+			'total' => $total
+		);
 
+		return $status;
 	}
 
 	private function initialise_status_multisite() {
@@ -54,7 +61,7 @@ class PostsManager {
 		return $status;
 	}
 
-	public function get_posts_count( $blog_id ) {
+	public function get_posts_count( $blog_id=null ) {
 		$count = 0;
 
 		if (isset($blog_id)) {
@@ -66,6 +73,10 @@ class PostsManager {
 
 			// back to the original
 			restore_current_blog();
+		}
+		else {
+			$args = $this->get_count_post_args();
+			$count = intval((new \WP_Query($args))->found_posts);
 		}
 
 		return $count;

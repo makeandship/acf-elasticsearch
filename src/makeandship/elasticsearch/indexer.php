@@ -166,36 +166,33 @@ class Indexer {
 	}
 
 	public function index_posts_singlesite( $fresh ) {
-		/*
-		$post_mapping_builder = new PostMappingBuilder();
-		$post_types = $post_mapping_builder->get_valid_post_types();
+		$status = $this->config[Constants::OPTION_INDEX_STATUS];
 
-		// args for count only 
-		$args = array(
-			'post_type' => $post_types,
-			'post_status' => 'publish',
-			'fields'=> 'count'
-		);
+		$posts_manager = new PostsManager();
+		$options_manager = new OptionsManager();
 
-		$total = get_posts( $args);
+		if ($fresh || (!isset($status) || empty($status))) {
+			$status = $posts_manager->initialise_status();
 
-		// adjust arguments to retrieve full posts
-		unset($args['fields']);
-		$args['paged'] = $page;
-		$args['posts_per_page'] = $per;
+			// store initial state
+			$options_manager->set(Constants::OPTION_INDEX_STATUS, $status);
+		}
 
-		$posts = get_posts( $args);
+		// find the next site to index (or next page in a site to index)
+		$page = $status['page'];
+		$per = Constants::DEFAULT_POSTS_PER_PAGE;
 
-		// bulk update on a group of posts
-		$indexed_total = $indexer->add_or_update_documents( $posts );
+		// get and update posts
+		$posts = $posts_manager->get_posts( null, $page, $per );
+		$count = $this->add_or_update_documents( $posts );
 
-		$updated_count = $indexed_total + $total;
+		// update status
+		$status['page'] = $page + 1;
+		$status['count'] = $status['count'] + $count;
+		
+		$options_manager->set(Constants::OPTION_INDEX_STATUS, $status);
 
-		return array(
-			'total' => $total,
-			'count' => $updated_count
-		);
-		*/
+		return $status;
 	}
 
 	public function index_taxonomies( $page, $per ) {
