@@ -164,32 +164,36 @@ class PostMappingBuilder extends MappingBuilder {
 				$name = $field['name'];
 
 				// default to index each field
-				$type = 'string';
-				$index = 'analyzed';
-
+				$props = array(
+					'type' => 'string',
+					'index' => 'analyzed'
+				);
+				
 				// default to text 
 				// color_picker, email, page_link, radio, select, text, textarea, url, wysiwyg
 
 				switch($acf_type) {
 					case 'checkbox':
-						$type = 'boolean';
-						$index = 'not_analyzed';
+						$props['type'] = 'boolean';
+						$props['index'] = 'not_analyzed';
 						break;
 					case 'date_picker':
-						$type = 'date';
-						$index = 'not_analyzed';
+						$props['type'] = 'date';
+						$props['index'] = 'not_analyzed';
+						$props['format'] = 'yyyy-MM-dd';
 						break;
 
 					case 'date_time_picker':
-						$type = 'date';
-						$index = 'not_analyzed';
+						$props['type'] = 'date';
+						$props['index'] = 'not_analyzed';
 						break;
 
 					case 'file':
 						break;
 
 					case 'google_map':
-						$type = 'geo_point';
+						$props['type'] = 'geo_point';
+						$props['index'] = 'not_analyzed';
 						break;
 
 					case 'image':
@@ -200,8 +204,8 @@ class PostMappingBuilder extends MappingBuilder {
 						break;
 
 					case 'number':
-						$type = 'long';
-						$index = 'not_analyzed';
+						$props['type'] = 'long';
+						$props['index'] = 'not_analyzed';
 						break;
 
 					case 'oembed':
@@ -223,13 +227,14 @@ class PostMappingBuilder extends MappingBuilder {
 						break;
 
 					case 'time_picker':
-						$type = 'long';
-						$index = 'not_analyzed';
+						$props['type'] = 'date';
+						$props['index'] = 'not_analyzed';
+						$props['format'] = 'HH:mm:ss';
 						break;
 
 					case 'true_false':
-						$type = 'boolean';
-						$index = 'not_analyzed';
+						$props['type'] = 'boolean';
+						$props['index'] = 'not_analyzed';
 						break;
 
 					case 'user':
@@ -238,11 +243,8 @@ class PostMappingBuilder extends MappingBuilder {
   
 				}
 
-				if (isset($type) && isset($name)) {
-					$properties[$name] = array(
-						'type' => $type,
-						'index' => $index
-					);
+				if (isset($props) && isset($name)) {
+					$properties[$name] = $props;
 				}
 			}	
 		}

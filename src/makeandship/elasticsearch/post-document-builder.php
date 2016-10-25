@@ -83,10 +83,11 @@ class PostDocumentBuilder extends DocumentBuilder {
 		if (isset($field) && isset($post)) {
 			if (array_key_exists('name', $field)) {
 				$name = $field['name'];
+				$type = $field['type'];
 				$value = get_field( $name, $post->ID );
 				
 				if (isset($value) && !empty($value)) {
-					// transform value based on field type
+					$value = $this->transform_acf_value( $value, $type );
 					$document = array();
 					$document[$name] = $value;
 				}
@@ -94,6 +95,65 @@ class PostDocumentBuilder extends DocumentBuilder {
 		}
 
 		return $document;
+	}
+
+	private function transform_acf_value( $value, $type ) {
+		$transformer = null;
+
+		switch($acf_type) {
+			
+			case 'checkbox':
+				break;
+			case 'color_picker': 
+				break;
+			case 'date_picker':
+				$transformer = new DateFieldTransformer();
+				break;
+			case 'date_time_picker':
+				$transformer = new DateFieldTransformer();
+				break;
+			case 'file':
+				break;
+			case 'google_map':
+				break;
+			case 'image':
+				// nested
+				break;
+			case 'message':
+				break;
+			case 'number':
+				break;
+			case 'oembed':
+				// nested
+				break;
+			case 'page_link':
+				break;
+			case 'password':
+				// dont index
+				break;
+			case 'post_object':
+				// id?
+				break;
+			case 'relationship':
+				break;
+			case 'taxonomy':
+				break;
+			case 'time_picker':
+				break;
+			case 'true_false':
+				break;
+			case 'user':
+				// custom
+				break;
+			case 'wysiwyg':
+				$transformer = new HtmlFieldTransformer();
+				break;
+
+		if ($transformer) {
+			$value = $transformer->transform( $value );
+		}
+
+		return $value;
 	}
 
 	/**
