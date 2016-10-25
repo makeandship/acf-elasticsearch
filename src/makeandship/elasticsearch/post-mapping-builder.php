@@ -159,71 +159,62 @@ class PostMappingBuilder extends MappingBuilder {
 
 		if (isset( $field )) {
 			if (array_key_exists('type', $field) && array_key_exists('name', $field)) {
-				$type = $field['type'];
+				$acf_type = $field['type'];
 				$name = $field['name'];
 
 				// default to index each field
+				$type = 'text';
 				$index = 'analyzed';
 
-				switch($type) {
+				// default to text 
+				// color_picker, email, page_link, radio, select, text, textarea
+
+				switch($acf_type) {
 					case 'checkbox':
+						$type = 'boolean';
 						break;
-
-					case 'color_picker':
-						break;
-
 					case 'date_picker':
+						$type = 'date';
 						break;
 
 					case 'date_time_picker':
-						break;
-
-					case 'email':
+						$type = 'date';
 						break;
 
 					case 'file':
 						break;
 
 					case 'google_map':
+						$type = 'geo_point';
 						break;
 
 					case 'image':
+						// nested
 						break;
 
 					case 'message':
 						break;
 
 					case 'number':
+						$type = 'long';
 						break;
 
 					case 'oembed':
-						break;
-
-					case 'page_link':
+						// nested
 						break;
 
 					case 'password':
+						// dont index
 						break;
 
 					case 'post_object':
-						break;
-
-					case 'radio':
+						// id?
 						break;
 
 					case 'relationship':
 						break;
 
-					case 'select':
-						break;
-
 					case 'taxonomy':
-						break;
-
-					case 'text':
-						break;
-
-					case 'textarea':
 						break;
 
 					case 'time_picker':
