@@ -166,7 +166,81 @@ class PostMappingBuilder extends MappingBuilder {
 				$index = 'analyzed';
 
 				switch($type) {
-					
+					case 'checkbox':
+						break;
+
+					case 'color_picker':
+						break;
+
+					case 'date_picker':
+						break;
+
+					case 'date_time_picker':
+						break;
+
+					case 'email':
+						break;
+
+					case 'file':
+						break;
+
+					case 'google_map':
+						break;
+
+					case 'image':
+						break;
+
+					case 'message':
+						break;
+
+					case 'number':
+						break;
+
+					case 'oembed':
+						break;
+
+					case 'page_link':
+						break;
+
+					case 'password':
+						break;
+
+					case 'post_object':
+						break;
+
+					case 'radio':
+						break;
+
+					case 'relationship':
+						break;
+
+					case 'select':
+						break;
+
+					case 'taxonomy':
+						break;
+
+					case 'text':
+						break;
+
+					case 'textarea':
+						break;
+
+					case 'time_picker':
+						break;
+
+					case 'true_false':
+						break;
+
+					case 'url':
+						break;
+
+					case 'user':
+						break;
+
+					case 'wysiwyg':
+						break;
+  
 				}
 
 				$properties[$field] = array(
