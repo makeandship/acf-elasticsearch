@@ -29,7 +29,7 @@ class PostsManager {
 	}
 
 	private function initialise_status_singlesite() {
-		$total = $this->get_posts_count( $blog_id );
+		$total = $this->get_posts_count( null );
 		$status = array(
 			'page' => 1,
 			'count' => 0,

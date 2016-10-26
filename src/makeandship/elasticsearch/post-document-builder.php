@@ -88,8 +88,11 @@ class PostDocumentBuilder extends DocumentBuilder {
 				
 				if (isset($value) && !empty($value)) {
 					$value = $this->transform_acf_value( $value, $type );
-					$document = array();
-					$document[$name] = $value;
+
+					if ($value) {
+						$document = array();
+						$document[$name] = $value;
+					}
 				}
 			}
 		}
@@ -100,11 +103,12 @@ class PostDocumentBuilder extends DocumentBuilder {
 	private function transform_acf_value( $value, $type ) {
 		$transformer = null;
 
-		switch($acf_type) {
+		switch($type) {
 			
 			case 'checkbox':
 				break;
 			case 'color_picker': 
+				$value = null;
 				break;
 			case 'date_picker':
 				$transformer = new DateFieldTransformer();
@@ -113,41 +117,57 @@ class PostDocumentBuilder extends DocumentBuilder {
 				$transformer = new DateFieldTransformer();
 				break;
 			case 'file':
+				$value = null;
 				break;
 			case 'google_map':
+				$value = null;
 				break;
 			case 'image':
+				$value = null;
 				// nested
 				break;
 			case 'message':
+				$value = null;
 				break;
 			case 'number':
 				break;
 			case 'oembed':
 				// nested
+				$value = null;
 				break;
 			case 'page_link':
+				$value = null;
 				break;
 			case 'password':
 				// dont index
+				$value = null;
 				break;
 			case 'post_object':
+				$value = null;
 				// id?
 				break;
 			case 'relationship':
+				$value = null;
+				break;
+			case 'repeater':
+				$value = null;
 				break;
 			case 'taxonomy':
+				$value = null;
 				break;
 			case 'time_picker':
+				$value = null;
 				break;
 			case 'true_false':
 				break;
 			case 'user':
+				$value = null;
 				// custom
 				break;
 			case 'wysiwyg':
 				$transformer = new HtmlFieldTransformer();
 				break;
+		}
 
 		if ($transformer) {
 			$value = $transformer->transform( $value );

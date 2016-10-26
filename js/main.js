@@ -79,11 +79,18 @@ jQuery(document).ready(function($) {
 				if (status) {
 					var complete = true;
 
-					for (var blogId in status) {
-						var site = status[blogId];
-						if (site.count < site.total) {
+					if (status.count && status.page && status.total) {
+						if (status.count < status.total) {
 							complete = false;
-							break;
+						}
+					}
+					else {
+						for (var blogId in status) {
+							var site = status[blogId];
+							if (site.count < site.total) {
+								complete = false;
+								break;
+							}
 						}
 					}
 
