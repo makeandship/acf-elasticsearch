@@ -221,6 +221,10 @@ class PostMappingBuilder extends MappingBuilder {
 						break;
 
 					case 'relationship':
+						// alter name to identify where further processing is required on lookup
+						$name = $name.'_relationship';
+						$props['type'] = 'long';
+						$props['index'] = 'not_analyzed'; 
 						break;
 
 					case 'repeater':
