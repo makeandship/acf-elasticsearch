@@ -32,9 +32,7 @@ class Indexer {
 		$replicas = Constants::DEFAULT_REPLICAS;
 
 		// elastic client to the cluster/server
-		$settings = array(
-			'url' => $this->config[Constants::OPTION_SERVER]
-		);
+		$settings = array();
 		$client = new Client($settings);
 
 		// remove the current index
