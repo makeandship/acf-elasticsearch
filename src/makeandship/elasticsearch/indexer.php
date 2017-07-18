@@ -113,6 +113,33 @@ class Indexer {
 		}
 	}
 
+	/**
+	 * Clear the index
+	 */
+	public function clear( $name ) {
+		$errors = array();
+
+		// elastic client to the cluster/server
+		$settings = array();
+		$client = new Client($settings);
+
+		// remove the current index
+		$index = $client->getIndex( $name );
+		try {
+			$index->delete();
+		} 
+		catch (ResponseException $ex) {
+			$response = $ex->getResponse();
+			$error = $response->getFullError();
+
+			// ignore if there's no index as that's the state we want
+			$is_index_error = strpos($error, 'IndexMissingException'); 
+			if ($is_index_error === false) {
+				$errors = $ex;
+			}
+		}
+	}
+
 	public function index_posts( $fresh ) {
 		if (is_multisite()) {
 			$status = $this->index_posts_multisite( $fresh );
