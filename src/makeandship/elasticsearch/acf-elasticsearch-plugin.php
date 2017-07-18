@@ -156,15 +156,8 @@ class AcfElasticsearchPlugin {
 	}
 
 	function clear_index() {
-		$options = $this->get_options();
+		$this->create_mappings();
 
-		if (isset($options) && array_key_exists(Constants::OPTION_PRIMARY_INDEX, $options)) {
-			$primary_index = $options[Constants::OPTION_PRIMARY_INDEX];
-
-			// deletes the index
-			$indexer = new Indexer( $options );
-			$indexer->clear( $primary_index );
-		}
 		$json = json_encode(array(
 			'message' => 'Index was cleared successfully'
 			));
