@@ -149,6 +149,14 @@ class AcfElasticsearchPlugin {
 	}
 
 	function index_taxonomies() {
+		error_log('index_taxonomies()');
+		$options = $this->get_options();
+
+		if (isset($options)) {
+			$indexer = new Indexer( $options );
+			$status = $indexer->index_taxonomies();
+		}
+
 		$json = json_encode(array(
 			'message' => 'Taxonomies were indexed successfully'
 			));

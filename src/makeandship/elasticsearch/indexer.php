@@ -7,6 +7,7 @@ use makeandship\elasticsearch\Constants;
 use makeandship\elasticsearch\domain\OptionsManager;
 use makeandship\elasticsearch\domain\SitesManager;
 use makeandship\elasticsearch\domain\PostsManager;
+use makeandship\elasticsearch\domain\TaxonomiesManager;
 
 use \Elastica\Client;
 use \Elastica\Exception\ResponseException;
@@ -220,8 +221,10 @@ class Indexer {
 		return $status;
 	}
 
-	public function index_taxonomies( $page, $per ) {
-
+	public function index_taxonomies() {
+	  $taxonomies_manager = new TaxonomiesManager();
+	  $terms = $taxonomies_manager->get_taxonomies();
+	  $count = $this->add_or_update_documents( $terms );
 	}
 
 	public function index_sites( $page, $per ) {
@@ -265,13 +268,15 @@ class Indexer {
 		$builder = $this->document_builder_factory->create( $o );
 		$document = $builder->build( $o );
 		$id = $builder->get_id( $o );
+		$doc_type = $builder->get_type( $o );
 
 		// ensure the document and id are valid before indexing
 		if (isset($document) && !empty($document) &&
 			isset($id) && !empty($id)) {
 
-			$type = $this->type_factory->create( $o->post_type );
-			$type->addDocument(new \Elastica\Document($o->ID, $document));
+			$type = $this->type_factory->create( $doc_type );
+
+			$type->addDocument(new \Elastica\Document($id, $document));
 
 			// response ?
 		}
