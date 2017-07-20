@@ -20,6 +20,11 @@ class TypeFactory {
 			return self::$clients[$writable_key];
 		}
 		else {
+		    $settings = array(
+			  Constants::SETTING_URL => $this->config[Constants::OPTION_SERVER],
+			  Constants::SETTING_USERNAME => ES_PRIVATE_USERNAME,
+			  Constants::SETTING_PASSWORD => ES_PRIVATE_PASSWORD
+		    );
 			if ($writable) {
 				$settings[Constants::SETTING_TIMEOUT] = $this->use_attribute_or_default(
 					$this->config,

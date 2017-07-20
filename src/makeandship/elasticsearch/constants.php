@@ -11,6 +11,8 @@ class Constants {
 	// elastica
 	const SETTING_URL = 'url';
 	const SETTING_TIMEOUT = 'timeout';
+	const SETTING_USERNAME = 'username';
+	const SETTING_PASSWORD = 'password';
 
 	const DEFAULT_WRITE_TIMEOUT = 30;
 	const DEFAULT_READ_TIMEOUT = 30;
