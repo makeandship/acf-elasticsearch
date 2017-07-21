@@ -34,8 +34,10 @@ class AcfElasticsearchPlugin {
 			$this->options = array();
 
 			$this->get_option( $this->options, Constants::OPTION_SERVER);
-			$this->get_option( $this->options, Constants::OPTION_PRIMARY_INDEX);
-			$this->get_option( $this->options, Constants::OPTION_SECONDARY_INDEX);
+			$this->get_option( $this->options, Constants::OPTION_PUBLIC_PRIMARY_INDEX);
+			$this->get_option( $this->options, Constants::OPTION_PUBLIC_SECONDARY_INDEX);
+			$this->get_option( $this->options, Constants::OPTION_PRIVATE_PRIMARY_INDEX);
+			$this->get_option( $this->options, Constants::OPTION_PRIVATE_SECONDARY_INDEX);
 			$this->get_option( $this->options, Constants::OPTION_READ_TIMEOUT);
 			$this->get_option( $this->options, Constants::OPTION_WRITE_TIMEOUT); 
 			$this->get_option( $this->options, Constants::OPTION_INDEX_STATUS); 
@@ -100,12 +102,17 @@ class AcfElasticsearchPlugin {
 	 * Index Administration
 	 * -------------------
 	 */
-	function create_mappings() {
+	function create_mappings($private = false) {
 		error_log('create_mappings()');
 		$options = $this->get_options();
+		$index_key = Constants::OPTION_PUBLIC_PRIMARY_INDEX;
 
-		if (isset($options) && array_key_exists(Constants::OPTION_PRIMARY_INDEX, $options)) {
-			$primary_index = $options[Constants::OPTION_PRIMARY_INDEX];
+		if($private) {
+			$index_key = Constants::OPTION_PRIVATE_PRIMARY_INDEX;
+		}
+
+		if (isset($options) && array_key_exists($index_key, $options)) {
+			$primary_index = $options[$index_key];
 
 			// (re)create the index
 			$indexer = new Indexer( $options );
@@ -164,7 +171,7 @@ class AcfElasticsearchPlugin {
 	}
 
 	function clear_index() {
-		$this->create_mappings();
+		$this->create_mappings(false);
 
 		$json = json_encode(array(
 			'message' => 'Index was cleared successfully'
