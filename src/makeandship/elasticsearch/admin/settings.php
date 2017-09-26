@@ -6,8 +6,10 @@
 		
 		// save incoming options
 		$server = esc_url($_POST['acf_elasticsearch_server']);
-		$primary_index = trim($_POST['acf_elasticsearch_primary_index']);
-		$secondary_index = trim($_POST['acf_elasticsearch_secondary_index']);
+		$public_primary_index = trim($_POST['acf_elasticsearch_public_primary_index']);
+		$public_secondary_index = trim($_POST['acf_elasticsearch_public_secondary_index']);
+		$private_primary_index = trim($_POST['acf_elasticsearch_private_primary_index']);
+		$private_secondary_index = trim($_POST['acf_elasticsearch_private_secondary_index']);
 		$read_timeout = intval(trim($_POST['acf_elasticsearch_read_timeout']));
 		$write_timeout = intval(trim($_POST['acf_elasticsearch_write_timeout']));
 
@@ -15,16 +17,20 @@
 		error_log('save multisite');
 			// store at network level
 			update_site_option('acf_elasticsearch_server', $server);
-			update_site_option('acf_elasticsearch_primary_index', $primary_index);
-			update_site_option('acf_elasticsearch_secondary_index', $secondary_index);
+			update_site_option('acf_elasticsearch_public_primary_index', $public_primary_index);
+			update_site_option('acf_elasticsearch_public_secondary_index', $public_secondary_index);
+			update_site_option('acf_elasticsearch_private_primary_index', $private_primary_index);
+			update_site_option('acf_elasticsearch_private_secondary_index', $private_secondary_index);
 			update_site_option('acf_elasticsearch_read_timeout', $read_timeout);
 			update_site_option('acf_elasticsearch_write_timeout', $write_timeout);
 		}
 		else {
 			// store at site level
 			update_option('acf_elasticsearch_server', $server);
-			update_option('acf_elasticsearch_primary_index', $primary_index);
-			update_option('acf_elasticsearch_secondary_index', $secondary_index);
+			update_option('acf_elasticsearch_public_primary_index', $public_primary_index);
+			update_option('acf_elasticsearch_public_secondary_index', $public_secondary_index);
+			update_option('acf_elasticsearch_private_primary_index', $private_primary_index);
+			update_option('acf_elasticsearch_private_secondary_index', $private_secondary_index);
 			update_option('acf_elasticsearch_read_timeout', $read_timeout);
 			update_option('acf_elasticsearch_write_timeout', $write_timeout);
 		}
@@ -46,16 +52,32 @@
 						)
 					);
 					echo HtmlUtils::render_field(
-						'Primary Index', 
-						'acf_elasticsearch_primary_index',
+						'Public Primary Index', 
+						'acf_elasticsearch_public_primary_index',
 						array(
 							'class' => '',
 							'placeholder' => ''
 						)
 					); 
 					echo HtmlUtils::render_field(
-						'Secondary Index', 
-						'acf_elasticsearch_secondary_index',
+						'Public Secondary Index', 
+						'acf_elasticsearch_public_secondary_index',
+						array(
+							'class' => '',
+							'placeholder' => ''
+						)
+					);
+					echo HtmlUtils::render_field(
+						'Private Primary Index', 
+						'acf_elasticsearch_private_primary_index',
+						array(
+							'class' => '',
+							'placeholder' => ''
+						)
+					); 
+					echo HtmlUtils::render_field(
+						'Private Secondary Index', 
+						'acf_elasticsearch_private_secondary_index',
 						array(
 							'class' => '',
 							'placeholder' => ''

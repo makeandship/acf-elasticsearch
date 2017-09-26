@@ -12,7 +12,7 @@ class TermDocumentBuilder extends DocumentBuilder {
 
 		if (isset( $term )) {
 			foreach(TermMappingBuilder::CORE_FIELDS as $name => $definition) {
-				$value = $post->{$name};
+				$value = $term->{$name};
 
 				// transform if required
 				if (is_array($definition) && array_key_exists('transformer', $definition)) {
@@ -41,5 +41,12 @@ class TermDocumentBuilder extends DocumentBuilder {
 	 */
 	public function get_id( $term ) {
 		return $term->term_id;
+	}
+
+	/**
+	 *
+	 */
+	public function get_type( $term ) {
+		return $term->taxonomy;
 	}
 }
