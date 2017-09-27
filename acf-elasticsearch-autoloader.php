@@ -1,9 +1,6 @@
 <?php
-error_log('here');
-// autoloader that 
 define('AUTOLOAD_ROOT', __DIR__ . DIRECTORY_SEPARATOR . 'src/');
 spl_autoload_register(function($class_name) {
-	error_log($class_name);
     $components = explode('\\', $class_name);
 
     $class_name = array_pop($components);
