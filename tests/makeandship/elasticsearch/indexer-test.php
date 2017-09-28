@@ -10,11 +10,11 @@ class IndexerTest extends WP_UnitTestCase
     public function testCreateIndexer()
     {
         $config = array(
-            Constants::OPTION_SERVER => "127.0.0.1",
-            Constants::DEFAULT_SHARDS => "1",
-            Constants::DEFAULT_REPLICAS => "1"
+            Constants::OPTION_SERVER => "http://127.0.0.1:9200"
         );
         $factory = new Indexer($config);
         $indexer = $factory->create('test_indexer');
+
+        $this->assertNotNull($indexer);
     }
 }
