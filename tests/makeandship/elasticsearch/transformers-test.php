@@ -5,7 +5,7 @@ require_once(__DIR__ . '/../../../acf-elasticsearch-autoloader.php');
 use makeandship\elasticsearch\transformer\DateFieldTransformer;
 use makeandship\elasticsearch\transformer\HtmlFieldTransformer;
 
-class TransformersTest extends \PHPUnit\Framework\TestCase
+class TransformersTest extends WP_UnitTestCase
 {
     public function testDateFieldTransformer()
     {
