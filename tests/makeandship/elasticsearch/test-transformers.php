@@ -11,7 +11,7 @@ class TransformersTest extends \PHPUnit\Framework\TestCase
     {
     	$transformer = new DateFieldTransformer();
         $transformed = $transformer->transform('27-09-2017');
-        $this->assertEquals($transformed, '2017-09-27T00:00:00+02:00');
+        $this->assertEquals($transformed, '2017-09-27T00:00:00+00:00');
     }
 
     public function testHtmlFieldTransformer()
