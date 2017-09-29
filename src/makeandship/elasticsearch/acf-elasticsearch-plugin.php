@@ -203,11 +203,11 @@ class AcfElasticsearchPlugin {
 		// index valid statuses
 		if (in_array($post->post_status, Constants::INDEX_POST_STATUSES)) {
 			// index
-			$this->indexer->add_or_update( $post );
+			$this->indexer->add_or_update_document( $post );
 		}
 		else {
 			// remove
-			$this->indexer->remove( $post );
+			$this->indexer->clear( $post );
 		}
 	}
 
@@ -230,7 +230,7 @@ class AcfElasticsearchPlugin {
 	 */
 	function transition_post_status( $new_status, $old_status, $post ) {
 		if ($new_status != Constants::STATUS_PUBLISH && $new_status != $old_status) {
-			$this->indexer->add_or_update( $post );
+			$this->indexer->add_or_update_document ( $post );
 		}
 	}
 
