@@ -26,7 +26,7 @@ GRANT ALL PRIVILEGES ON *.* TO 'es_plugin_test'@'localhost';
 
 3. Setup the test environment
 ```
-bash bin/install-wp-tests.sh wordpress_test es_plugin_test ‘password’ 127.0.0.1 latest
+bash bin/install-wp-tests.sh wordpress_test es_plugin_test 'password' 127.0.0.1 latest
 ```
 
 4. Run the tests
