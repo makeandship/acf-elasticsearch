@@ -20,13 +20,13 @@ sudo mv phpunit-6.2.phar /usr/local/bin/phpunit
 2. Create mysql test user
 ```
 mysql -u root
-CREATE USER ‘es_plugin_test’@‘localhost' IDENTIFIED BY 'password';
+CREATE USER 'es_plugin_test'@'localhost' IDENTIFIED BY 'password';
 GRANT ALL PRIVILEGES ON *.* TO 'es_plugin_test'@'localhost';
 ```
 
 3. Setup the test environment
 ```
-bash bin/install-wp-tests.sh wordpress_test es_plugin_test ‘password’ 127.0.0.1 latest
+bash bin/install-wp-tests.sh wordpress_test es_plugin_test 'password' 127.0.0.1 latest
 ```
 
 4. Run the tests
