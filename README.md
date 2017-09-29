@@ -20,7 +20,7 @@ sudo mv phpunit-6.2.phar /usr/local/bin/phpunit
 2. Create mysql test user
 ```
 mysql -u root
-CREATE USER ‘es_plugin_test’@‘localhost' IDENTIFIED BY 'password';
+CREATE USER 'es_plugin_test'@'localhost' IDENTIFIED BY 'password';
 GRANT ALL PRIVILEGES ON *.* TO 'es_plugin_test'@'localhost';
 ```
 
