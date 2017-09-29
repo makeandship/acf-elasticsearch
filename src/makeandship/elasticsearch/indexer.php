@@ -7,6 +7,7 @@ use makeandship\elasticsearch\Constants;
 use makeandship\elasticsearch\domain\OptionsManager;
 use makeandship\elasticsearch\domain\SitesManager;
 use makeandship\elasticsearch\domain\PostsManager;
+use makeandship\elasticsearch\domain\TaxonomiesManager;
 
 use \Elastica\Client;
 use \Elastica\Exception\ResponseException;
@@ -33,7 +34,9 @@ class Indexer {
 
 		// elastic client to the cluster/server
 		$settings = array(
-			'url' => $this->config[Constants::OPTION_SERVER]
+			Constants::SETTING_URL => $this->config[Constants::OPTION_SERVER],
+			Constants::SETTING_USERNAME => ES_PRIVATE_USERNAME,
+			Constants::SETTING_PASSWORD => ES_PRIVATE_PASSWORD
 		);
 		$client = new Client($settings);
 
@@ -112,6 +115,33 @@ class Indexer {
 		}
 		else {
 			return $response;
+		}
+	}
+
+	/**
+	 * Clear the index
+	 */
+	public function clear( $name ) {
+		$errors = array();
+
+		// elastic client to the cluster/server
+		$settings = array();
+		$client = new Client($settings);
+
+		// remove the current index
+		$index = $client->getIndex( $name );
+		try {
+			$index->delete();
+		} 
+		catch (ResponseException $ex) {
+			$response = $ex->getResponse();
+			$error = $response->getFullError();
+
+			// ignore if there's no index as that's the state we want
+			$is_index_error = strpos($error, 'IndexMissingException'); 
+			if ($is_index_error === false) {
+				$errors = $ex;
+			}
 		}
 	}
 
@@ -195,8 +225,10 @@ class Indexer {
 		return $status;
 	}
 
-	public function index_taxonomies( $page, $per ) {
-
+	public function index_taxonomies() {
+	  $taxonomies_manager = new TaxonomiesManager();
+	  $terms = $taxonomies_manager->get_taxonomies();
+	  $count = $this->add_or_update_documents( $terms );
 	}
 
 	public function index_sites( $page, $per ) {
@@ -240,13 +272,15 @@ class Indexer {
 		$builder = $this->document_builder_factory->create( $o );
 		$document = $builder->build( $o );
 		$id = $builder->get_id( $o );
+		$doc_type = $builder->get_type( $o );
 
 		// ensure the document and id are valid before indexing
 		if (isset($document) && !empty($document) &&
 			isset($id) && !empty($id)) {
 
-			$type = $this->type_factory->create( $o->post_type );
-			$type->addDocument(new \Elastica\Document($o->ID, $document));
+			$type = $this->type_factory->create( $doc_type );
+
+			$type->addDocument(new \Elastica\Document($id, $document));
 
 			// response ?
 		}
