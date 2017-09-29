@@ -7,13 +7,14 @@ use makeandship\elasticsearch\Constants;
 
 class IndexerTest extends WP_UnitTestCase
 {
+    const CONFIG = array(
+        Constants::OPTION_SERVER => "http://127.0.0.1:9200/"
+    );
+
     public function testCreateIndexer()
     {
-        $config = array(
-            Constants::OPTION_SERVER => "http://127.0.0.1:9200"
-        );
-        $factory = new Indexer($config);
-        $indexer = $factory->create('test_indexer');
+        $factory = new Indexer(self::CONFIG);
+        $indexer = $factory->create('elastictest');
 
         $this->assertNotNull($indexer);
     }

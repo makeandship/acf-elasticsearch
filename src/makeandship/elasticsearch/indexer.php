@@ -47,10 +47,10 @@ class Indexer {
 			$error = $response->getFullError();
 
 			// ignore if there's no index as that's the state we want
-			//$is_index_error = strpos($error, 'IndexMissingException'); 
-			//if ($is_index_error === false) {
-			//	$errors = $ex;
-			//}
+			$is_index_error = strpos($error, 'IndexMissingException'); 
+			if ($is_index_error === false) {
+				$errors = $ex;
+			}
 		}
 
 		$analysis = array(
