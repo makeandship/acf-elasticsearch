@@ -44,7 +44,6 @@ class PostMappingBuilder extends MappingBuilder {
 	 *
 	 */
 	public function build ( $post_type ) {
-		error_log($post_type.' is '.$this->valid($post_type));
 		if (!$this->valid( $post_type )) {
 			return null;
 		}

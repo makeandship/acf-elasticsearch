@@ -26,8 +26,7 @@ class TermMappingBuilder extends MappingBuilder {
 	 */
 	public function build ( $taxonomy ) {
 		$properties = array();
-
-		error_log($taxonomy.' is '.$this->valid($taxonomy));
+		
 		if (!$this->valid( $taxonomy )) {
 			return null;
 		}

@@ -207,7 +207,7 @@ class AcfElasticsearchPlugin {
 		}
 		else {
 			// remove
-			$this->indexer->clear( $post );
+			$this->indexer->remove_document( $post );
 		}
 	}
 
