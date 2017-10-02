@@ -24,12 +24,17 @@ CREATE USER 'es_plugin_test'@'localhost' IDENTIFIED BY 'password';
 GRANT ALL PRIVILEGES ON *.* TO 'es_plugin_test'@'localhost';
 ```
 
-3. Setup the test environment
+3. Setup the test environment (Run it after each system restart)
 ```
 bash bin/install-wp-tests.sh wordpress_test es_plugin_test 'password' 127.0.0.1 latest
 ```
 
-4. Run the tests
+4. Start local elasticsearch server
+```
+brew services start elasticsearch
+```
+
+5. Run the tests
 ```
 phpunit
 ```
