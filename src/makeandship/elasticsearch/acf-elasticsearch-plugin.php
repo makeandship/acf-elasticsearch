@@ -20,6 +20,10 @@ class AcfElasticsearchPlugin {
 		$this->initialise_index_hooks();
 	}
 
+	public function get_indexer() {
+		return $this->indexer;
+	}
+
 	/**
 	 * Get the current configuration.  Configuration values
 	 * are cached.  Use the $fresh parameter to get an updated

@@ -65,88 +65,19 @@ class Defaults
 	 **/
 	static function meta_fields()
 	{
-		if( class_exists('acf') ) {
+
+		global $wpdb;
+		$keys = $wpdb->get_col("SELECT meta_key
+                            FROM $wpdb->postmeta
+                            GROUP BY meta_key
+                            HAVING meta_key NOT LIKE '\_%'
+                            ORDER BY meta_key");
+		if ($keys) {
+			natcasesort($keys);
+		} else {
 			$keys = array();
-
-			$field_groups = acf_get_field_groups();
-
-			foreach($field_groups as $field_group) {
-				$location = $field_group['location'];
-				
-				$post_type_group = self::is_post_type_field_group($field_group);
-
-				if ( $post_type_group ) {
-					$field_group_id = $field_group['ID'];
-					
-					$fields = acf_get_fields_by_id( $field_group_id );
-
-					if (isset($fields)) {
-						foreach($fields as $field) {
-							$keys = array_merge( $keys, self::meta_fields_type( null, $field ) );
-						}
-					}
-				}
-			}
-			
-			return $keys;
 		}
-		else {
-			global $wpdb;
-			$keys = $wpdb->get_col("SELECT meta_key
-	                            FROM $wpdb->postmeta
-	                            GROUP BY meta_key
-	                            HAVING meta_key NOT LIKE '\_%'
-	                            ORDER BY meta_key");
-			if ($keys) {
-				natcasesort($keys);
-			} else {
-				$keys = array();
-			}
-			return $keys;
-		}
-	}
-
-	private static function meta_fields_type($prefix, $field) {
-		$keys  = array();
-
-		$type = $field['type'];
-		$name = $field['name'];
-		
-		if (isset($name) && !empty($name)) {
-			if ($field['type'] === 'repeater') {
-				if (array_key_exists( 'sub_fields', $field )) {
-					$prefix = isset($prefix) ? $prefix.".".$name : $name;
-
-					foreach($field['sub_fields'] as $sub_field) {
-						$keys = array_merge( $keys, self::meta_fields_type( $prefix, $sub_field ));
-					}
-				}
-			}
-			else {
-				$keys[] = isset($prefix) ? $prefix.".".$name : $name;
-			}
-		}
-
 		return $keys;
-	}
-
-	private static function is_post_type_field_group( $field_group ) {
-		$post_type_group = false;
-
-		if (isset($field_group) && array_key_exists( 'location', $field_group )) {
-			$location = $field_group['location'];
-
-			foreach( $location as $rules) {
-				foreach ($rules as $rule) {
-					if ($rule['param'] === 'post_type') {
-						$post_type_group = true;
-						break;
-					}
-				}
-			}
-		}
-
-		return $post_type_group;
 	}
 }
 

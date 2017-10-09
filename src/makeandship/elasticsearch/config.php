@@ -21,7 +21,7 @@ class Config
 	 **/
 	static function option($name, $default = null)
 	{
-		if (!isset(self::$options) || self::$options == null) {
+		if (self::$options == null) {
 			self::$options = get_option('elasticsearch');
 		}
 
