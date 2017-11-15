@@ -20,6 +20,10 @@ class AcfElasticsearchPlugin {
 		$this->initialise_index_hooks();
 	}
 
+	public function get_indexer() {
+		return $this->indexer;
+	}
+
 	/**
 	 * Get the current configuration.  Configuration values
 	 * are cached.  Use the $fresh parameter to get an updated
@@ -101,7 +105,6 @@ class AcfElasticsearchPlugin {
 	 * -------------------
 	 */
 	function create_mappings() {
-		error_log('create_mappings()');
 		$options = $this->get_options();
 
 		if (isset($options) && array_key_exists(Constants::OPTION_PRIMARY_INDEX, $options)) {
@@ -149,6 +152,14 @@ class AcfElasticsearchPlugin {
 	}
 
 	function index_taxonomies() {
+		error_log('index_taxonomies()');
+		$options = $this->get_options();
+
+		if (isset($options)) {
+			$indexer = new Indexer( $options );
+			$status = $indexer->index_taxonomies();
+		}
+
 		$json = json_encode(array(
 			'message' => 'Taxonomies were indexed successfully'
 			));
@@ -156,6 +167,8 @@ class AcfElasticsearchPlugin {
 	}
 
 	function clear_index() {
+		$this->create_mappings();
+
 		$json = json_encode(array(
 			'message' => 'Index was cleared successfully'
 			));
@@ -193,11 +206,11 @@ class AcfElasticsearchPlugin {
 		// index valid statuses
 		if (in_array($post->post_status, Constants::INDEX_POST_STATUSES)) {
 			// index
-			$this->indexer->add_or_update( $post );
+			$this->indexer->add_or_update_document( $post );
 		}
 		else {
 			// remove
-			$this->indexer->remove( $post );
+			$this->indexer->remove_document( $post );
 		}
 	}
 
@@ -220,7 +233,7 @@ class AcfElasticsearchPlugin {
 	 */
 	function transition_post_status( $new_status, $old_status, $post ) {
 		if ($new_status != Constants::STATUS_PUBLISH && $new_status != $old_status) {
-			$this->indexer->add_or_update( $post );
+			$this->indexer->add_or_update_document ( $post );
 		}
 	}
 

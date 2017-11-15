@@ -182,4 +182,11 @@ class PostDocumentBuilder extends DocumentBuilder {
 	public function get_id( $post ) {
 		return $post->ID;
 	}
+
+	/**
+	 *
+	 */
+	public function get_type( $post ) {
+		return $post->post_type;
+	}
 }
