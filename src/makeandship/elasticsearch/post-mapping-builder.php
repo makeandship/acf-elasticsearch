@@ -179,7 +179,6 @@ class PostMappingBuilder extends MappingBuilder {
 					case 'date_picker':
 						$props['type'] = 'date';
 						$props['index'] = 'not_analyzed';
-						$props['format'] = 'yyyy-MM-dd';
 						break;
 
 					case 'date_time_picker':
