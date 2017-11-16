@@ -158,7 +158,7 @@ class PostMappingBuilder extends MappingBuilder {
 		$properties = array();
 
 		if (isset( $field )) {
-			if (array_key_exists('type', $field) && array_key_exists('name', $field)) {
+			if (array_key_exists('type', $field) && array_key_exists('name', $field) && $field['type'] != 'tab') {
 				$acf_type = $field['type'];
 				$name = $field['name'];
 
