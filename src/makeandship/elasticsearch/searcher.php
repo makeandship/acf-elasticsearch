@@ -49,7 +49,13 @@ class Searcher
 		$query = Config::apply_filters('searcher_query', $query);
 
 		try {
-			$settings = array();
+			
+			$settings = array(
+			  Constants::SETTING_URL => get_option(Constants::OPTION_SERVER),
+			  Constants::SETTING_USERNAME => ES_PRIVATE_USERNAME,
+			  Constants::SETTING_PASSWORD => ES_PRIVATE_PASSWORD
+			);
+
 			$client = new Client($settings);
 			$name = get_option(Constants::OPTION_PRIMARY_INDEX);
 			$index = $client->getIndex( $name );

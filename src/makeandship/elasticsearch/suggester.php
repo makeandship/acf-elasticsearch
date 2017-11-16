@@ -17,14 +17,19 @@ class Suggester {
 		$text = $args['text'];
 		$categories = $args['categories'];
 		$size = $args['size'];
-		$fields = $args['fields'];
+		$fields = array('name_suggest'); //$args['fields'];
 
 		//$field, $text, $categories = array(), $size = 5
 
 		$result = null;
 
 		if (isset( $text ) && !empty( $text )) {
-			$settings = array();
+			$settings = array(
+			  Constants::SETTING_URL => get_option(Constants::OPTION_SERVER),
+			  Constants::SETTING_USERNAME => ES_PRIVATE_USERNAME,
+			  Constants::SETTING_PASSWORD => ES_PRIVATE_PASSWORD
+			);
+
 			$client = new Client($settings);
 			$name = get_option(Constants::OPTION_PRIMARY_INDEX);
 			$index = $client->getIndex( $name );
@@ -47,7 +52,8 @@ class Suggester {
 			    ),
 			    '_source' => $fields
 			);
-				
+			
+			
 			if (isset($categories) && is_array($categories) && count($categories) > 0) {
 				$query['query']['bool']['filter'] = array();
 				foreach($categories as $taxonomy => $filters) {
@@ -78,7 +84,7 @@ class Suggester {
 			$eq = new \Elastica\Query( $query );
 			$eq->setFrom( 0 );
 			$eq->setSize( $size );
-			
+
 			$response = $search->search($eq);
 
 			try {
