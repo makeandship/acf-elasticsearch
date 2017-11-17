@@ -20,7 +20,7 @@ class Suggester
         $text = $args['text'];
         $categories = $args['categories'];
         $size = $args['size'];
-        $fields = array('name_suggest'); //$args['fields'];
+        $fields = $args['fields'];
 
         //$field, $text, $categories = array(), $size = 5
 
@@ -125,7 +125,7 @@ class Suggester
         if ($total > 0 && count($hits) > 0) {
             foreach ($hits as $item) {
                 $hit = $item->getHit();
-                $hit_fields = $hit['fields'];
+                $hit_fields = $hit['_source'];
 
                 $id = $item->getId();
 
