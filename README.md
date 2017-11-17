@@ -7,7 +7,10 @@ Improve wordpress search performance/accuracy and enable secure search against E
 1. Upload plugin folder to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Click the 'ElasticSearch' menu item and follow the instructions on each section to configure the plugin. (be sure to save on each section)
-4. Select "Enable" on "Server Settings" when you are ready for it to go live.
+4. If you are using searchguard, define your private username and password in you wp-config:
+define('ES_PRIVATE_USERNAME', 'private_user');
+define('ES_PRIVATE_PASSWORD', 'secret');
+5. Select "Enable" on "Server Settings" when you are ready for it to go live.
 
 ## Tests
 1. Install phpunit
