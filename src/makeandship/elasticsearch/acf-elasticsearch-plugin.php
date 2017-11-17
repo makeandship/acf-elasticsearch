@@ -2,13 +2,17 @@
 
 namespace makeandship\elasticsearch;
 
+use makeandship\elasticsearch\SettingsManager;
 use makeandship\elasticsearch\admin\UserInterfaceManager;
 
 class AcfElasticsearchPlugin
 {
     public function __construct()
     {
-        $this->indexer = new Indexer($this->get_options());
+        $settings_manager = new SettingsManager();
+        $settings = $settings_manager->get_settings();
+        
+        $this->indexer = new Indexer($settings);
 
         $this->ui = new UserInterfaceManager(Constants::VERSION, Constants::DB_VERSION, $this);
 
@@ -24,52 +28,6 @@ class AcfElasticsearchPlugin
     public function get_indexer()
     {
         return $this->indexer;
-    }
-
-    /**
-     * Get the current configuration.  Configuration values
-     * are cached.  Use the $fresh parameter to get an updated
-     * set
-     *
-     * @param $fresh - true to get updated values
-     * @return array of options
-     */
-    public function get_options($fresh=false)
-    {
-        if (!isset($this->options) || $fresh) {
-            $this->options = array();
-
-            $this->get_option($this->options, Constants::OPTION_SERVER);
-            $this->get_option($this->options, Constants::OPTION_PRIMARY_INDEX);
-            $this->get_option($this->options, Constants::OPTION_SECONDARY_INDEX);
-            $this->get_option($this->options, Constants::OPTION_READ_TIMEOUT);
-            $this->get_option($this->options, Constants::OPTION_WRITE_TIMEOUT);
-            $this->get_option($this->options, Constants::OPTION_INDEX_STATUS);
-            $this->get_option($this->options, Constants::OPTION_USERNAME);
-            $this->get_option($this->options, Constants::OPTION_PASSWORD);
-        }
-        
-        return $this->options;
-    }
-
-    /**
-     * Add a single option to an options array.  Detects multisite
-     * and pulls from multisite options when it is
-     *
-     * @param $options array (passed by reference)
-     * @param $name the option name
-     */
-    private function get_option(&$options, $name)
-    {
-        if (!isset($options)) {
-            $options = array();
-        }
-
-        if (is_multisite()) {
-            $options[$name] = get_site_option($name);
-        } else {
-            $options[$name] = get_option($name);
-        }
     }
 
     public function initialise_plugin_hooks()
@@ -112,17 +70,18 @@ class AcfElasticsearchPlugin
      */
     public function create_mappings()
     {
-        $options = $this->get_options();
+        $settings_manager = new OptionsManager();
+        $settings = $settings_manager->get_settings();
 
-        if (isset($options) && array_key_exists(Constants::OPTION_PRIMARY_INDEX, $options)) {
-            $primary_index = $options[Constants::OPTION_PRIMARY_INDEX];
+        if (isset($settings) && array_key_exists(Constants::OPTION_PRIMARY_INDEX, $settings)) {
+            $primary_index = $settings[Constants::OPTION_PRIMARY_INDEX];
 
             // (re)create the index
-            $indexer = new Indexer($options);
+            $indexer = new Indexer($settings);
             $indexer->create($primary_index);
 
             // initialise the mapper with config
-            $mapper = new Mapper($options);
+            $mapper = new Mapper($settings);
             $result = $mapper->map();
         } else {
             // error
@@ -142,10 +101,11 @@ class AcfElasticsearchPlugin
     {
         $fresh = isset($_POST['fresh']) ? ($_POST['fresh'] === 'true') : false;
 
-        $options = $this->get_options();
+        $settings_manager = new OptionsManager();
+        $settings = $settings_manager->get_settings();
 
-        if (isset($options)) {
-            $indexer = new Indexer($options);
+        if (isset($settings)) {
+            $indexer = new Indexer($settings);
             $status = $indexer->index_posts($fresh);
         }
 
@@ -161,10 +121,12 @@ class AcfElasticsearchPlugin
     public function index_taxonomies()
     {
         error_log('index_taxonomies()');
-        $options = $this->get_options();
+        
+        $settings_manager = new OptionsManager();
+        $settings = $settings_manager->get_settings();
 
-        if (isset($options)) {
-            $indexer = new Indexer($options);
+        if (isset($settings)) {
+            $indexer = new Indexer($settings);
             $status = $indexer->index_taxonomies();
         }
 
@@ -294,7 +256,7 @@ class AcfElasticsearchPlugin
      */
     public function initialise()
     {
-        $this->ui->initialise_options();
+        $this->ui->initialise_settings();
         $this->ui->initialise_settings();
     }
 
@@ -313,7 +275,7 @@ class AcfElasticsearchPlugin
 
     public function activate()
     {
-        $this->initialise_options();
+        $this->initialise_settings();
 
         register_uninstall_hook(__FILE__, array($this, 'uninstall' ));
     }

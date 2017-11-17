@@ -4,10 +4,14 @@ namespace makeandship\elasticsearch;
 
 use makeandship\elasticsearch\Constants;
 
+use makeandship\elasticsearch\SettingsManager;
+
 use makeandship\elasticsearch\domain\OptionsManager;
 use makeandship\elasticsearch\domain\SitesManager;
 use makeandship\elasticsearch\domain\PostsManager;
 use makeandship\elasticsearch\domain\TaxonomiesManager;
+
+use makeandship\elasticsearch\Util;
 
 use \Elastica\Client;
 use \Elastica\Exception\ResponseException;
@@ -15,13 +19,13 @@ use \Elastica\Response;
 
 class Indexer
 {
-    public function __construct($options)
+    public function __construct($settings)
     {
-        $this->options = $options;
+        $this->settings = $settings;
 
         // factories
         $this->document_builder_factory = new DocumentBuilderFactory();
-        $this->type_factory = new TypeFactory($this->options);
+        $this->type_factory = new TypeFactory($this->settings);
     }
 
     /**
@@ -35,15 +39,7 @@ class Indexer
         $replicas = Constants::DEFAULT_REPLICAS;
 
         // elastic client to the cluster/server
-        $settings = array(
-            Constants::SETTING_URL => $this->options[Constants::OPTION_SERVER]
-        );
-        if (array_key_exists(Constants::OPTION_USERNAME, $this->options)) {
-            $settings[Constants::SETTING_USERNAME] = $this->options[Constants::OPTION_USERNAME];
-        }
-        if (array_key_exists(Constants::OPTION_PASSWORD, $this->options)) {
-            $settings[Constants::SETTING_PASSWORD] = $this->options[Constants::OPTION_PASSWORD];
-        }
+        $settings = Util::get_client_settings($this->settings);
         
         $client = new Client($settings);
 
@@ -160,16 +156,16 @@ class Indexer
 
     public function index_posts_multisite($fresh)
     {
-        $status = $this->options[Constants::OPTION_INDEX_STATUS];
+        $status = $this->settings[Constants::OPTION_INDEX_STATUS];
 
         $posts_manager = new PostsManager();
-        $options_manager = new OptionsManager();
+        $settings_manager = new OptionsManager();
 
         if ($fresh || (!isset($status) || empty($status))) {
             $status = $posts_manager->initialise_status();
 
             // store initial state
-            $options_manager->set(Constants::OPTION_INDEX_STATUS, $status);
+            $settings_manager->set(Constants::OPTION_INDEX_STATUS, $status);
         }
 
         // find the next site to index (or next page in a site to index)
@@ -194,23 +190,23 @@ class Indexer
         $target_site['page'] = $page + 1;
         $target_site['count'] = $target_site['count'] + $count;
         $status[$blog_id] = $target_site;
-        $options_manager->set(Constants::OPTION_INDEX_STATUS, $status);
+        $settings_manager->set(Constants::OPTION_INDEX_STATUS, $status);
 
         return $status;
     }
 
     public function index_posts_singlesite($fresh)
     {
-        $status = $this->options[Constants::OPTION_INDEX_STATUS];
+        $status = $this->settings[Constants::OPTION_INDEX_STATUS];
 
         $posts_manager = new PostsManager();
-        $options_manager = new OptionsManager();
+        $settings_manager = new OptionsManager();
 
         if ($fresh || (!isset($status) || empty($status))) {
             $status = $posts_manager->initialise_status();
 
             // store initial state
-            $options_manager->set(Constants::OPTION_INDEX_STATUS, $status);
+            $settings_manager->set(Constants::OPTION_INDEX_STATUS, $status);
         }
 
         // find the next site to index (or next page in a site to index)
@@ -225,7 +221,7 @@ class Indexer
         $status['page'] = $page + 1;
         $status['count'] = $status['count'] + $count;
         
-        $options_manager->set(Constants::OPTION_INDEX_STATUS, $status);
+        $settings_manager->set(Constants::OPTION_INDEX_STATUS, $status);
 
         error_log(print_r($status, true));
 
@@ -237,6 +233,8 @@ class Indexer
         $taxonomies_manager = new TaxonomiesManager();
         $terms = $taxonomies_manager->get_taxonomies();
         $count = $this->add_or_update_documents($terms);
+
+        error_log('Indexed '.strval($count).' terms');
     }
 
     public function index_sites($page, $per)
