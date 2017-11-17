@@ -70,7 +70,7 @@ class AcfElasticsearchPlugin
      */
     public function create_mappings()
     {
-        $settings_manager = new OptionsManager();
+        $settings_manager = new SettingsManager();
         $settings = $settings_manager->get_settings();
 
         if (isset($settings) && array_key_exists(Constants::OPTION_PRIMARY_INDEX, $settings)) {
@@ -101,7 +101,7 @@ class AcfElasticsearchPlugin
     {
         $fresh = isset($_POST['fresh']) ? ($_POST['fresh'] === 'true') : false;
 
-        $settings_manager = new OptionsManager();
+        $settings_manager = new SettingsManager();
         $settings = $settings_manager->get_settings();
 
         if (isset($settings)) {
@@ -122,7 +122,7 @@ class AcfElasticsearchPlugin
     {
         error_log('index_taxonomies()');
         
-        $settings_manager = new OptionsManager();
+        $settings_manager = new SettingsManager();
         $settings = $settings_manager->get_settings();
 
         if (isset($settings)) {

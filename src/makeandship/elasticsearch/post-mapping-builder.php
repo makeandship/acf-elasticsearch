@@ -22,7 +22,10 @@ class PostMappingBuilder extends MappingBuilder {
 			'suggest' => true,
 			'transformer' => 'makeandship\elasticsearch\transformer\HtmlFieldTransformer'
 		),
-		'post_title' => 'string',
+		'post_title' => array( 
+			'type' => 'string', 
+			'suggest' => true
+		),
 		'post_type' => array( 
 			'type' => 'string', 
 			'index' => 'not_analyzed' 
