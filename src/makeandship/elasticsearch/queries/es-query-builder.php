@@ -25,12 +25,12 @@ class ESQueryBuilder {
     public function limit($value)
     {
         // add limit
-        return $this->str;
+        return $this;
     }
 
     public function sort($field)
     {
         // add sort
-        return $this->str;
+        return $this;
     }
 }
