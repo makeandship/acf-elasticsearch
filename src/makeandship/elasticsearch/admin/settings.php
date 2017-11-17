@@ -138,6 +138,12 @@ if (!empty($_POST)) {
                             'id' => 'index-posts'
                         ),
                         array(
+                            'value' => 'Resume indexing posts',
+                            'name' => 'acf_elasticsearch_resume_indexing_posts_button',
+                            'class' => 'button',
+                            'id' => 'resume-indexing-posts'
+                        ),
+                        array(
                             'value' => 'Index taxonomies',
                             'name' => 'acf_elasticsearch_index_taxonomies_button',
                             'class' => 'button',

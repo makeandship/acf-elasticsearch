@@ -227,6 +227,8 @@ class Indexer
         
         $options_manager->set(Constants::OPTION_INDEX_STATUS, $status);
 
+        error_log(print_r($status, true));
+
         return $status;
     }
 

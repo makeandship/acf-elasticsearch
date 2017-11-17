@@ -36,7 +36,7 @@ class Constants
     const INDEX_POST_STATUSES = [Constants::STATUS_PUBLISH];
 
     // TODO move to settings
-    const DEFAULT_POSTS_PER_PAGE = 50;
+    const DEFAULT_POSTS_PER_PAGE = 20;
     const DEFAULT_TERMS_PER_PAGE = 50;
     const DEFAULT_SITES_PER_PAGE = 50;
 
