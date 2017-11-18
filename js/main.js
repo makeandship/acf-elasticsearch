@@ -5,16 +5,25 @@ jQuery(document).ready(function($) {
   var CLEAR_INDEX_URI = "";
 
   $("#create-mappings").click(function(e) {
-    console.log("create mappings");
+    $("#mapping-spinner").addClass("is-active");
+    $("#mapping-messages").html("Creating mappings ...");
+    $("#create-mappings").attr("disabled", true);
+
     var data = {
       action: "create_mappings"
     };
     adminAjax(
       data,
       function() {
+        $("#mapping-spinner").removeClass("is-active");
+        $("#mapping-messages").html("Mappings created successfully");
+        $("#create-mappings").attr("disabled", false);
         console.log("success");
       },
       function() {
+        $("#mapping-spinner").removeClass("is-active");
+        $("#mapping-messages").html("Mappings generation failed");
+        $("#create-mappings").attr("disabled", false);
         console.log("error");
       }
     );
@@ -30,7 +39,9 @@ jQuery(document).ready(function($) {
   });
 
   $("#index-posts").click(function(e) {
-    console.log("index posts");
+    $("#indexing-spinner").addClass("is-active");
+    $("#indexing-messages").html("Indexing posts ...");
+    $("#index-posts").attr("disabled", true);
 
     indexPosts(true);
 
@@ -103,8 +114,17 @@ jQuery(document).ready(function($) {
 
           if (!complete) {
             console.log("More posts to index");
+            $("#indexing-messages").html(
+              `Indexed ${status.count} of ${status.total}`
+            );
             indexPosts();
           } else {
+            $("#indexing-messages").html(`All ${status.total} posts indexed`);
+            $("#indexing-spinner").removeClass("is-active");
+            $("#indexing-container input[type='submit']").attr(
+              "disabled",
+              false
+            );
             console.log("All posts indexed");
           }
         }

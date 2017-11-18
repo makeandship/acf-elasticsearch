@@ -38,24 +38,24 @@ class Suggester
 
             $search = new \Elastica\Search($client);
             $search->addIndex($index);
-
+            
             $query = array(
-                'query' => array(
-                    'bool' => array(
-                        'must' => array(
-                            'match' => array(
-                                $field => array(
-                                    'query' =>  strtolower($text),
-                                    'fuzziness' => 1
+                            'query' => array(
+                                'bool' => array(
+                                    'must' => array(
+                                        'match' => array(
+                                            $field => array(
+                                                'query' =>  strtolower($text),
+                                                'fuzziness' => 1
+                                            )
+                                        )
+                                       )
                                 )
-                            )
-                           )
-                    )
-                ),
-                '_source' => $fields
-            );
-            
-            
+                            ),
+                            '_source' => $fields
+                        );
+
+
             if (isset($categories) && is_array($categories) && count($categories) > 0) {
                 $query['query']['bool']['filter'] = array();
                 foreach ($categories as $taxonomy => $filters) {
@@ -71,6 +71,49 @@ class Suggester
                             if (is_array($filter)) {
                                 foreach ($filter as $value) {
                                     $query['query']['bool']['filter']['bool'][$bool_operator][] =
+                                                    array(
+                                                        'term' => array(
+                                                            $taxonomy => $value
+                                                        )
+                                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            /*
+            $query = array(
+                'query' => array(
+                    'filtered' => array(
+                        'query' => array(
+                            'match' => array(
+                                $field => array(
+                                    'query' =>  strtolower($text),
+                                    'fuzziness' => 1
+                                )
+                            )
+                           )
+                    )
+                ),
+                'fields' => $fields
+            );
+
+            if (isset($categories) && is_array($categories) && count($categories) > 0) {
+                $query['query']['filtered']['filter'] = array();
+                foreach ($categories as $taxonomy => $filters) {
+                    foreach ($filters as $operation => $filter) {
+                        if (is_string($operation)) {
+                            $query['query']['filtered']['filter']['bool'] = array();
+
+                            $bool_operator = $operation === 'or' ? 'should' : 'must';
+                            if (!array_key_exists($bool_operator, $query['query']['filtered']['filter']['bool'])) {
+                                $query['query']['filtered']['filter']['bool'][$bool_operator] = array();
+                            }
+
+                            if (is_array($filter)) {
+                                foreach ($filter as $value) {
+                                    $query['query']['filtered']['filter']['bool'][$bool_operator][] =
                                         array(
                                             'term' => array(
                                                 $taxonomy => $value
@@ -81,7 +124,9 @@ class Suggester
                         }
                     }
                 }
-            }
+            }*/
+            
+            error_log(print_r(json_encode($query), true));
             
             $eq = new \Elastica\Query($query);
             $eq->setFrom(0);
