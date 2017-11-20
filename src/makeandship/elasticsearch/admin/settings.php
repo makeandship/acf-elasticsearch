@@ -38,8 +38,8 @@ if (!empty($_POST)) {
 <h1>ACF Elasticsearch</h1>
 	<div id="poststuff">
 		<form method="post" action="">
-			<div class="postbox">
-				<h2 class="hndle"><span>1. Configure your Elastic search server</span></h2>
+			<div id="config-container" class="postbox">
+				<h2 class="handle"><span>1. Configure your Elastic search server</span></h2>
 				<div class="inside acf-fields -left">
 					<?php 
                     echo HtmlUtils::render_field(
@@ -109,10 +109,12 @@ if (!empty($_POST)) {
                         )
                     ]);
                     ?>
+                    <span id="config-spinner" class="acf-spinner"></span>
+                    <span id="config-messages"></span>
 				</div>
 			</div>
-			<div class="postbox">
-				<h2><span>2. Setup server mappings</span></h2>
+			<div id="mapping-container" class="postbox">
+				<h2 class="handle"><span>2. Setup server mappings</span></h2>
 				<div class="inside acf-fields -left">
 				<?php
                     echo HtmlUtils::render_buttons([
@@ -124,10 +126,12 @@ if (!empty($_POST)) {
                         )
                     ]);
                 ?>
-				</div>
+                    <span id="mapping-spinner" class="acf-spinner"></span>
+                    <span id="mapping-messages"></span>
+                </div>
 			</div>
-			<div class="postbox">
-				<h2><span>3. Index the data</span></h2>
+			<div id="indexing-container" class="postbox">
+				<h2 class="handle"><span>3. Index the data</span></h2>
 				<div class="inside acf-fields -left">
 				<?php
                     echo HtmlUtils::render_buttons([
@@ -157,6 +161,8 @@ if (!empty($_POST)) {
                         )
                     ]);
                 ?>
+                    <span id="indexing-spinner" class="acf-spinner"></span>
+                    <span id="indexing-messages"></span>
 				</div>
 			</div>
 	 	</form>
