@@ -1,6 +1,8 @@
 <?php
 namespace makeandship\elasticsearch;
 
+use makeandship\elasticsearch\SettingsManager;
+
 use \Elastica\Client;
 
 /**
@@ -51,7 +53,9 @@ class Searcher
         $query = Config::apply_filters('searcher_query', $query);
 
         try {
-            $settings = Util::get_client_settings($this->options);
+            $settings_manager = new SettingsManager();
+            $settings = $settings_manager->get_settings();
+            $client_settings = Util::get_client_settings($settings);
 
             $client = new Client($settings);
             $name = get_option(Constants::OPTION_PRIMARY_INDEX);
