@@ -3,6 +3,7 @@
 namespace makeandship\elasticsearch\queries;
 
 use makeandship\elasticsearch\Config;
+use makeandship\elasticsearch\Util;
 
 /*
  * A chainable builder to generate elastic search queries
@@ -40,7 +41,7 @@ class ElasticsearchQueryBuilder {
                     "facet" => array(
                         'terms' => array(
                             'field' => $facet,
-                            'size' => Config::apply_filters('searcher_query_facet_size', 100)  // see https://github.com/elasticsearch/elasticsearch/issues/1832
+                            'size' => Util::get_facet_size()
                         )
                     )
                 )
@@ -75,7 +76,7 @@ class ElasticsearchQueryBuilder {
         if (in_array($field_name, $fields)) {
             $this->query['aggs'][$field_name]['terms'] = array(
                 'field' => $field_name,
-                'size' => Config::apply_filters('searcher_query_facet_size', 100)  // see https://github.com/elasticsearch/elasticsearch/issues/1832
+                'size' => Util::get_facet_size()
             );
         }
 

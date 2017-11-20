@@ -51,4 +51,9 @@ class Util
         }
         return null;
     }
+
+    public static function get_facet_size() 
+    {
+        return Config::apply_filters('searcher_query_facet_size', 100);
+    }
 }
