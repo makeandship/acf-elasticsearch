@@ -2,6 +2,7 @@
 namespace makeandship\elasticsearch;
 
 use makeandship\elasticsearch\SettingsManager;
+use makeandship\elasticsearch\queries\ElasticsearchQueryBuilder;
 
 use \Elastica\Client;
 
@@ -147,7 +148,7 @@ class Searcher
             self::_filterBySelectedFacets($tax, $facets, 'term', $musts, $filters);
         }
 
-        $args = array();
+        $args = new ElasticsearchQueryBuilder();
 
         $numeric = Config::option('numeric');
 
@@ -181,96 +182,13 @@ class Searcher
 
         self::_searchField(Config::customFacets(), 'custom', $exclude, $search, $facets, $musts, $filters, $scored, $numeric);
 
-        if (count($filters) > 0) {
-            $args['filter']['bool'] = self::_filtersToBoolean($filters);
-        }
+        $args = $args->query($filters, $musts)
+                     ->field_aggs('post_type', $fields)
+                     ->aggs($filters)
+                     ->numeric_aggs($numeric)
+                     ->filter();
 
-        if (count($musts) > 0) {
-            $args['query']['bool']['must'] = $musts;
-        }
-
-        if (in_array('post_type', $fields)) {
-            $args['aggs']['post_type']['terms'] = array(
-                'field' => 'post_type',
-                'size' => Config::apply_filters('searcher_query_facet_size', 100)  // see https://github.com/elasticsearch/elasticsearch/issues/1832
-            );
-        }
-
-        // return facets
-        foreach (Config::facets() as $facet) {
-            $args['aggs'][$facet] = array(
-                'aggs' => array(
-                    "facet" => array(
-                        'terms' => array(
-                            'field' => $facet,
-                            'size' => Config::apply_filters('searcher_query_facet_size', 100)  // see https://github.com/elasticsearch/elasticsearch/issues/1832
-                        )
-                    )
-                )
-            );
-
-            if (count($filters) > 0) {
-                $applicable = array();
-
-                foreach ($filters as $filter) {
-                    foreach ($filter as $type) {
-                        $terms = array_keys($type);
-
-                        if (!in_array($facet, $terms)) {
-                            // do not filter on itself when using OR
-                            $applicable[] = $filter;
-                        }
-                    }
-                }
-
-                if (count($applicable) > 0) {
-                    $args['aggs'][$facet]['filter']['bool'] = self::_filtersToBoolean($applicable);
-                }
-            }
-        }
-
-        if (is_array($numeric)) {
-            foreach (array_keys($numeric) as $facet) {
-                $ranges = Config::ranges($facet);
-
-                if (count($ranges) > 0) {
-                    $args['aggs'][$facet]['aggs'] = array(
-                        "range" => array(
-                            'range' => array(
-                                'field' => $facet,
-                                'ranges' => array()
-                            )
-                        )
-                    );
-
-                    foreach ($ranges as $key => $range) {
-                        $params = array();
-
-                        if (isset($range['to'])) {
-                            $params['to'] = $range['to'];
-                        }
-
-                        if (isset($range['from'])) {
-                            $params['from'] = $range['from'];
-                        }
-
-                        $args['aggs'][$facet]['aggs']['range']['range']['ranges'][] = $params;
-                    }
-                }
-            }
-        }
-
-        if (isset($args['aggs'])) {
-            foreach ($args['aggs'] as $facet => &$config) {
-                if (!isset($config['filter'])) {
-                    $config['filter'] = array('bool' => array('must' => array()));
-                }
-
-                //$config['filter']['bool']['must'][] = $blogfilter;
-            }
-        }
-
-        return Config::apply_filters('searcher_query_post_facet_filter', $args);
+        return Config::apply_filters('searcher_query_post_facet_filter', $args->getQuery());
     }
 
     public static function _searchField($fields, $type, $exclude, $search, $facets, &$musts, &$filters, &$scored, $numeric)
@@ -322,6 +240,7 @@ class Searcher
         }
     }
 
+    // remove
     public static function _filtersToBoolean($filters)
     {
         $types = array();
