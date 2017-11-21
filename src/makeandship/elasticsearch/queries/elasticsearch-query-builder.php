@@ -181,6 +181,30 @@ class ElasticsearchQueryBuilder {
         return $this;
     }
 
+    public function from($pageIndex)
+    {
+      $this->query['from'] = $pageIndex;
+      return $this;
+    }
+
+    public function size($size)
+    {
+      $this->query['size'] = $size;
+      return $this;
+    }
+
+    public function sort($sortByDate)
+    {
+      if (!array_key_exists('sort', $this->query)) {
+        if ($sortByDate) {
+            $this->query['sort'] = array('post_date' => 'desc');
+        } else {
+            $this->query['sort'] = array('_score');
+        }
+      }
+      return $this;
+    }
+
     // return the built query
     function getQuery()
     {
