@@ -39,9 +39,9 @@ class Indexer
         $replicas = Constants::DEFAULT_REPLICAS;
 
         // elastic client to the cluster/server
-        $settings = Util::get_client_settings($this->settings);
+        $client_settings = Util::get_client_settings($this->settings);
         
-        $client = new Client($settings);
+        $client = new Client($client_settings);
 
         // remove the current index
         $index = $client->getIndex($name);
@@ -124,8 +124,8 @@ class Indexer
         $errors = array();
 
         // elastic client to the cluster/server
-        $settings = array();
-        $client = new Client($settings);
+        $client_settings = Util::get_client_settings($this->settings);
+        $client = new Client($client_settings);
 
         // remove the current index
         $index = $client->getIndex($name);
