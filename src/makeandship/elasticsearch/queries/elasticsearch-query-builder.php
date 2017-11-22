@@ -143,9 +143,14 @@ class ElasticsearchQueryBuilder {
     }
 
     // add fuzziness for a match query
-    public function fuzziness($field, $value)
+    public function fuzziness($value, $field='')
     {
-        $this->query['query']['bool']['must']['match'][$field]['fuzziness'] = $value;
+        if (!empty($field)) {
+            $this->query['query']['bool']['must']['match'][$field]['fuzziness'] = $value;
+        }
+        else {
+            $this->query['query']['bool']['must']['multi_match']['fuzziness'] = $value;
+        }
         return $this;
     }
 
@@ -178,6 +183,18 @@ class ElasticsearchQueryBuilder {
                 }
             }
         }
+        return $this;
+    }
+
+    public function filter_types($types)
+    {
+        foreach($types as $post_type) {
+			$this->query['query']['bool']['filter']['bool']['should'][] = array(
+				'type' => array(
+					'value' => $post_type
+				)
+			);
+		}
         return $this;
     }
 

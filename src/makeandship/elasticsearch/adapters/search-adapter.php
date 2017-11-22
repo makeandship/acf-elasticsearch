@@ -11,7 +11,7 @@ class SearchAdapter {
 
   private $search;
   private $filters;
-  private $facets;
+  private $facets; 
   private $musts;
   private $fields;
   private $numeric;
@@ -38,14 +38,14 @@ class SearchAdapter {
     $this->musts = array();
     $this->filters = array();
     $this->numeric = Config::option('numeric');
-    $this->scored = array();
+    $this->scored = array("_all");
     $exclude = Config::apply_filters('searcher_query_exclude_fields', array('post_date'));
 
     foreach (Config::taxonomies() as $tax) {
       if ($this->search) {
         $score = Config::score('tax', $tax);
 
-          if ($score > 0) {
+    if ($score > 0) {
             $scored[] = "{$tax}_name^$score";
           }
       }
@@ -66,7 +66,7 @@ class SearchAdapter {
         $qs['fuzzy_min_sim'] = $this->fuzzy;
       }
       $qs = Config::apply_filters('searcher_query_string', $qs);
-      $this->musts[] = array('query_string' => $qs);
+      $this->musts = array('multi_match' => $qs);
     }
 
     if (in_array('post_type', $this->fields)) {
@@ -158,9 +158,12 @@ class SearchAdapter {
     $searcher = new Searcher();
     $transformer = new SearchTransformer();
     $args = new ElasticsearchQueryBuilder();
+    $types = Config::types();
 
     $args = $args->query($this->filters, $this->musts)
                  ->field_aggs('post_type', $this->fields)
+                 ->filter_types($types)
+                 ->fuzziness(1)
                  ->aggs($this->filters)
                  ->numeric_aggs($this->numeric)
                  ->filter()

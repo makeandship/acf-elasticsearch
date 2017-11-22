@@ -28,7 +28,7 @@ class SuggestionAdapter {
     $args = new ElasticsearchQueryBuilder();
 
     $args = $args->match($this->fields, $this->field, $this->text)
-                 ->fuzziness($this->field, 1)
+                 ->fuzziness(1, $this->field)
                  ->filter_categories($this->categories)
                  ->from(0)
                  ->size($this->size);
