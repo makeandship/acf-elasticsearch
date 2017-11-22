@@ -20,13 +20,13 @@ class Searcher
 
     public function __construct()
     {
-      $settings_manager = new SettingsManager();
-      $settings = $settings_manager->get_settings();
-      $client_settings = Util::get_client_settings($settings);
+        $settings_manager = new SettingsManager();
+        $settings = $settings_manager->get_settings();
+        $client_settings = Util::get_client_settings($settings);
 
-      $this->client = new Client($settings);
-      $name = get_option(Constants::OPTION_PRIMARY_INDEX);
-      $this->index = $this->client->getIndex($name);
+        $this->client = new Client($client_settings);
+        $name = get_option(Constants::OPTION_PRIMARY_INDEX);
+        $this->index = $this->client->getIndex($name);
     }
     /**
      * Initiate a search with the ElasticSearch server and return the results. Use Faceting to manipulate URLs.
@@ -76,5 +76,4 @@ class Searcher
             return null;
         }
     }
-
 }
