@@ -1,15 +1,18 @@
 <?php
 
 namespace makeandship\elasticsearch\transformer;
+
 use makeandship\elasticsearch\Config;
 
-class SearchTransformer {	
-	public function transform($response)
+class SearchTransformer
+{
+    public function transform($response)
     {
         $val = array(
             'total' => $response->getTotalHits(),
             'facets' => array(),
-            'ids' => array()
+            'ids' => array(),
+            'results' => array()
         );
 
         foreach ($response->getAggregations() as $name => $agg) {
@@ -30,7 +33,12 @@ class SearchTransformer {
         }
 
         foreach ($response->getResults() as $result) {
-            $val['ids'][] = $result->getId();
+            $id = $result->getId();
+            $source = $result->getSource();
+            $source['id'] = $id;
+            
+            $val['ids'][] = $id;
+            $val['results'][] = $source;
         }
 
         return Config::apply_filters('searcher_results', $val, $response);
