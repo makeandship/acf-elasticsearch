@@ -8,9 +8,9 @@ class TypeFactory
 {
     private static $clients;
 
-    public function __construct($options)
+    public function __construct($settings)
     {
-        $this->options = $options;
+        $this->settings = $settings;
     }
 
     public function get_client($writable=false)
@@ -20,31 +20,23 @@ class TypeFactory
         if (isset(self::$clients) && is_array(self::$clients) && array_key_exists($writable_key, self::$clients)) {
             return self::$clients[$writable_key];
         } else {
-            $settings = array(
-                Constants::SETTING_URL => $this->options[Constants::OPTION_SERVER]
-            );
-            if (array_key_exists(Constants::OPTION_USERNAME, $this->options)) {
-                $settings[Constants::SETTING_USERNAME] = $this->options[Constants::OPTION_USERNAME];
-            }
-            if (array_key_exists(Constants::OPTION_PASSWORD, $this->options)) {
-                $settings[Constants::SETTING_PASSWORD] = $this->options[Constants::OPTION_PASSWORD];
-            }
+            $client_settings = $client_settings = Util::get_client_settings($this->settings);
+            
             if ($writable) {
-                $settings[Constants::SETTING_TIMEOUT] = $this->use_attribute_or_default(
-                    $this->options,
+                $client_settings[Constants::SETTING_TIMEOUT] = $this->use_attribute_or_default(
+                    $this->settings,
                     Constants::OPTION_WRITE_TIMEOUT,
                     Constants::DEFAULT_WRITE_TIMEOUT
                 );
             } else {
-                $settings[Constants::SETTING_TIMEOUT] = $this->use_attribute_or_default(
-                    $this->options,
+                $client_settings[Constants::SETTING_TIMEOUT] = $this->use_attribute_or_default(
+                    $this->settings,
                     Constants::OPTION_READ_TIMEOUT,
                     Constants::DEFAULT_READ_TIMEOUT
                 );
             }
 
-            $client = new Client($settings);
-
+            $client = new Client($client_settings);
 
             if (!isset(self::$clients) || !is_array(self::$clients)) {
                 self::$clients = array();
@@ -55,12 +47,12 @@ class TypeFactory
         }
     }
 
-    private function use_attribute_or_default($options, $name, $default)
+    private function use_attribute_or_default($settings, $name, $default)
     {
         $value = null;
 
-        if (array_key_exists($name, $options)) {
-            $value = $this->options[$name];
+        if (array_key_exists($name, $settings)) {
+            $value = $this->settings[$name];
         } else {
             $value = $default;
         }
@@ -77,8 +69,8 @@ class TypeFactory
 
         $client = $this->get_client($writable);
         
-        if (isset($client) && array_key_exists(Constants::OPTION_PRIMARY_INDEX, $this->options)) {
-            $index_name = $this->options[Constants::OPTION_PRIMARY_INDEX];
+        if (isset($client) && array_key_exists(Constants::OPTION_PRIMARY_INDEX, $this->settings)) {
+            $index_name = $this->settings[Constants::OPTION_PRIMARY_INDEX];
             $index = $client->getIndex($index_name);
 
             if (isset($index)) {
