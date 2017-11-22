@@ -42,6 +42,7 @@ class UserInterfaceManager
             add_site_option(Constants::OPTION_WRITE_TIMEOUT, 30);
 
             add_site_option(Constants::OPTION_INDEX_STATUS, array());
+            add_site_option(Constants::OPTION_POST_TYPES, array());
         } else {
             add_option(Constants::VERSION, $this->version);
             add_option(Constants::DB_VERSION, $this->db_version);
@@ -54,6 +55,7 @@ class UserInterfaceManager
             add_option(Constants::OPTION_WRITE_TIMEOUT, 30);
 
             add_option(Constants::OPTION_INDEX_STATUS, array());
+            add_option(Constants::OPTION_POST_TYPES, array());
         }
     }
 
@@ -105,7 +107,14 @@ class UserInterfaceManager
             'acf_elasticsearch_settings_page',
             'acf_elasticsearch_settings'
         );
-        
+        add_settings_field(
+            'acf_elasticsearch_post_types',
+            'Post Types',
+            array($this, 'render_option_post_types'),
+            'acf_elasticsearch_settings_page',
+            'acf_elasticsearch_settings'
+        );
+
         // register_setting( $option_group, $option_name, $sanitize_callback )
         register_setting(
             'acf_elasticsearch_settings',
@@ -131,6 +140,11 @@ class UserInterfaceManager
             'acf_elasticsearch_settings',
             'acf_elasticsearch_write_timeout',
             array( $this, 'sanitize_write_timeout')
+        );
+        register_setting(
+            'acf_elasticsearch_settings',
+            'acf_elasticsearch_post_types',
+            array( $this, 'sanitize_post_types')
         );
 
         add_settings_section(
@@ -213,6 +227,13 @@ class UserInterfaceManager
     {
         return intval($input);
     }
+
+    public function sanitize_post_types($input)
+    {
+        return $input;
+    }
+
+    
 
     public function render_field($type, $name, $attributes)
     {

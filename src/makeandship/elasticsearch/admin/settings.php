@@ -1,10 +1,12 @@
 <div class="wrap">
 <?php
     use makeandship\elasticsearch\admin\HtmlUtils;
+    use makeandship\elasticsearch\Defaults;
+    use makeandship\elasticsearch\Constants;
 
 if (!empty($_POST)) {
         
-        // save incoming options
+    // save incoming options
     $server = esc_url($_POST['acf_elasticsearch_server']);
     $primary_index = trim($_POST['acf_elasticsearch_primary_index']);
     $secondary_index = trim($_POST['acf_elasticsearch_secondary_index']);
@@ -12,6 +14,7 @@ if (!empty($_POST)) {
     $write_timeout = intval(trim($_POST['acf_elasticsearch_write_timeout']));
     $username = trim($_POST['acf_elasticsearch_username']);
     $password = trim($_POST['acf_elasticsearch_password']);
+    $post_types = $_POST['acf_elasticsearch_post_types'];
 
     if (is_multisite()) { //  && is_plugin_active_for_network(plugin_basename(__FILE__))
         error_log('save multisite');
@@ -23,6 +26,7 @@ if (!empty($_POST)) {
         update_site_option('acf_elasticsearch_write_timeout', $write_timeout);
         update_site_option('acf_elasticsearch_username', $username);
         update_site_option('acf_elasticsearch_password', $password);
+        update_site_option('acf_elasticsearch_post_types', $post_types);
     } else {
         // store at site level
         update_option('acf_elasticsearch_server', $server);
@@ -32,8 +36,25 @@ if (!empty($_POST)) {
         update_option('acf_elasticsearch_write_timeout', $write_timeout);
         update_option('acf_elasticsearch_username', $username);
         update_option('acf_elasticsearch_password', $password);
+        update_option('acf_elasticsearch_post_types', $post_types);
     }
 }
+
+// populate post types
+$types = Defaults::types();
+$option_types = get_option(Constants::OPTION_POST_TYPES);
+
+$post_type_checkboxes = [];
+foreach($types as $post_type) {
+    $post_type_checkboxes[] = array(
+        'value' => $post_type,
+        'name' => 'acf_elasticsearch_post_types[]',
+        'class' => 'checkbox',
+        'checked' => in_array($post_type ,$option_types),
+        'id' => $post_type
+    );
+}
+
 ?>
 <h1>ACF Elasticsearch</h1>
 	<div id="poststuff">
@@ -99,6 +120,10 @@ if (!empty($_POST)) {
                             'class' => '',
                             'placeholder' => 'When using searchguard'
                         )
+                    );
+                    echo HtmlUtils::render_checkboxes(
+                        'Post types',
+                        $post_type_checkboxes
                     );
                     echo HtmlUtils::render_buttons([
                         array(

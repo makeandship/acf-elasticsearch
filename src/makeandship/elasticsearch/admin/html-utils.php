@@ -109,5 +109,46 @@ class HtmlUtils {
 
 		return implode( $html, PHP_EOL );
 	}
+
+	public static function render_checkboxes( $label, $checkboxes ) {
+		$html = [];
+
+		$html[] = '<div class="acf-elasticsearch-row">';
+		$html[] = '	<div class="acf-elasticsearch-label">';
+		$html[] = '	<label for="">'.$label.'</label>';
+		$html[] = '	</div>';
+
+		$html[] = ' <div class="acf-elasticsearch-checkboxes">';
+		foreach($checkboxes as $checkbox) {
+			$html[] = self::render_checkbox( $checkbox );
+		}
+		$html[] = '	</div>';
+
+		$html[] = '	</div>';
+
+		return implode( $html, PHP_EOL );
+	}
+
+	public static function render_checkbox( $args ) {
+		
+		$id = $args['id'];
+		$name = $args['name'];
+		$value = $args['value'];
+		$checked = $args['checked'];
+
+		$html[] = "<label for=".$id.">";
+        $html[] = "<input type='checkbox' value=".$value." name=".$name." id=".$id;
+		if ($checked) {
+			$html[] = "checked>";
+		}
+		else {
+			$html[] = ">";
+		}
+		$html[] = $value;
+		$html[] = "</label>";
+		
+		
+		return implode( $html, PHP_EOL );
+	}
 }
 

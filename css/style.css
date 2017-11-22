@@ -1,39 +1,43 @@
 .acf-elasticsearch-row {
-	display:block;
-	margin:10px 0;
-	border-bottom:1px #f2f2f2 solid;
+  display: block;
+  margin: 10px 0;
+  border-bottom: 1px #f2f2f2 solid;
 }
 
 .acf-elasticsearch-label {
-	display:inline-block;
-	width:20%;
-	padding-bottom:10px;
+  display: inline-block;
+  width: 20%;
+  padding-bottom: 10px;
 }
 
 .acf-elasticsearch-field {
-	display:inline-block;
-	width:60%;
-	padding-bottom:10px;
+  display: inline-block;
+  width: 60%;
+  padding-bottom: 10px;
+}
+
+.acf-elasticsearch-checkboxes {
+  display: inline-grid;
 }
 
 .acf-elasticsearch-button-container {
-	display:inline-block;
-	padding-bottom:10px;	
+  display: inline-block;
+  padding-bottom: 10px;
 }
 
 .acf-elasticsearch-field input {
-	width:60%;
+  width: 60%;
 }
 
 .acf-elasticsearch-field input.short {
-	width:20%;
+  width: 20%;
 }
 
 .acf-elasticsearch-field input.long {
-	width:100%;
+  width: 100%;
 }
 
 .acf-elasticsearch-button-container p {
-	display:inline-block;
-	padding-right:10px;
+  display: inline-block;
+  padding-right: 10px;
 }
