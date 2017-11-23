@@ -155,7 +155,13 @@ class PostsManager
 
     public function valid($post_type)
     {
-        $types = SettingsManager::get_instance()->get(Constants::OPTION_POST_TYPES);
+        $option_post_types = SettingsManager::get_instance()->get(Constants::OPTION_POST_TYPES);
+
+        $types = [];
+
+        foreach ($option_post_types as $item) {
+            $types[] = $item['type'];
+        }
 
         if (!$types) {
             return false;

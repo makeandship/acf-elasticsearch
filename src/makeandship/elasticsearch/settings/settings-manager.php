@@ -155,4 +155,32 @@ class SettingsManager
             return update_option($key, $value);
         }
     }
+
+    public function get_private_fields($type)
+    {
+        $private = array();
+        $option_post_types = $this->get_option(Constants::OPTION_POST_TYPES);
+
+        foreach ($option_post_types as $item) {
+            if ($item['type'] == $type) {
+                $private = $item['private'];
+            }
+        }
+
+        return $private;
+    }
+
+    public function get_exclude_fields($type)
+    {
+        $exclude = array();
+        $option_post_types = $this->get_option(Constants::OPTION_POST_TYPES);
+
+        foreach ($option_post_types as $item) {
+            if ($item['type'] == $type) {
+                $exclude = $item['exclude'];
+            }
+        }
+
+        return $exclude;
+    }
 }

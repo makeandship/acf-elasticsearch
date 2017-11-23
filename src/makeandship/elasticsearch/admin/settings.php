@@ -15,7 +15,7 @@ if (!empty($_POST)) {
     $write_timeout = intval(trim($_POST['acf_elasticsearch_write_timeout']));
     $username = trim($_POST['acf_elasticsearch_username']);
     $password = trim($_POST['acf_elasticsearch_password']);
-    $post_types = $_POST['acf_elasticsearch_post_types'];
+    $post_types = HtmlUtils::create_post_types();
 
     SettingsManager::get_instance()->set(Constants::OPTION_SERVER, $server);
     SettingsManager::get_instance()->set(Constants::OPTION_PRIMARY_INDEX, $primary_index);
