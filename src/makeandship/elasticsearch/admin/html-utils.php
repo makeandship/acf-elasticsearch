@@ -2,6 +2,8 @@
 
 namespace makeandship\elasticsearch\admin;
 
+use makeandship\elasticsearch\settings\SettingsHelper;
+
 class HtmlUtils
 {
     protected function __construct()
@@ -25,10 +27,10 @@ class HtmlUtils
 
             $html = [
                 '<div class="acf-elasticsearch-row">',
-                '	<div class="acf-elasticsearch-label">',
+                '	<div class="twocol">',
                 '		<label for="">'.$label.'</label>',
                 '	</div>',
-                '	<div class="acf-elasticsearch-field">',
+                '	<div class="tencol last">',
                 '		'.$field,
                 '	</div>',
                 '</div>'
@@ -83,7 +85,7 @@ class HtmlUtils
         $html = [];
 
         $html[] = '<div class="acf-elasticsearch-row">';
-        $html[] = '	<div class="acf-elasticsearch-button-container">';
+        $html[] = '	<div class="twelvecol last acf-elasticsearch-button-container">';
 
         foreach ($buttons as $button) {
             $html[] = self::render_button($button);
@@ -111,22 +113,32 @@ class HtmlUtils
         return implode($html, PHP_EOL);
     }
 
-    public static function render_checkboxes($label, $checkboxes)
+    public static function render_post_type_choices($label)
     {
         $html = [];
 
-        $html[] = '<div class="acf-elasticsearch-row">';
-        $html[] = '    <div class="acf-elasticsearch-label">';
-        $html[] = '	       <label for="">'.$label.'</label>';
-        $html[] = '    </div>';
-        $html[] = '    <div class="acf-elasticsearch-checkboxes">';
-        
+        $first = true;
+
+        $checkboxes = SettingsHelper::get_post_type_checkbox_data();
+
         foreach ($checkboxes as $checkbox) {
+            $html[] = '<div class="acf-elasticsearch-row">';
+            $html[] = '    <div class="twocol">';
+            $html[] = '	       <label for="">'.($first ? $label : "").'</label>';
+            $html[] = '    </div>';
+            $html[] = '    <div class="twocol">';
             $html[] = self::render_checkbox($checkbox);
+            $html[] = '    </div>';
+            $html[] = '    <div class="fourcol">';
+            $html[] = '         <textarea name=""></textarea>';
+            $html[] = '    </div>';
+            $html[] = '    <div class="fourcol last">';
+            $html[] = '         <textarea name=""></textarea>';
+            $html[] = '    </div>';
+            $html[] = '</div>';
+
+            $first = false;
         }
-        
-        $html[] = '    </div>';
-        $html[] = '</div>';
 
         return implode($html, PHP_EOL);
     }
