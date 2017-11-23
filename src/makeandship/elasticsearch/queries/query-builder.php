@@ -55,6 +55,11 @@ class QueryBuilder
         return $this;
     }
 
+    public function sort($sorts)
+    {
+        $this->sorts = $sorts;
+    }
+
     public function to_query()
     {
         $query = array(
@@ -80,6 +85,10 @@ class QueryBuilder
         // pagination
         $pagination = $this->build_pagination();
         $query = array_merge($query, $pagination);
+
+        // sorting
+        $sorts = $this->build_sorts();
+        $query = array_merge($query, $sorts);
     }
 
     private function build_text_query()
@@ -281,5 +290,36 @@ class QueryBuilder
         }
 
         return $pagination();
+    }
+
+    /**
+     * Creates sorts and ordering within the query
+     *
+     * Target example
+     * {
+     *     "sort": [
+     *         { "post_date": "desc" }
+     *     ],
+     *     ...
+     * }
+     *
+     * _score is used for no sort
+     */
+    private function build_sorts()
+    {
+        $sorts = array();
+
+        if ($this->sorts && count($this->sorts) > 0) {
+            $sorts['sort'] = array();
+            foreach ($this->sorts as $sort => $order) {
+                $sorts['sort'][$sort] = $order;
+            }
+        } else {
+            $sorts['sort'] = array(
+                '_score'
+            );
+        }
+
+        return $sorts();
     }
 }
