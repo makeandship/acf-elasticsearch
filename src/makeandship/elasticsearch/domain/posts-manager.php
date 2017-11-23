@@ -1,6 +1,8 @@
 <?php
 
 namespace makeandship\elasticsearch\domain;
+use makeandship\elasticsearch\Constants;
+use makeandship\elasticsearch\domain\OptionsManager;
 
 class PostsManager {
 	const EXCLUDE_POST_TYPES = array(
@@ -144,9 +146,15 @@ class PostsManager {
 	}
 
 	public function valid( $post_type ) {
+		$options_manager = new OptionsManager();
+		$option_types = $options_manager->get(Constants::OPTION_POST_TYPES);
+
 		if (in_array( $post_type, self::EXCLUDE_POST_TYPES)) {
 			return false;
 		}
-		return true;
+		else if (in_array( $post_type, $option_types)){
+			return true;
+		}
+		return false;
 	}
 }
