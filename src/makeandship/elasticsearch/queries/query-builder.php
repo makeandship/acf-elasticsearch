@@ -76,6 +76,10 @@ class QueryBuilder
         // aggregations to count results by post types and taxonomy entries
         $aggregations = $this->build_aggregations();
         $query['aggregations'] = $aggregations;
+
+        // pagination
+        $pagination = $this->build_pagination();
+        $query = array_merge($query, $pagination);
     }
 
     private function build_text_query()
@@ -196,15 +200,86 @@ class QueryBuilder
         return $categories;
     }
 
+    /**
+     * Creates aggregations for post types and taxonomies
+     *
+     * The final result will look similar to
+     * "aggs": {
+     *     "post_type": {
+     *         "aggs": {
+     *             "facet": {
+     *                 "terms": {
+     *                     "field": "post_type",
+     *                     "size": 100
+     *                 }
+     *             }
+     *         },
+     *         "filter": {
+     *             "bool": {
+     *                 "must": []
+     *             }
+     *         }
+     *     }
+     * }
+     */
     private function build_aggregations()
     {
         $aggregations = array();
 
+        // aggregations for taxonomies
         if ($this->counts && count($this->counts) > 0) {
             foreach ($this->counts as $taxonomy => $count) {
+                $aggregations[$taxonomy] = array(
+                    'aggs' => array(
+                        'facet' => array(
+                            'terms' => array(
+                                'field' => $taxonomy,
+                                'size' => $count
+                            )
+                        )
+                    ),
+                    'filter' => array(
+                        'bool' => array(
+                            'must' => array()
+                        )
+                    )
+                );
             }
         }
 
+        // post type aggregation
+        $post_type_count = $this->post_types ? count($this->post_types) : 100;
+        $aggregations['post_type'] = array(
+            'aggs' => array(
+                'facet' => array(
+                    'terms' => array(
+                        'field' => 'post_type',
+                        'size' => $post_type_count
+                    )
+                )
+            ),
+            'filter' => array(
+                'bool' => array(
+                    'must' => array()
+                )
+            )
+        );
+
         return $aggregations;
+    }
+
+    private function build_pagination()
+    {
+        $pagination = array();
+
+        if ($this->from && $this->size) {
+            // from is the record number hence page size * page number
+            $from = $this->from * $this->size;
+            $pagination['from'] = $from;
+
+            $pagination['size'] = $this->size;
+        }
+
+        return $pagination();
     }
 }
