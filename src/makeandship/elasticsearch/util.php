@@ -5,6 +5,32 @@ namespace makeandship\elasticsearch;
 class Util
 {
     /**
+     * Call wordpress apply filters using the plugin prefix
+     *
+     * e.g. prepare_query will become acf-elasticsearch/prepare_query
+     */
+    public static function apply_filters()
+    {
+        $args = func_get_args();
+        $args[0] = 'acf-elasticsearch/' . $args[0];
+
+        return call_user_func_array('apply_filters', $args);
+    }
+
+    /**
+     * Call wordpress apply filters using the plugin prefix
+     *
+     * e.g. search_exception will become acf-elasticsearch/search_exception
+     */
+    public static function do_action()
+    {
+        $args = func_get_args();
+        $args[0] = 'acf-elasticsearch/' . $args[0];
+
+        return call_user_func_array('do_action', $args);
+    }
+    
+    /**
      * Retrieve the value from an array item, or object attribute
      * returning null if the attribute is missing or the value is null
      *

@@ -1,8 +1,25 @@
 <?php
+
+namespace makeandship\elasticsearch\queries;
+
+use makeandship\elasticsearch\PostMappingBuilder;
+
 class QueryBuilder
 {
     public function __construct()
     {
+        // default include all valid post types
+        $post_mapping_builder = new PostMappingBuilder();
+        $this->post_types = $post_mapping_builder->get_valid_post_types();
+
+        $this->freetext = null;
+        $this->fuzziness = null;
+        $this->weights = null;
+        $this->categories = null;
+        $this->counts = null;
+        $this->from = null;
+        $this->size = null;
+        $this->sorts = null;
     }
 
     public function freetext($freetext)
@@ -58,9 +75,11 @@ class QueryBuilder
     public function sort($sorts)
     {
         $this->sorts = $sorts;
+
+        return $this;
     }
 
-    public function to_query()
+    public function to_array()
     {
         $query = array(
             'query' => array(
@@ -72,15 +91,15 @@ class QueryBuilder
 
         // freetext, fuzziness and weightings are used together for the built query
         $query_text = $this->build_text_query();
-        $query['query']['bool']['must'] = array_merge($query['bool']['must'], $query_text);
+        $query['query']['bool']['must'] = array_merge($query['query']['bool']['must'], $query_text);
 
         // post types and taxonomies filter the query results
         $query_filters = $this->build_filters();
-        $query['query']['must'] = array_merge($query['bool']['must'], $query_filters);
+        $query['query']['bool'] = array_merge($query['query']['bool'], $query_filters);
 
         // aggregations to count results by post types and taxonomy entries
         $aggregations = $this->build_aggregations();
-        $query['aggregations'] = $aggregations;
+        $query['aggs'] = $aggregations;
 
         // pagination
         $pagination = $this->build_pagination();
@@ -89,6 +108,8 @@ class QueryBuilder
         // sorting
         $sorts = $this->build_sorts();
         $query = array_merge($query, $sorts);
+
+        return $query;
     }
 
     private function build_text_query()
@@ -165,17 +186,24 @@ class QueryBuilder
         }
 
         // filter by post types (which are elastic search types)
+        // use "should" as it can match any post_type (not all)
         if ($this->post_types && count($this->post_types) > 0) {
-            if (!array_key_exists('must', $query['filter']['bool'])) {
-                $query['filter']['bool']['must'] = array();
+            if (!array_key_exists('filter', $query_taxonomy_filters)) {
+                $query_taxonomy_filters['filter'] = array();
+            }
+            if (!array_key_exists('bool', $query_taxonomy_filters['filter'])) {
+                $query_taxonomy_filters['filter']['bool'] = array();
+            }
+            if (!array_key_exists('must', $query_taxonomy_filters['filter']['bool'])) {
+                $query_taxonomy_filters['filter']['bool']['should'] = array();
             }
 
-            foreach ($post_types as $post_type) {
+            foreach ($this->post_types as $post_type) {
                 // post type is used for the index type and therefore uses a type query
                 // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-query.html
-                $query['filter']['bool'][$bool_operator][] = array(
-                    'term' => array(
-                        $taxonomy => $filter
+                $query_taxonomy_filters['filter']['bool']['should'][] = array(
+                    'type' => array(
+                        'value' => $post_type
                     )
                 );
             }
@@ -238,6 +266,7 @@ class QueryBuilder
         // aggregations for taxonomies
         if ($this->counts && count($this->counts) > 0) {
             foreach ($this->counts as $taxonomy => $count) {
+                $count = is_string($count) ? intval($count) : $count;
                 $aggregations[$taxonomy] = array(
                     'aggs' => array(
                         'facet' => array(
@@ -281,7 +310,7 @@ class QueryBuilder
     {
         $pagination = array();
 
-        if ($this->from && $this->size) {
+        if ($this->from !== null && $this->size !== null) {
             // from is the record number hence page size * page number
             $from = $this->from * $this->size;
             $pagination['from'] = $from;
@@ -289,7 +318,7 @@ class QueryBuilder
             $pagination['size'] = $this->size;
         }
 
-        return $pagination();
+        return $pagination;
     }
 
     /**
@@ -320,6 +349,6 @@ class QueryBuilder
             );
         }
 
-        return $sorts();
+        return $sorts;
     }
 }
