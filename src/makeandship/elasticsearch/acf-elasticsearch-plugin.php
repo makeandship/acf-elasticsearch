@@ -2,17 +2,14 @@
 
 namespace makeandship\elasticsearch;
 
-use makeandship\elasticsearch\SettingsManager;
+use makeandship\elasticsearch\settings\SettingsManager;
 use makeandship\elasticsearch\admin\UserInterfaceManager;
 
 class AcfElasticsearchPlugin
 {
     public function __construct()
     {
-        $settings_manager = new SettingsManager();
-        $settings = $settings_manager->get_settings();
-        
-        $this->indexer = new Indexer($settings);
+        $this->indexer = new Indexer();
 
         $this->ui = new UserInterfaceManager(Constants::VERSION, Constants::DB_VERSION, $this);
 
@@ -70,18 +67,14 @@ class AcfElasticsearchPlugin
      */
     public function create_mappings()
     {
-        $settings_manager = new SettingsManager();
-        $settings = $settings_manager->get_settings();
-
-        if (isset($settings) && array_key_exists(Constants::OPTION_PRIMARY_INDEX, $settings)) {
-            $primary_index = $settings[Constants::OPTION_PRIMARY_INDEX];
-
+        $primary_index = SettingsManager::get_instance()->get(Constants::OPTION_PRIMARY_INDEX);
+        if ($primary_index) {
             // (re)create the index
-            $indexer = new Indexer($settings);
+            $indexer = new Indexer();
             $indexer->create($primary_index);
 
             // initialise the mapper with config
-            $mapper = new Mapper($settings);
+            $mapper = new Mapper();
             $result = $mapper->map();
         } else {
             // error
@@ -101,13 +94,8 @@ class AcfElasticsearchPlugin
     {
         $fresh = isset($_POST['fresh']) ? ($_POST['fresh'] === 'true') : false;
 
-        $settings_manager = new SettingsManager();
-        $settings = $settings_manager->get_settings();
-
-        if (isset($settings)) {
-            $indexer = new Indexer($settings);
-            $status = $indexer->index_posts($fresh);
-        }
+        $indexer = new Indexer();
+        $status = $indexer->index_posts($fresh);
 
         $response = array(
             'message' => 'Posts were indexed successfully',

@@ -1,9 +1,9 @@
 <div class="wrap">
 <?php
     use makeandship\elasticsearch\admin\HtmlUtils;
-    use makeandship\elasticsearch\Defaults;
-    use makeandship\elasticsearch\Constants;
-    use makeandship\elasticsearch\domain\OptionsManager;
+use makeandship\elasticsearch\Defaults;
+use makeandship\elasticsearch\Constants;
+use makeandship\elasticsearch\settings\SettingsManager;
 
 if (!empty($_POST)) {
         
@@ -17,34 +17,19 @@ if (!empty($_POST)) {
     $password = trim($_POST['acf_elasticsearch_password']);
     $post_types = $_POST['acf_elasticsearch_post_types'];
 
-    if (is_multisite()) { //  && is_plugin_active_for_network(plugin_basename(__FILE__))
-        error_log('save multisite');
-        // store at network level
-        update_site_option('acf_elasticsearch_server', $server);
-        update_site_option('acf_elasticsearch_primary_index', $primary_index);
-        update_site_option('acf_elasticsearch_secondary_index', $secondary_index);
-        update_site_option('acf_elasticsearch_read_timeout', $read_timeout);
-        update_site_option('acf_elasticsearch_write_timeout', $write_timeout);
-        update_site_option('acf_elasticsearch_username', $username);
-        update_site_option('acf_elasticsearch_password', $password);
-        update_site_option('acf_elasticsearch_post_types', $post_types);
-    } else {
-        // store at site level
-        update_option('acf_elasticsearch_server', $server);
-        update_option('acf_elasticsearch_primary_index', $primary_index);
-        update_option('acf_elasticsearch_secondary_index', $secondary_index);
-        update_option('acf_elasticsearch_read_timeout', $read_timeout);
-        update_option('acf_elasticsearch_write_timeout', $write_timeout);
-        update_option('acf_elasticsearch_username', $username);
-        update_option('acf_elasticsearch_password', $password);
-        update_option('acf_elasticsearch_post_types', $post_types);
-    }
+    SettingsManager::get_instance()->set(Constants::OPTION_SERVER, $server);
+    SettingsManager::get_instance()->set(Constants::OPTION_PRIMARY_INDEX, $primary_index);
+    SettingsManager::get_instance()->set(Constants::OPTION_SECONDARY_INDEX, $secondary_index);
+    SettingsManager::get_instance()->set(Constants::OPTION_READ_TIMEOUT, $read_timeout);
+    SettingsManager::get_instance()->set(Constants::OPTION_WRITE_TIMEOUT, $write_timeout);
+    SettingsManager::get_instance()->set(Constants::OPTION_USERNAME, $username);
+    SettingsManager::get_instance()->set(Constants::OPTION_PASSWORD, $password);
+    SettingsManager::get_instance()->set(Constants::OPTION_POST_TYPES, $post_types);
 }
 
 // populate post types
 $types = Defaults::types();
-$options_manager = new OptionsManager();
-$option_types = $options_manager->get(Constants::OPTION_POST_TYPES);
+$option_types = SettingsManager::get_instance()->get(Constants::OPTION_POST_TYPES);
 
 $post_type_checkboxes = [];
 

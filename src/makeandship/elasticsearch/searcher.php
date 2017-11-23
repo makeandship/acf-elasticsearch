@@ -1,7 +1,7 @@
 <?php
 namespace makeandship\elasticsearch;
 
-use makeandship\elasticsearch\SettingsManager;
+use makeandship\elasticsearch\settings\SettingsManager;
 use makeandship\elasticsearch\queries\ElasticsearchQueryBuilder;
 
 use \Elastica\Client;
@@ -20,9 +20,8 @@ class Searcher
 
     public function __construct()
     {
-        $settings_manager = new SettingsManager();
-        $settings = $settings_manager->get_settings();
-        $client_settings = Util::get_client_settings($settings);
+        $settings_manager = SettingsManager::get_instance();
+        $client_settings = $settings_manager->get_client_settings();
 
         $this->client = new Client($client_settings);
         $name = get_option(Constants::OPTION_PRIMARY_INDEX);

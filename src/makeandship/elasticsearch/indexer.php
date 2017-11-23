@@ -4,9 +4,8 @@ namespace makeandship\elasticsearch;
 
 use makeandship\elasticsearch\Constants;
 
-use makeandship\elasticsearch\SettingsManager;
+use makeandship\elasticsearch\settings\SettingsManager;
 
-use makeandship\elasticsearch\domain\OptionsManager;
 use makeandship\elasticsearch\domain\SitesManager;
 use makeandship\elasticsearch\domain\PostsManager;
 use makeandship\elasticsearch\domain\TaxonomiesManager;
@@ -19,13 +18,11 @@ use \Elastica\Response;
 
 class Indexer
 {
-    public function __construct($settings)
+    public function __construct()
     {
-        $this->settings = $settings;
-
         // factories
         $this->document_builder_factory = new DocumentBuilderFactory();
-        $this->type_factory = new TypeFactory($this->settings);
+        $this->type_factory = new TypeFactory();
     }
 
     /**
@@ -39,8 +36,7 @@ class Indexer
         $replicas = Constants::DEFAULT_REPLICAS;
 
         // elastic client to the cluster/server
-        $client_settings = Util::get_client_settings($this->settings);
-        
+        $client_settings = SettingsManager::get_instance()->get_client_settings();
         $client = new Client($client_settings);
 
         // remove the current index
@@ -124,7 +120,7 @@ class Indexer
         $errors = array();
 
         // elastic client to the cluster/server
-        $client_settings = Util::get_client_settings($this->settings);
+        $client_settings = SettingsManager::get_instance()->get_client_settings();
         $client = new Client($client_settings);
 
         // remove the current index
@@ -156,16 +152,15 @@ class Indexer
 
     public function index_posts_multisite($fresh)
     {
-        $status = $this->settings[Constants::OPTION_INDEX_STATUS];
+        $status = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
 
         $posts_manager = new PostsManager();
-        $settings_manager = new OptionsManager();
-
+        
         if ($fresh || (!isset($status) || empty($status))) {
             $status = $posts_manager->initialise_status();
 
             // store initial state
-            $settings_manager->set(Constants::OPTION_INDEX_STATUS, $status);
+            SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
         }
 
         // find the next site to index (or next page in a site to index)
@@ -190,23 +185,22 @@ class Indexer
         $target_site['page'] = $page + 1;
         $target_site['count'] = $target_site['count'] + $count;
         $status[$blog_id] = $target_site;
-        $settings_manager->set(Constants::OPTION_INDEX_STATUS, $status);
+        SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
 
         return $status;
     }
 
     public function index_posts_singlesite($fresh)
     {
-        $status = $this->settings[Constants::OPTION_INDEX_STATUS];
+        $status = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
 
         $posts_manager = new PostsManager();
-        $settings_manager = new OptionsManager();
-
+        
         if ($fresh || (!isset($status) || empty($status))) {
             $status = $posts_manager->initialise_status();
 
             // store initial state
-            $settings_manager->set(Constants::OPTION_INDEX_STATUS, $status);
+            SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
         }
 
         // find the next site to index (or next page in a site to index)
@@ -221,7 +215,7 @@ class Indexer
         $status['page'] = $page + 1;
         $status['count'] = $status['count'] + $count;
         
-        $settings_manager->set(Constants::OPTION_INDEX_STATUS, $status);
+        SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
 
         error_log(print_r($status, true));
 
