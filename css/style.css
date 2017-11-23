@@ -300,3 +300,8 @@
   display: inline-block;
   padding-right: 10px;
 }
+
+.textarea-label {
+  padding: 0 0 10px 0;
+  display: block;
+}

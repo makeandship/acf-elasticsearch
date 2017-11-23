@@ -130,9 +130,11 @@ class HtmlUtils
             $html[] = self::render_checkbox($checkbox);
             $html[] = '    </div>';
             $html[] = '    <div class="fourcol">';
+            $html[] = '         <label class="textarea-label" for="">Exclude fields from indexing</label>';
             $html[] = '         <textarea name=""></textarea>';
             $html[] = '    </div>';
             $html[] = '    <div class="fourcol last">';
+            $html[] = '         <label class="textarea-label" for="">Fields for private searches only</label>';
             $html[] = '         <textarea name=""></textarea>';
             $html[] = '    </div>';
             $html[] = '</div>';
