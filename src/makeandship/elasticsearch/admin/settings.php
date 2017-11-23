@@ -1,8 +1,9 @@
 <div class="wrap">
 <?php
     use makeandship\elasticsearch\admin\HtmlUtils;
-use makeandship\elasticsearch\Defaults;
-use makeandship\elasticsearch\Constants;
+    use makeandship\elasticsearch\Defaults;
+    use makeandship\elasticsearch\Constants;
+    use makeandship\elasticsearch\domain\OptionsManager;
 
 if (!empty($_POST)) {
         
@@ -42,7 +43,8 @@ if (!empty($_POST)) {
 
 // populate post types
 $types = Defaults::types();
-$option_types = get_option(Constants::OPTION_POST_TYPES);
+$options_manager = new OptionsManager();
+$option_types = $options_manager->get(Constants::OPTION_POST_TYPES);
 
 $post_type_checkboxes = [];
 

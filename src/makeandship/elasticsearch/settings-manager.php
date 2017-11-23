@@ -29,6 +29,7 @@ class SettingsManager
             $this->get_option($this->settings, Constants::OPTION_INDEX_STATUS);
             $this->get_option($this->settings, Constants::OPTION_USERNAME);
             $this->get_option($this->settings, Constants::OPTION_PASSWORD);
+            $this->get_option($this->settings, Constants::OPTION_POST_TYPES);
         }
         
         return $this->settings;
