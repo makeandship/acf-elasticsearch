@@ -262,7 +262,7 @@ class UserInterfaceManager
         $styles = plugins_url('acf-elasticsearch/css/style.css');
         $scripts = plugins_url('acf-elasticsearch/js/main.js');
         
-        wp_register_style('acf-elasticsearch', $styles);
+        wp_register_style('acf-elasticsearch', $styles, null, '0.0.1');
         wp_enqueue_style('acf-elasticsearch');
         wp_register_script('acf-elasticsearch', $scripts, array('jquery'), '0.1.6');
         wp_enqueue_script('acf-elasticsearch');

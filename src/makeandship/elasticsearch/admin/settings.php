@@ -1,8 +1,8 @@
 <div class="wrap">
 <?php
     use makeandship\elasticsearch\admin\HtmlUtils;
-    use makeandship\elasticsearch\Defaults;
-    use makeandship\elasticsearch\Constants;
+use makeandship\elasticsearch\Defaults;
+use makeandship\elasticsearch\Constants;
 
 if (!empty($_POST)) {
         
@@ -45,12 +45,19 @@ $types = Defaults::types();
 $option_types = get_option(Constants::OPTION_POST_TYPES);
 
 $post_type_checkboxes = [];
-foreach($types as $post_type) {
+
+foreach ($types as $post_type) {
+    // if no options have been selected, select them all, otherwise none
+    $checked = (
+        (!$option_types) ||
+        ($option_types && in_array($post_type, $option_types))
+    ) ? true : false;
+    
     $post_type_checkboxes[] = array(
         'value' => $post_type,
         'name' => 'acf_elasticsearch_post_types[]',
         'class' => 'checkbox',
-        'checked' => in_array($post_type ,$option_types),
+        'checked' => $checked,
         'id' => $post_type
     );
 }
