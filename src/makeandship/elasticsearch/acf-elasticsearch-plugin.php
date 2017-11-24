@@ -71,7 +71,8 @@ class AcfElasticsearchPlugin
         $indexer = new Indexer();
         foreach($indexes as $index) {
             $name = $index['name'];
-            $indexer->create($index['name']);
+            $indexer->create($name);
+
             $mapper = new Mapper($name);
             $result = $mapper->map();
         }
@@ -90,8 +91,15 @@ class AcfElasticsearchPlugin
     {
         $fresh = isset($_POST['fresh']) ? ($_POST['fresh'] === 'true') : false;
 
+        $indexes = SettingsManager::get_instance()->get_indexes();
         $indexer = new Indexer();
-        $status = $indexer->index_posts($fresh);
+        $status = 0;
+
+        foreach($indexes as $index) {
+            $name = $index['name'];
+            $include_private = !$index['public'];
+            $status = $indexer->index_posts($fresh, $name, $include_private);
+        }
 
         $response = array(
             'message' => 'Posts were indexed successfully',
@@ -106,8 +114,13 @@ class AcfElasticsearchPlugin
     {
         error_log('index_taxonomies()');
 
+        $indexes = SettingsManager::get_instance()->get_indexes();
         $indexer = new Indexer();
-        $count = $indexer->index_taxonomies();
+        $index = 0;
+        foreach($indexes as $index) {
+            $name = $index['name'];
+            $count = $indexer->index_taxonomies($name);
+        }
 
         $json = json_encode(array(
             'message' => $count.' taxonomies were indexed successfully'

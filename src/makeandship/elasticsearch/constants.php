@@ -36,7 +36,8 @@ class Constants
 
     // indexer
     const STATUS_PUBLISH = 'publish';
-    const INDEX_POST_STATUSES = [Constants::STATUS_PUBLISH];
+    const STATUS_PRIVATE = 'private';
+    const INDEX_POST_STATUSES = [Constants::STATUS_PUBLISH, Constants::STATUS_PRIVATE];
 
     // TODO move to settings
     const DEFAULT_POSTS_PER_PAGE = 20;

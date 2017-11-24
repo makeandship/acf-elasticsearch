@@ -139,25 +139,25 @@ class Indexer
         }
     }
 
-    public function index_posts($fresh)
+    public function index_posts($fresh, $name, $include_private=false)
     {
         if (is_multisite()) {
-            $status = $this->index_posts_multisite($fresh);
+            $status = $this->index_posts_multisite($fresh, $name, $include_private);
         } else {
-            $status = $this->index_posts_singlesite($fresh);
+            $status = $this->index_posts_singlesite($fresh, $name, $include_private);
         }
 
         return $status;
     }
 
-    public function index_posts_multisite($fresh)
+    public function index_posts_multisite($fresh, $name, $include_private=false)
     {
         $status = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
 
         $posts_manager = new PostsManager();
         
         if ($fresh || (!isset($status) || empty($status))) {
-            $status = $posts_manager->initialise_status();
+            $status = $posts_manager->initialise_status($include_private);
 
             // store initial state
             SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
@@ -177,8 +177,8 @@ class Indexer
         $per = Constants::DEFAULT_POSTS_PER_PAGE;
 
         // get and update posts
-        $posts = $posts_manager->get_posts($blog_id, $page, $per);
-        $count = $this->add_or_update_documents($posts);
+        $posts = $posts_manager->get_posts($blog_id, $page, $per, $include_private);
+        $count = $this->add_or_update_documents($posts, $name);
 
         // update status
         $target_site['count'] = $target_site['count'] || 0;
@@ -190,14 +190,14 @@ class Indexer
         return $status;
     }
 
-    public function index_posts_singlesite($fresh)
+    public function index_posts_singlesite($fresh, $name, $include_private=false)
     {
         $status = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
 
         $posts_manager = new PostsManager();
         
         if ($fresh || (!isset($status) || empty($status))) {
-            $status = $posts_manager->initialise_status();
+            $status = $posts_manager->initialise_status($include_private);
 
             // store initial state
             SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
@@ -208,8 +208,8 @@ class Indexer
         $per = Constants::DEFAULT_POSTS_PER_PAGE;
 
         // get and update posts
-        $posts = $posts_manager->get_posts(null, $page, $per);
-        $count = $this->add_or_update_documents($posts);
+        $posts = $posts_manager->get_posts(null, $page, $per, $include_private);
+        $count = $this->add_or_update_documents($posts, $name);
 
         // update status
         $status['page'] = $page + 1;
@@ -222,11 +222,11 @@ class Indexer
         return $status;
     }
 
-    public function index_taxonomies()
+    public function index_taxonomies($name)
     {
         $taxonomies_manager = new TaxonomiesManager();
         $terms = $taxonomies_manager->get_taxonomies();
-        $count = $this->add_or_update_documents($terms);
+        $count = $this->add_or_update_documents($terms, $name);
 
         error_log('Indexed '.strval($count).' terms');
 
@@ -247,13 +247,13 @@ class Indexer
      *
      * @param $o the wordpress object to add
      */
-    public function add_or_update_documents($o)
+    public function add_or_update_documents($o, $name)
     {
         $count = 0;
 
         // TODO for now go one by one - later switch to bulk
         foreach ($o as $item) {
-            $this->add_or_update_document($item);
+            $this->add_or_update_document($item, $name);
 
             $count++;
         }
@@ -271,7 +271,7 @@ class Indexer
      *
      * @param $o the wordpress object to add
      */
-    public function add_or_update_document($o)
+    public function add_or_update_document($o, $name)
     {
         $builder = $this->document_builder_factory->create($o);
         $document = $builder->build($o);
@@ -281,7 +281,7 @@ class Indexer
         // ensure the document and id are valid before indexing
         if (isset($document) && !empty($document) &&
             isset($id) && !empty($id)) {
-            $type = $this->type_factory->create($doc_type);
+            $type = $this->type_factory->create($doc_type, $name);
 
             $type->addDocument(new \Elastica\Document($id, $document));
 

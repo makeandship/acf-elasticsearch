@@ -23,18 +23,18 @@ class PostsManager
     {
     }
 
-    public function initialise_status()
+    public function initialise_status($include_private=false)
     {
         if (is_multisite()) {
-            return $this->initialise_status_multisite();
+            return $this->initialise_status_multisite($include_private);
         } else {
-            return $this->initialise_status_singlesite();
+            return $this->initialise_status_singlesite($include_private);
         }
     }
 
-    private function initialise_status_singlesite()
+    private function initialise_status_singlesite($include_private=false)
     {
-        $total = $this->get_posts_count(null);
+        $total = $this->get_posts_count(null, $include_private);
         $status = array(
             'page' => 1,
             'count' => 0,
@@ -44,7 +44,7 @@ class PostsManager
         return $status;
     }
 
-    private function initialise_status_multisite()
+    private function initialise_status_multisite($include_private=false)
     {
         $status = array();
 
@@ -54,7 +54,7 @@ class PostsManager
         foreach ($sites as $site) {
             $blog_id = $site->blog_id;
 
-            $total = $this->get_posts_count($blog_id);
+            $total = $this->get_posts_count($blog_id, $include_private);
             
             $status[$blog_id] = array(
                 'page' => 1,
@@ -67,7 +67,7 @@ class PostsManager
         return $status;
     }
 
-    public function get_posts_count($blog_id=null)
+    public function get_posts_count($blog_id=null, $include_private=false)
     {
         $count = 0;
 
@@ -75,26 +75,26 @@ class PostsManager
             // target site
             switch_to_blog($blog_id);
 
-            $args = $this->get_count_post_args();
+            $args = $this->get_count_post_args($include_private);
             $count = intval((new \WP_Query($args))->found_posts);
 
             // back to the original
             restore_current_blog();
         } else {
-            $args = $this->get_count_post_args();
+            $args = $this->get_count_post_args($include_private);
             $count = intval((new \WP_Query($args))->found_posts);
         }
 
         return $count;
     }
 
-    public function get_posts($blog_id, $page, $per)
+    public function get_posts($blog_id, $page, $per, $include_private=false)
     {
         if (isset($blog_id)) {
             switch_to_blog($blog_id);
         }
 
-        $args = $this->get_paginated_post_args($page, $per);
+        $args = $this->get_paginated_post_args($page, $per, $include_private);
         $posts = get_posts($args);
 
         if (isset($blog_id)) {
@@ -104,26 +104,28 @@ class PostsManager
         return $posts;
     }
 
-    private function get_count_post_args()
+    private function get_count_post_args($include_private=false)
     {
         $post_types = $this->get_valid_post_types();
+        $post_status = $include_private ? array( 'publish', 'private' ) : 'publish';
         
         $args = array(
             'post_type' => $post_types,
-            'post_status' => 'publish',
+            'post_status' => $post_status,
             'fields' => 'count'
         );
 
         return $args;
     }
 
-    private function get_paginated_post_args($page, $per)
+    private function get_paginated_post_args($page, $per, $include_private=false)
     {
         $post_types = $this->get_valid_post_types();
+        $post_status = $include_private ? array( 'publish', 'private' ) : 'publish';
         
         $args = array(
             'post_type' => $post_types,
-            'post_status' => 'publish',
+            'post_status' => $post_status,
             'posts_per_page' => $per,
             'paged' => $page
         );
