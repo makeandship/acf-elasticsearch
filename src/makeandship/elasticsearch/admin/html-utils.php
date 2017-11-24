@@ -131,11 +131,11 @@ class HtmlUtils
             $html[] = '    </div>';
             $html[] = '    <div class="fourcol">';
             $html[] = '         <label class="textarea-label" for="">Exclude fields from indexing</label>';
-            $html[] = '         <textarea name=""></textarea>';
+            $html[] = '         <textarea name="'.$checkbox['value'].'_exclude">'.$checkbox['exclude'].'</textarea>';
             $html[] = '    </div>';
             $html[] = '    <div class="fourcol last">';
             $html[] = '         <label class="textarea-label" for="">Fields for private searches only</label>';
-            $html[] = '         <textarea name=""></textarea>';
+            $html[] = '         <textarea name="'.$checkbox['value'].'_private">'.$checkbox['private'].'</textarea>';
             $html[] = '    </div>';
             $html[] = '</div>';
 
@@ -166,5 +166,31 @@ class HtmlUtils
         $html[] = '</label>';
               
         return implode($html, PHP_EOL);
+    }
+
+    public static function create_post_types()
+    {
+        $post_types = array();
+        $types = $_POST['acf_elasticsearch_post_types'];
+        foreach($types as $type){
+            $post_type = array();
+            $post_type['type'] = $type;
+            $post_type['exclude'] = self::get_array_data($type, 'exclude');
+            $post_type['private'] = self::get_array_data($type, 'private');
+            $post_types[] = $post_type;
+        }
+        
+        return $post_types;
+    }
+
+    private static function get_array_data($type, $category)
+    {
+        if(isset($_POST[$type.'_'.$category])){
+            $input = $_POST[$type.'_'.$category];
+            return explode("\n", str_replace("\r", "", $input));
+        }
+        else {
+            return array();
+        }
     }
 }

@@ -4,6 +4,7 @@ namespace makeandship\elasticsearch;
 
 use makeandship\elasticsearch\transformer\HtmlFieldTransformer;
 use makeandship\elasticsearch\transformer\DateFieldTransformer;
+use makeandship\elasticsearch\settings\SettingsManager;
 
 class PostDocumentBuilder extends DocumentBuilder
 {
@@ -92,6 +93,8 @@ class PostDocumentBuilder extends DocumentBuilder
     private function build_acf_field($field, $post)
     {
         $document = null;
+        $post_type = $this->get_type($post);
+        $excluded_fields = SettingsManager::get_instance()->get_exclude_fields($post_type);
 
         if (isset($field) && isset($post)) {
             if (array_key_exists('name', $field)) {
@@ -99,7 +102,7 @@ class PostDocumentBuilder extends DocumentBuilder
                 $type = $field['type'];
                 $value = get_field($name, $post->ID);
                 
-                if (isset($value) && !empty($value)) {
+                if (isset($value) && !empty($value) && !in_array($name, $excluded_fields)) {
                     $value = $this->transform_acf_value($value, $type);
 
                     if ($value) {
