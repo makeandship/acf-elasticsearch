@@ -10,6 +10,18 @@ class PostDocumentBuilder extends DocumentBuilder
 {
 
     /**
+     * Is this document private
+     */
+    public function is_private($post)
+    {
+        if ($post->post_status === 'private') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      *
      */
     public function build($post)

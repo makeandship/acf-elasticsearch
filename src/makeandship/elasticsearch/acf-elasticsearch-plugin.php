@@ -69,7 +69,7 @@ class AcfElasticsearchPlugin
     {
         $indexes = SettingsManager::get_instance()->get_indexes();
         $indexer = new Indexer();
-        foreach($indexes as $index) {
+        foreach ($indexes as $index) {
             $name = $index['name'];
             $indexer->create($name);
 
@@ -95,11 +95,7 @@ class AcfElasticsearchPlugin
         $indexer = new Indexer();
         $status = 0;
 
-        foreach($indexes as $index) {
-            $name = $index['name'];
-            $include_private = !$index['public'];
-            $status = $indexer->index_posts($fresh, $name, $include_private);
-        }
+        $status = $indexer->index_posts($fresh);
 
         $response = array(
             'message' => 'Posts were indexed successfully',
@@ -117,7 +113,7 @@ class AcfElasticsearchPlugin
         $indexes = SettingsManager::get_instance()->get_indexes();
         $indexer = new Indexer();
         $index = 0;
-        foreach($indexes as $index) {
+        foreach ($indexes as $index) {
             $name = $index['name'];
             $count = $indexer->index_taxonomies($name);
         }

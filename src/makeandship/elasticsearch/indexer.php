@@ -139,18 +139,18 @@ class Indexer
         }
     }
 
-    public function index_posts($fresh, $name, $include_private=false)
+    public function index_posts($fresh)
     {
         if (is_multisite()) {
-            $status = $this->index_posts_multisite($fresh, $name, $include_private);
+            $status = $this->index_posts_multisite($fresh);
         } else {
-            $status = $this->index_posts_singlesite($fresh, $name, $include_private);
+            $status = $this->index_posts_singlesite($fresh);
         }
 
         return $status;
     }
 
-    public function index_posts_multisite($fresh, $name, $include_private=false)
+    public function index_posts_multisite($fresh)
     {
         $status = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
 
@@ -177,8 +177,8 @@ class Indexer
         $per = Constants::DEFAULT_POSTS_PER_PAGE;
 
         // get and update posts
-        $posts = $posts_manager->get_posts($blog_id, $page, $per, $include_private);
-        $count = $this->add_or_update_documents($posts, $name);
+        $posts = $posts_manager->get_posts($blog_id, $page, $per);
+        $count = $this->add_or_update_documents($posts);
 
         // update status
         $target_site['count'] = $target_site['count'] || 0;
@@ -190,14 +190,14 @@ class Indexer
         return $status;
     }
 
-    public function index_posts_singlesite($fresh, $name, $include_private=false)
+    public function index_posts_singlesite($fresh)
     {
         $status = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
 
         $posts_manager = new PostsManager();
         
         if ($fresh || (!isset($status) || empty($status))) {
-            $status = $posts_manager->initialise_status($include_private);
+            $status = $posts_manager->initialise_status();
 
             // store initial state
             SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
@@ -208,8 +208,8 @@ class Indexer
         $per = Constants::DEFAULT_POSTS_PER_PAGE;
 
         // get and update posts
-        $posts = $posts_manager->get_posts(null, $page, $per, $include_private);
-        $count = $this->add_or_update_documents($posts, $name);
+        $posts = $posts_manager->get_posts(null, $page, $per);
+        $count = $this->add_or_update_documents($posts);
 
         // update status
         $status['page'] = $page + 1;
@@ -226,7 +226,7 @@ class Indexer
     {
         $taxonomies_manager = new TaxonomiesManager();
         $terms = $taxonomies_manager->get_taxonomies();
-        $count = $this->add_or_update_documents($terms, $name);
+        $count = $this->add_or_update_documents($terms);
 
         error_log('Indexed '.strval($count).' terms');
 
@@ -247,13 +247,13 @@ class Indexer
      *
      * @param $o the wordpress object to add
      */
-    public function add_or_update_documents($o, $name)
+    public function add_or_update_documents($o)
     {
         $count = 0;
 
         // TODO for now go one by one - later switch to bulk
         foreach ($o as $item) {
-            $this->add_or_update_document($item, $name);
+            $this->add_or_update_document($item);
 
             $count++;
         }
@@ -271,9 +271,12 @@ class Indexer
      *
      * @param $o the wordpress object to add
      */
-    public function add_or_update_document($o, $name)
+    public function add_or_update_document($o)
     {
         $builder = $this->document_builder_factory->create($o);
+
+        $private = $builder->is_private($o);
+        
         $document = $builder->build($o);
         $id = $builder->get_id($o);
         $doc_type = $builder->get_type($o);
@@ -281,11 +284,18 @@ class Indexer
         // ensure the document and id are valid before indexing
         if (isset($document) && !empty($document) &&
             isset($id) && !empty($id)) {
-            $type = $this->type_factory->create($doc_type, $name);
-
-            $type->addDocument(new \Elastica\Document($id, $document));
-
-            // response ?
+            if ($private) {
+                // only index private documents in the private repository
+                $type = $this->type_factory->create($doc_type, false, true);
+                $type->addDocument(new \Elastica\Document($id, $document));
+            } else {
+                // index public documents in the public repository
+                $type = $this->type_factory->create($doc_type, false, false);
+                $type->addDocument(new \Elastica\Document($id, $document));
+                // index public documents in the private repository
+                $type = $this->type_factory->create($doc_type, false, true);
+                $type->addDocument(new \Elastica\Document($id, $document));
+            }
         }
     }
 

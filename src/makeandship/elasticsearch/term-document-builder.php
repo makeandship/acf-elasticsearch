@@ -4,7 +4,14 @@ namespace makeandship\elasticsearch;
 
 class TermDocumentBuilder extends DocumentBuilder
 {
-    
+    /**
+     * Is this document private
+     */
+    public function is_private($term)
+    {
+        return true;
+    }
+
     /**
      *
      */
