@@ -1,6 +1,6 @@
 <div class="wrap">
 <?php
-    use makeandship\elasticsearch\admin\HtmlUtils;
+use makeandship\elasticsearch\admin\HtmlUtils;
 use makeandship\elasticsearch\Defaults;
 use makeandship\elasticsearch\Constants;
 use makeandship\elasticsearch\settings\SettingsManager;
@@ -11,6 +11,8 @@ if (!empty($_POST)) {
     $server = esc_url($_POST['acf_elasticsearch_server']);
     $primary_index = trim($_POST['acf_elasticsearch_primary_index']);
     $secondary_index = trim($_POST['acf_elasticsearch_secondary_index']);
+    $private_primary_index = trim($_POST['acf_elasticsearch_private_primary_index']);
+    $private_secondary_index = trim($_POST['acf_elasticsearch_private_secondary_index']);
     $read_timeout = intval(trim($_POST['acf_elasticsearch_read_timeout']));
     $write_timeout = intval(trim($_POST['acf_elasticsearch_write_timeout']));
     $username = trim($_POST['acf_elasticsearch_username']);
@@ -20,6 +22,8 @@ if (!empty($_POST)) {
     SettingsManager::get_instance()->set(Constants::OPTION_SERVER, $server);
     SettingsManager::get_instance()->set(Constants::OPTION_PRIMARY_INDEX, $primary_index);
     SettingsManager::get_instance()->set(Constants::OPTION_SECONDARY_INDEX, $secondary_index);
+    SettingsManager::get_instance()->set(Constants::OPTION_PRIVATE_PRIMARY_INDEX, $private_primary_index);
+    SettingsManager::get_instance()->set(Constants::OPTION_PRIVATE_SECONDARY_INDEX, $private_secondary_index);
     SettingsManager::get_instance()->set(Constants::OPTION_READ_TIMEOUT, $read_timeout);
     SettingsManager::get_instance()->set(Constants::OPTION_WRITE_TIMEOUT, $write_timeout);
     SettingsManager::get_instance()->set(Constants::OPTION_USERNAME, $username);
@@ -54,6 +58,22 @@ if (!empty($_POST)) {
                         echo HtmlUtils::render_field(
                             'Secondary Index',
                             'acf_elasticsearch_secondary_index',
+                            array(
+                                'class' => '',
+                                'placeholder' => ''
+                            )
+                        );
+                        echo HtmlUtils::render_field(
+                            'Private Primary Index',
+                            'acf_elasticsearch_private_primary_index',
+                            array(
+                                'class' => '',
+                                'placeholder' => ''
+                            )
+                        );
+                        echo HtmlUtils::render_field(
+                            'Private Secondary Index',
+                            'acf_elasticsearch_private_secondary_index',
                             array(
                                 'class' => '',
                                 'placeholder' => ''

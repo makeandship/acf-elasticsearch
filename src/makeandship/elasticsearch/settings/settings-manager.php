@@ -47,6 +47,8 @@ class SettingsManager
             $this->settings[Constants::OPTION_SERVER] = $this->get_option(Constants::OPTION_SERVER);
             $this->settings[Constants::OPTION_PRIMARY_INDEX] = $this->get_option(Constants::OPTION_PRIMARY_INDEX);
             $this->settings[Constants::OPTION_SECONDARY_INDEX] = $this->get_option(Constants::OPTION_SECONDARY_INDEX);
+            $this->settings[Constants::OPTION_PRIVATE_PRIMARY_INDEX] = $this->get_option(Constants::OPTION_PRIVATE_PRIMARY_INDEX);
+            $this->settings[Constants::OPTION_PRIVATE_SECONDARY_INDEX] = $this->get_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
             $this->settings[Constants::OPTION_READ_TIMEOUT] = $this->get_option(Constants::OPTION_READ_TIMEOUT);
             $this->settings[Constants::OPTION_WRITE_TIMEOUT] = $this->get_option(Constants::OPTION_WRITE_TIMEOUT);
             $this->settings[Constants::OPTION_INDEX_STATUS] = $this->get_option(Constants::OPTION_INDEX_STATUS);
@@ -83,6 +85,8 @@ class SettingsManager
                 Constants::OPTION_SERVER,
                 Constants::OPTION_PRIMARY_INDEX,
                 Constants::OPTION_SECONDARY_INDEX,
+                Constants::OPTION_PRIVATE_PRIMARY_INDEX,
+                Constants::OPTION_PRIVATE_SECONDARY_INDEX,
                 Constants::OPTION_READ_TIMEOUT,
                 Constants::OPTION_WRITE_TIMEOUT,
                 Constants::OPTION_INDEX_STATUS,

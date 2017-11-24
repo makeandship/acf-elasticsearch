@@ -25,6 +25,8 @@ class Constants
     const OPTION_SERVER = 'acf_elasticsearch_server';
     const OPTION_PRIMARY_INDEX = 'acf_elasticsearch_primary_index';
     const OPTION_SECONDARY_INDEX = 'acf_elasticsearch_secondary_index';
+    const OPTION_PRIVATE_PRIMARY_INDEX = 'acf_elasticsearch_private_primary_index';
+    const OPTION_PRIVATE_SECONDARY_INDEX = 'acf_elasticsearch_private_secondary_index';
     const OPTION_READ_TIMEOUT = 'acf_elasticsearch_read_timeout';
     const OPTION_WRITE_TIMEOUT = 'acf_elasticsearch_write_timeout';
     const OPTION_INDEX_STATUS = 'acf_elasticsearch_index_status';
