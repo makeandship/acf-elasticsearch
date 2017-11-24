@@ -6,13 +6,16 @@ use \Elastica\Type\Mapping;
 
 class Mapper
 {
-    public function __construct()
+    public function __construct($index_name)
     {
         // factory to manage individual mappers
         $this->mapping_builder_factory = new MappingBuilderFactory();
 
         // factory to manage types
         $this->type_factory = new TypeFactory();
+
+        // index to use
+        $this->index_name = $index_name;
     }
 
     public function map()
@@ -52,7 +55,7 @@ class Mapper
             $properties = $builder->build($type_name);
 
             if (isset($properties)) {
-                $type = $this->type_factory->create($type_name);
+                $type = $this->type_factory->create($type_name, $this->index_name);
 
                 $mapping = new Mapping($type, $properties);
                 $mapping->send();

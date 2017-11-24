@@ -67,19 +67,15 @@ class AcfElasticsearchPlugin
      */
     public function create_mappings()
     {
-        $primary_index = SettingsManager::get_instance()->get(Constants::OPTION_PRIMARY_INDEX);
-        if ($primary_index) {
-            // (re)create the index
-            $indexer = new Indexer();
-            $indexer->create($primary_index);
-
-            // initialise the mapper with config
-            $mapper = new Mapper();
+        $indexes = SettingsManager::get_instance()->get_indexes();
+        $indexer = new Indexer();
+        foreach($indexes as $index) {
+            $name = $index['name'];
+            $indexer->create($index['name']);
+            $mapper = new Mapper($name);
             $result = $mapper->map();
-        } else {
-            // error
         }
-
+        
         // extract message from result
         $message = 'Mappings were created successfully';
 

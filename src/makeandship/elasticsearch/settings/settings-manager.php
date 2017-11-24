@@ -187,4 +187,50 @@ class SettingsManager
 
         return $exclude;
     }
+
+    public function get_indexes()
+    {
+        $indexes = array();
+        // public primary index
+        $primary = $this->get(Constants::OPTION_PRIMARY_INDEX);
+        if ($primary) {
+            $indexes[] = array(
+                'name' => $primary,
+                'type' => 'primary',
+                'public' => true
+            );
+        }
+
+        // public secondary index
+        $secondary = $this->get(Constants::OPTION_SECONDARY_INDEX);
+        if ($secondary) {
+            $indexes[] = array(
+                'name' => $secondary,
+                'type' => 'secondary',
+                'public' => true
+            );
+        }
+
+        // private primary index
+        $private_primary = $this->get(Constants::OPTION_PRIVATE_PRIMARY_INDEX);
+        if ($private_primary) {
+            $indexes[] = array(
+                'name' => $private_primary,
+                'type' => 'primary',
+                'public' => false
+            );
+        }
+
+        // private secondary index
+        $private_secondary = $this->get(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
+        if ($private_secondary) {
+            $indexes[] = array(
+                'name' => $private_secondary,
+                'type' => 'secondary',
+                'public' => false
+            );
+        }
+
+        return $indexes;
+    }
 }
