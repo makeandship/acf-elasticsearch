@@ -3,6 +3,9 @@
 namespace makeandship\elasticsearch\queries;
 
 use makeandship\elasticsearch\PostMappingBuilder;
+use makeandship\elasticsearch\Constants;
+use makeandship\elasticsearch\Util;
+use makeandship\elasticsearch\settings\SettingsManager;
 
 class QueryBuilder
 {
@@ -15,13 +18,35 @@ class QueryBuilder
         $this->freetext = null;
         $this->fuzziness = null;
         $this->weights = null;
+        $this->post_types = null;
         $this->categories = null;
+        $this->taxonomies = null;
         $this->counts = null;
         $this->from = null;
         $this->size = null;
         $this->sorts = null;
+        $this->search_fields = null;
+        $this->return_fields = null;
+
+        $this->set_plugin_defaults();
     }
 
+    private function set_plugin_defaults()
+    {
+        // set fuzziness, weights and post_types
+        // TODO fuzziness and weights into the plugin
+        $this->fuzziness = 1;
+        $this->post_types = SettingsManager::get_instance()->get(Constants::OPTION_POST_TYPES);
+        $this->weights = array(
+            'post_title' => 3,
+            'post_content' => 3,
+        );
+    }
+
+    /**
+     * Captures a free text query
+     * @param freetext a freetext search e.g. Ace
+     */
     public function freetext($freetext)
     {
         $this->freetext = $freetext;
@@ -29,6 +54,12 @@ class QueryBuilder
         return $this;
     }
 
+    /**
+     * Captures a fuzziness score.  By default this will use the admin
+     * console setting
+     *
+     * @param fuzziness a level of fuzziness - letters allowed to swop
+     */
     public function with_fuzziness($fuzziness)
     {
         $this->fuzziness = $fuzziness;
@@ -36,6 +67,13 @@ class QueryBuilder
         return $this;
     }
 
+    /**
+     * Capture scoring weights to use in queries.  Weightings are captured as an array with
+     * key the field name and the value the score.  These become elasticsearch weightings
+     * e.g. post_title => 3 becomes post_title^3
+     *
+     * @param weights array of weights
+     */
     public function weighted($weights)
     {
         $this->weights = $weights;
@@ -43,9 +81,28 @@ class QueryBuilder
         return $this;
     }
 
+    /**
+     * Post types to include in a search.  The default is to include post types set in the
+     * plugin.
+     *
+     * @param post_types array of post types
+     */
     public function for_post_types($post_types)
     {
         $this->post_types = $post_types;
+
+        return $this;
+    }
+
+    /**
+     * Taxonomies to include in a search.  The default is to include post types set in the
+     * plugin.
+     *
+     * @param taxonomies array of post types
+     */
+    public function for_taxonomies($taxonomies)
+    {
+        $this->taxonomies = $taxonomies;
 
         return $this;
     }
@@ -75,6 +132,20 @@ class QueryBuilder
     public function sort($sorts)
     {
         $this->sorts = $sorts;
+
+        return $this;
+    }
+
+    public function searching($fields)
+    {
+        $this->search_fields = $fields;
+
+        return $this;
+    }
+
+    public function returning($fields)
+    {
+        $this->return_fields = $fields;
 
         return $this;
     }
@@ -109,6 +180,12 @@ class QueryBuilder
         $sorts = $this->build_sorts();
         $query = array_merge($query, $sorts);
 
+        // fields
+        $fields = $this->build_fields();
+        $query = array_merge($query, $fields);
+
+        error_log(print_r(json_encode($query), true));
+
         return $query;
     }
 
@@ -117,20 +194,41 @@ class QueryBuilder
         $query_text = array();
 
         if ($this->freetext) {
-            $query_text = array(
-                'multi_match' => array(
-                    'fields' => array(
-                        '_all'
-                    ),
-                    'query' => $this->freetext
-                )
-            );
+            if ($this->search_fields) {
+                // restrict the search to specific fields only and add weights for those fields only
+                $fields = array();
+                foreach ($this->search_fields as $search_field) {
+                    $weight = Util::safely_get_attribute($this->weights, $search_field);
+                    if ($weight) {
+                        $fields[] = $search_field.'^'.$weight;
+                    } else {
+                        $fields[] = $search_field;
+                    }
+                }
 
-            // weight fields in the search result
-            if ($this->weights) {
-                foreach ($this->weights as $field => $weight) {
-                    if (ctype_digit(strval($weight))) { // check numeric - see http://php.net/manual/en/function.is-int.php
-                        $query_text['multi_match']['fields'][] = $field.'^'.$weight;
+                $query_text = array(
+                    'multi_match' => array(
+                        'fields' => $fields,
+                        'query' => $this->freetext
+                    )
+                );
+            } else {
+                // search all fields
+                $query_text = array(
+                    'multi_match' => array(
+                        'fields' => array(
+                            '_all'
+                        ),
+                        'query' => $this->freetext
+                    )
+                );
+
+                // weight fields in the search result
+                if ($this->weights) {
+                    foreach ($this->weights as $field => $weight) {
+                        if (ctype_digit(strval($weight))) { // check numeric - see http://php.net/manual/en/function.is-int.php
+                            $query_text['multi_match']['fields'][] = $field.'^'.$weight;
+                        }
                     }
                 }
             }
@@ -159,7 +257,7 @@ class QueryBuilder
             $query_taxonomy_filters['filter'] = array();
 
             if ($categories && count($categories) > 0) {
-                $query['filter']['bool'] = array();
+                $query_taxonomy_filters['filter']['bool'] = array();
 
                 // e.g. 'category' => ['and' => ...]
                 foreach ($categories as $taxonomy => $operations) {
@@ -167,14 +265,14 @@ class QueryBuilder
                     foreach ($operations as $operation => $filters) {
                         $bool_operator = $operation === 'or' ? 'should' : 'must';
 
-                        if (!array_key_exists($bool_operator, $query['filter']['bool'])) {
-                            $query['filter']['bool'][$bool_operator] = array();
+                        if (!array_key_exists($bool_operator, $query_taxonomy_filters['filter']['bool'])) {
+                            $query_taxonomy_filters['filter']['bool'][$bool_operator] = array();
                         }
 
                         foreach ($filters as $filter) {
                             // category is held as a simple term so uses a term query
                             // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html
-                            $query['filter']['bool'][$bool_operator][] = array(
+                            $query_taxonomy_filters['filter']['bool'][$bool_operator][] = array(
                                 'term' => array(
                                     $taxonomy => $filter
                                 )
@@ -204,6 +302,30 @@ class QueryBuilder
                 $query_taxonomy_filters['filter']['bool']['should'][] = array(
                     'type' => array(
                         'value' => $post_type
+                    )
+                );
+            }
+        }
+
+        // filter by taxonomies (which are elastic search types)
+        // use "should" as it can match any post_type (not all)
+        if ($this->taxonomies && count($this->taxonomies) > 0) {
+            if (!array_key_exists('filter', $query_taxonomy_filters)) {
+                $query_taxonomy_filters['filter'] = array();
+            }
+            if (!array_key_exists('bool', $query_taxonomy_filters['filter'])) {
+                $query_taxonomy_filters['filter']['bool'] = array();
+            }
+            if (!array_key_exists('must', $query_taxonomy_filters['filter']['bool'])) {
+                $query_taxonomy_filters['filter']['bool']['should'] = array();
+            }
+
+            foreach ($this->taxonomies as $taxonomy) {
+                // post type is used for the index type and therefore uses a type query
+                // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-query.html
+                $query_taxonomy_filters['filter']['bool']['should'][] = array(
+                    'type' => array(
+                        'value' => $taxonomy
                     )
                 );
             }
@@ -350,5 +472,21 @@ class QueryBuilder
         }
 
         return $sorts;
+    }
+
+    /**
+     * Build query body to control which fields are returned
+     *
+     * @return array for the source attribute
+     */
+    private function build_fields()
+    {
+        $fields = array();
+
+        if ($this->return_fields) {
+            $fields['_source'] = $this->return_fields;
+        }
+
+        return $fields;
     }
 }

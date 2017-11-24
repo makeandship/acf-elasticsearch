@@ -109,17 +109,12 @@ class AcfElasticsearchPlugin
     public function index_taxonomies()
     {
         error_log('index_taxonomies()');
-        
-        $settings_manager = new SettingsManager();
-        $settings = $settings_manager->get_settings();
 
-        if (isset($settings)) {
-            $indexer = new Indexer($settings);
-            $status = $indexer->index_taxonomies();
-        }
+        $indexer = new Indexer();
+        $count = $indexer->index_taxonomies();
 
         $json = json_encode(array(
-            'message' => 'Taxonomies were indexed successfully'
+            'message' => $count.' taxonomies were indexed successfully'
             ));
         die($json);
     }
