@@ -30,6 +30,7 @@ class Constants
     const OPTION_INDEX_STATUS = 'acf_elasticsearch_index_status';
     const OPTION_USERNAME = 'acf_elasticsearch_username';
     const OPTION_PASSWORD = 'acf_elasticsearch_password';
+    const OPTION_POST_TYPES = 'acf_elasticsearch_post_types';
 
     // indexer
     const STATUS_PUBLISH = 'publish';

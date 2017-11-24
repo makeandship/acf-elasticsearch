@@ -31,7 +31,9 @@ jQuery(document).ready(function($) {
   });
 
   $("#resume-indexing-posts").click(function(e) {
-    console.log("resume indexing posts");
+    $("#indexing-spinner").addClass("is-active");
+    $("#indexing-messages").html("Indexing posts ...");
+    $("#resume-indexing-posts").attr("disabled", true);
 
     indexPosts(false);
 
@@ -49,34 +51,46 @@ jQuery(document).ready(function($) {
   });
 
   $("#index-taxonomies").click(function(e) {
-    console.log("index taxonomies");
+    $("#indexing-spinner").addClass("is-active");
+    $("#indexing-messages").html("Indexing taxonomies ...");
+    $("#index-taxonomies").attr("disabled", true);
     var data = {
       action: "index_taxonomies"
     };
     adminAjax(
       data,
       function(response) {
-        console.log("success");
+        $("#indexing-spinner").removeClass("is-active");
+        $("#indexing-messages").html("Taxonomies indexed successfully");
+        $("#index-taxonomies").attr("disabled", false);
       },
       function() {
-        console.log("error");
+        $("#indexing-spinner").removeClass("is-active");
+        $("#indexing-messages").html("Error indexing taxonomies");
+        $("#index-taxonomies").attr("disabled", false);
       }
     );
     return false;
   });
 
   $("#clear-index").click(function(e) {
-    console.log("clear index");
+    $("#indexing-spinner").addClass("is-active");
+    $("#indexing-messages").html("Clearing index ...");
+    $("#clear-index").attr("disabled", true);
     var data = {
       action: "clear_index"
     };
     adminAjax(
       data,
       function(response) {
-        console.log("success");
+        $("#indexing-spinner").removeClass("is-active");
+        $("#indexing-messages").html("Index cleared successfully");
+        $("#clear-index").attr("disabled", false);
       },
       function() {
-        console.log("error");
+        $("#indexing-spinner").removeClass("is-active");
+        $("#indexing-messages").html("Error clearing index cleared");
+        $("#clear-index").attr("disabled", false);
       }
     );
     return false;

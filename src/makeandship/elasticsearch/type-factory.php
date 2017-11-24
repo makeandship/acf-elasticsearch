@@ -2,15 +2,16 @@
 
 namespace makeandship\elasticsearch;
 
+use makeandship\elasticsearch\settings\SettingsManager;
+
 use \Elastica\Client;
 
 class TypeFactory
 {
     private static $clients;
 
-    public function __construct($options)
+    public function __construct()
     {
-        $this->options = $options;
     }
 
     public function get_client($writable=false)
@@ -20,31 +21,21 @@ class TypeFactory
         if (isset(self::$clients) && is_array(self::$clients) && array_key_exists($writable_key, self::$clients)) {
             return self::$clients[$writable_key];
         } else {
-            $settings = array(
-                Constants::SETTING_URL => $this->options[Constants::OPTION_SERVER]
-            );
-            if (array_key_exists(Constants::OPTION_USERNAME, $this->options)) {
-                $settings[Constants::SETTING_USERNAME] = $this->options[Constants::OPTION_USERNAME];
-            }
-            if (array_key_exists(Constants::OPTION_PASSWORD, $this->options)) {
-                $settings[Constants::SETTING_PASSWORD] = $this->options[Constants::OPTION_PASSWORD];
-            }
+            $client_settings = SettingsManager::get_instance()->get_client_settings();
+            
             if ($writable) {
-                $settings[Constants::SETTING_TIMEOUT] = $this->use_attribute_or_default(
-                    $this->options,
-                    Constants::OPTION_WRITE_TIMEOUT,
-                    Constants::DEFAULT_WRITE_TIMEOUT
-                );
+                $client_settings[Constants::SETTING_TIMEOUT] =
+                    SettingsManager::get_instance()->get(Constants::OPTION_WRITE_TIMEOUT) ?
+                    SettingsManager::get_instance()->get(Constants::OPTION_WRITE_TIMEOUT) :
+                    Constants::DEFAULT_WRITE_TIMEOUT;
             } else {
-                $settings[Constants::SETTING_TIMEOUT] = $this->use_attribute_or_default(
-                    $this->options,
-                    Constants::OPTION_READ_TIMEOUT,
-                    Constants::DEFAULT_READ_TIMEOUT
-                );
+                $client_settings[Constants::SETTING_TIMEOUT] =
+                    SettingsManager::get_instance()->get(Constants::OPTION_READ_TIMEOUT) ?
+                    SettingsManager::get_instance()->get(Constants::OPTION_READ_TIMEOUT) :
+                    Constants::DEFAULT_READ_TIMEOUT;
             }
 
-            $client = new Client($settings);
-
+            $client = new Client($client_settings);
 
             if (!isset(self::$clients) || !is_array(self::$clients)) {
                 self::$clients = array();
@@ -53,19 +44,6 @@ class TypeFactory
 
             return self::$clients[$writable_key];
         }
-    }
-
-    private function use_attribute_or_default($options, $name, $default)
-    {
-        $value = null;
-
-        if (array_key_exists($name, $options)) {
-            $value = $this->options[$name];
-        } else {
-            $value = $default;
-        }
-
-        return $value;
     }
     
     /**
@@ -77,9 +55,10 @@ class TypeFactory
 
         $client = $this->get_client($writable);
         
-        if (isset($client) && array_key_exists(Constants::OPTION_PRIMARY_INDEX, $this->options)) {
-            $index_name = $this->options[Constants::OPTION_PRIMARY_INDEX];
-            $index = $client->getIndex($index_name);
+        $primary_index = SettingsManager::get_instance()->get(Constants::OPTION_PRIMARY_INDEX);
+
+        if (isset($client) && $primary_index) {
+            $index = $client->getIndex($primary_index);
 
             if (isset($index)) {
                 $type = $index->getType($type_name);

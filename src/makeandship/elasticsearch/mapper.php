@@ -6,15 +6,13 @@ use \Elastica\Type\Mapping;
 
 class Mapper
 {
-    public function __construct($settings)
+    public function __construct()
     {
-        $this->settings = $settings;
-
         // factory to manage individual mappers
         $this->mapping_builder_factory = new MappingBuilderFactory();
 
         // factory to manage types
-        $this->type_factory = new TypeFactory($this->settings);
+        $this->type_factory = new TypeFactory();
     }
 
     public function map()

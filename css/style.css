@@ -1,39 +1,307 @@
+@media only screen and (min-width: 768px) and (max-width: 991px) {
+  .acf-elasticsearch-row {
+    width: 100%;
+    max-width: 940px;
+    margin: 0;
+    overflow: hidden;
+  }
+  .eightcol,
+  .elevencol,
+  .fivecol,
+  .fourcol,
+  .ninecol,
+  .onecol,
+  .sevencol,
+  .sixcol,
+  .tencol,
+  .threecol,
+  .twelvecol,
+  .twocol {
+    float: left;
+    min-height: 1px;
+    margin-right: 2.12766%;
+  }
+  .acf-elasticsearch-row .onecol {
+    width: 6.38298%;
+  }
+  .acf-elasticsearch-row .twocol {
+    width: 14.89362%;
+  }
+  .acf-elasticsearch-row .threecol {
+    width: 23.40426%;
+  }
+  .acf-elasticsearch-row .fourcol {
+    width: 31.91489%;
+  }
+  .acf-elasticsearch-row .fivecol {
+    width: 40.42553%;
+  }
+  .acf-elasticsearch-row .sixcol {
+    width: 48.93617%;
+  }
+  .acf-elasticsearch-row .sevencol {
+    width: 57.44681%;
+  }
+  .acf-elasticsearch-row .eightcol {
+    width: 65.95745%;
+  }
+  .acf-elasticsearch-row .ninecol {
+    width: 74.46809%;
+  }
+  .acf-elasticsearch-row .tencol {
+    width: 82.97872%;
+  }
+  .acf-elasticsearch-row .elevencol {
+    width: 91.48936%;
+  }
+  .acf-elasticsearch-row .twelvecol {
+    width: 100%;
+  }
+  .last {
+    margin-right: 0;
+  }
+  .fourcolsub,
+  .sixcolsub,
+  .twocolsub {
+    float: left;
+    min-height: 1px;
+    margin-right: 3.22581%;
+  }
+  .fourcolsub.last,
+  .sixcolsub.last,
+  .twocolsub.last {
+    margin-right: 0;
+  }
+  .twocolsub {
+    width: 22.58065%;
+  }
+  .fourcolsub {
+    width: 48.3871%;
+  }
+  .sixcolsub {
+    width: 74.19355%;
+  }
+  body {
+    font-size: 70%;
+  }
+}
+@media only screen and (min-width: 992px) and (max-width: 1280px) {
+  .acf-elasticsearch-row {
+    width: 100%;
+    max-width: 940px;
+    margin: 0;
+    overflow: hidden;
+  }
+  .eightcol,
+  .elevencol,
+  .fivecol,
+  .fourcol,
+  .ninecol,
+  .onecol,
+  .sevencol,
+  .sixcol,
+  .tencol,
+  .threecol,
+  .twelvecol,
+  .twocol {
+    float: left;
+    min-height: 1px;
+    margin-right: 2.12766%;
+  }
+  .acf-elasticsearch-row .onecol {
+    width: 6.38298%;
+  }
+  .acf-elasticsearch-row .twocol {
+    width: 14.89362%;
+  }
+  .acf-elasticsearch-row .threecol {
+    width: 23.40426%;
+  }
+  .acf-elasticsearch-row .fourcol {
+    width: 31.91489%;
+  }
+  .acf-elasticsearch-row .fivecol {
+    width: 40.42553%;
+  }
+  .acf-elasticsearch-row .sixcol {
+    width: 48.93617%;
+  }
+  .acf-elasticsearch-row .sevencol {
+    width: 57.44681%;
+  }
+  .acf-elasticsearch-row .eightcol {
+    width: 65.95745%;
+  }
+  .acf-elasticsearch-row .ninecol {
+    width: 74.46809%;
+  }
+  .acf-elasticsearch-row .tencol {
+    width: 82.97872%;
+  }
+  .acf-elasticsearch-row .elevencol {
+    width: 91.48936%;
+  }
+  .acf-elasticsearch-row .twelvecol {
+    width: 100%;
+  }
+  .last {
+    margin-right: 0;
+  }
+  .fourcolsub,
+  .sixcolsub,
+  .twocolsub {
+    float: left;
+    min-height: 1px;
+    margin-right: 3.22581%;
+  }
+  .fourcolsub.last,
+  .sixcolsub.last,
+  .twocolsub.last {
+    margin-right: 0;
+  }
+  .twocolsub {
+    width: 22.58065%;
+  }
+  .fourcolsub {
+    width: 48.3871%;
+  }
+  .sixcolsub {
+    width: 74.19355%;
+  }
+  body {
+    font-size: 87.5%;
+  }
+}
+@media only screen and (min-width: 1281px) {
+  .acf-elasticsearch-row {
+    width: 100%;
+    max-width: 1128px;
+    margin: 0;
+    overflow: hidden;
+  }
+  .eightcol,
+  .elevencol,
+  .fivecol,
+  .fourcol,
+  .ninecol,
+  .onecol,
+  .sevencol,
+  .sixcol,
+  .tencol,
+  .threecol,
+  .twelvecol,
+  .twocol {
+    float: left;
+    min-height: 1px;
+    margin-right: 2.12766%;
+  }
+  .acf-elasticsearch-row .onecol {
+    width: 6.38298%;
+  }
+  .acf-elasticsearch-row .twocol {
+    width: 14.89362%;
+  }
+  .acf-elasticsearch-row .threecol {
+    width: 23.40426%;
+  }
+  .acf-elasticsearch-row .fourcol {
+    width: 31.91489%;
+  }
+  .acf-elasticsearch-row .fivecol {
+    width: 40.42553%;
+  }
+  .acf-elasticsearch-row .sixcol {
+    width: 48.93617%;
+  }
+  .acf-elasticsearch-row .sevencol {
+    width: 57.44681%;
+  }
+  .acf-elasticsearch-row .eightcol {
+    width: 65.95745%;
+  }
+  .acf-elasticsearch-row .ninecol {
+    width: 74.46809%;
+  }
+  .acf-elasticsearch-row .tencol {
+    width: 82.97872%;
+  }
+  .acf-elasticsearch-row .elevencol {
+    width: 91.48936%;
+  }
+  .acf-elasticsearch-row .twelvecol {
+    width: 100%;
+  }
+  .last {
+    margin-right: 0;
+  }
+  .fourcolsub,
+  .sixcolsub,
+  .twocolsub {
+    float: left;
+    min-height: 1px;
+    margin-right: 3.22581%;
+  }
+  .fourcolsub.last,
+  .sixcolsub.last,
+  .twocolsub.last {
+    margin-right: 0;
+  }
+  .twocolsub {
+    width: 22.58065%;
+  }
+  .fourcolsub {
+    width: 48.3871%;
+  }
+  .sixcolsub {
+    width: 74.19355%;
+  }
+}
 .acf-elasticsearch-row {
-	display:block;
-	margin:10px 0;
-	border-bottom:1px #f2f2f2 solid;
+  padding: 10px 0;
+  border-bottom: 1px #f2f2f2 solid;
 }
-
 .acf-elasticsearch-label {
-	display:inline-block;
-	width:20%;
-	padding-bottom:10px;
+  display: inline-block;
+  width: 20%;
+  padding-bottom: 10px;
 }
-
 .acf-elasticsearch-field {
-	display:inline-block;
-	width:60%;
-	padding-bottom:10px;
+  display: inline-block;
+  width: 60%;
+  padding-bottom: 10px;
 }
-
+.acf-elasticsearch-checkboxes {
+  display: inline-block;
+}
+.acf-elasticsearch-field-container {
+  display: inline-block;
+}
 .acf-elasticsearch-button-container {
-	display:inline-block;
-	padding-bottom:10px;	
+  display: inline-block;
+  padding-bottom: 10px;
 }
-
-.acf-elasticsearch-field input {
-	width:60%;
+.acf-elasticsearch-row input[type="checkbox"] {
+  width: 16px;
 }
-
-.acf-elasticsearch-field input.short {
-	width:20%;
+.acf-elasticsearch-row textarea {
+  width: 100%;
+  height: 100px;
 }
-
-.acf-elasticsearch-field input.long {
-	width:100%;
+.acf-elasticsearch-row input[type="text"] {
+  width: 60%;
 }
-
+.acf-elasticsearch-row input[type="text"].short {
+  width: 20%;
+}
+.acf-elasticsearch-row input[type="text"].long {
+  width: 100%;
+}
 .acf-elasticsearch-button-container p {
-	display:inline-block;
-	padding-right:10px;
+  display: inline-block;
+  padding-right: 10px;
+}
+
+.textarea-label {
+  padding: 0 0 10px 0;
+  display: block;
 }

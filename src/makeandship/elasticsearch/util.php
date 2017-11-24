@@ -5,27 +5,31 @@ namespace makeandship\elasticsearch;
 class Util
 {
     /**
-     * Return a settings array based on stored options for use
-     * with elastica searches, indexing and mapping
+     * Call wordpress apply filters using the plugin prefix
      *
-     * @param options stored options for the plugin
-     * @return settings array containing url, username and password
+     * e.g. prepare_query will become acf-elasticsearch/prepare_query
      */
-    public static function get_client_settings($options)
+    public static function apply_filters()
     {
-        $settings = array(
-            Constants::SETTING_URL => $options[Constants::OPTION_SERVER]
-        );
-        if (array_key_exists(Constants::OPTION_USERNAME, $options)) {
-            $settings[Constants::SETTING_USERNAME] = $options[Constants::OPTION_USERNAME];
-        }
-        if (array_key_exists(Constants::OPTION_PASSWORD, $options)) {
-            $settings[Constants::SETTING_PASSWORD] = $options[Constants::OPTION_PASSWORD];
-        }
+        $args = func_get_args();
+        $args[0] = 'acf-elasticsearch/' . $args[0];
 
-        return $settings;
+        return call_user_func_array('apply_filters', $args);
     }
 
+    /**
+     * Call wordpress apply filters using the plugin prefix
+     *
+     * e.g. search_exception will become acf-elasticsearch/search_exception
+     */
+    public static function do_action()
+    {
+        $args = func_get_args();
+        $args[0] = 'acf-elasticsearch/' . $args[0];
+
+        return call_user_func_array('do_action', $args);
+    }
+    
     /**
      * Retrieve the value from an array item, or object attribute
      * returning null if the attribute is missing or the value is null
@@ -50,5 +54,10 @@ class Util
             }
         }
         return null;
+    }
+
+    public static function get_facet_size()
+    {
+        return Config::apply_filters('searcher_query_facet_size', 100);
     }
 }
