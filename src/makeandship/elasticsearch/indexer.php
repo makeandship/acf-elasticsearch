@@ -229,6 +229,8 @@ class Indexer
         $count = $this->add_or_update_documents($terms);
 
         error_log('Indexed '.strval($count).' terms');
+
+        return $count;
     }
 
     public function index_sites($page, $per)
