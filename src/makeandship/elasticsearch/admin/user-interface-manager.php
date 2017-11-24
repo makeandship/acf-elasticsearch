@@ -302,7 +302,7 @@ class UserInterfaceManager
         
         wp_register_style('acf-elasticsearch', $styles, null, '0.0.3');
         wp_enqueue_style('acf-elasticsearch');
-        wp_register_script('acf-elasticsearch', $scripts, array('jquery'), '0.1.8   ');
+        wp_register_script('acf-elasticsearch', $scripts, array('jquery'), '0.1.9');
         wp_enqueue_script('acf-elasticsearch');
 
         wp_localize_script('acf-elasticsearch', 'acfElasticsearchManager', array(

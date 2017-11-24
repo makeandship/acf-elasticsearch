@@ -31,7 +31,9 @@ jQuery(document).ready(function($) {
   });
 
   $("#resume-indexing-posts").click(function(e) {
-    console.log("resume indexing posts");
+    $("#indexing-spinner").addClass("is-active");
+    $("#indexing-messages").html("Indexing posts ...");
+    $("#resume-indexing-posts").attr("disabled", true);
 
     indexPosts(false);
 
