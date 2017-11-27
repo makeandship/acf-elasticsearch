@@ -22,9 +22,17 @@ class PostDocumentBuilder extends DocumentBuilder
     }
 
     /**
+     * Does this document have private fields
+     */
+    public function has_private_fields()
+    {
+        return true;
+    }
+
+    /**
      *
      */
-    public function build($post)
+    public function build($post, $include_private=false)
     {
         $document = null;
 
@@ -74,7 +82,7 @@ class PostDocumentBuilder extends DocumentBuilder
                             $fields = acf_get_fields($field_group_id);
 
                             foreach ($fields as $field) {
-                                $field_document = $this->build_acf_field($field, $post);
+                                $field_document = $this->build_acf_field($field, $post, $include_private);
                                 if (isset($field_document)) {
                                     $document = array_merge(
                                         $document,
@@ -102,11 +110,12 @@ class PostDocumentBuilder extends DocumentBuilder
         return $document;
     }
 
-    private function build_acf_field($field, $post)
+    private function build_acf_field($field, $post, $include_private)
     {
         $document = null;
         $post_type = $this->get_type($post);
         $excluded_fields = SettingsManager::get_instance()->get_exclude_fields($post_type);
+        $private_fields = SettingsManager::get_instance()->get_private_fields($post_type);
 
         if (isset($field) && isset($post)) {
             if (array_key_exists('name', $field)) {
@@ -114,7 +123,7 @@ class PostDocumentBuilder extends DocumentBuilder
                 $type = $field['type'];
                 $value = get_field($name, $post->ID);
                 
-                if (isset($value) && !empty($value) && !in_array($name, $excluded_fields)) {
+                if (isset($value) && !empty($value) && !in_array($name, $excluded_fields) && (!in_array($name, $private_fields) || $include_private)) {
                     $value = $this->transform_acf_value($value, $type);
 
                     if ($value) {

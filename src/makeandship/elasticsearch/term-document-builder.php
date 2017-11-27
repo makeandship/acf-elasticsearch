@@ -9,13 +9,21 @@ class TermDocumentBuilder extends DocumentBuilder
      */
     public function is_private($term)
     {
-        return true;
+        return false;
+    }
+
+    /**
+     * Does this document have private fields
+     */
+    public function has_private_fields()
+    {
+        return false;
     }
 
     /**
      *
      */
-    public function build($term)
+    public function build($term, $include_private=false)
     {
         $document = null;
 

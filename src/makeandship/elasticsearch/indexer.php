@@ -276,8 +276,17 @@ class Indexer
         $builder = $this->document_builder_factory->create($o);
 
         $private = $builder->is_private($o);
+        $private_fields = $builder->has_private_fields();
         
-        $document = $builder->build($o);
+        $document = $builder->build($o, false);
+        
+        if ($private_fields) {
+            $private_document = $builder->build($o, true);
+        }
+        else {
+            $private_document = $document;
+        }
+
         $id = $builder->get_id($o);
         $doc_type = $builder->get_type($o);
 
@@ -287,10 +296,10 @@ class Indexer
             if ($private) {
                 // only index private documents in the private repository
                 $primary_private_type = $this->type_factory->create($doc_type, false, true, true);
-                $primary_private_type->addDocument(new \Elastica\Document($id, $document));
+                $primary_private_type->addDocument(new \Elastica\Document($id, $private_document));
 
                 $secondary_private_type = $this->type_factory->create($doc_type, false, true, false);
-                $secondary_private_type->addDocument(new \Elastica\Document($id, $document));
+                $secondary_private_type->addDocument(new \Elastica\Document($id, $private_document));
             } else {
                 // index public documents in the public repository
                 $primary_public_type = $this->type_factory->create($doc_type, false, false, true);
@@ -300,9 +309,9 @@ class Indexer
                 
                 // index public documents in the private repository
                 $primary_private_type = $this->type_factory->create($doc_type, false, true, true);
-                $primary_private_type->addDocument(new \Elastica\Document($id, $document));
+                $primary_private_type->addDocument(new \Elastica\Document($id, $private_document));
                 $secondary_private_type = $this->type_factory->create($doc_type, false, true, false);
-                $secondary_private_type->addDocument(new \Elastica\Document($id, $document));
+                $secondary_private_type->addDocument(new \Elastica\Document($id, $private_document));
             }
         }
     }
