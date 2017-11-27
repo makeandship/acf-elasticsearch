@@ -4,6 +4,7 @@ namespace makeandship\elasticsearch;
 
 use makeandship\elasticsearch\settings\SettingsManager;
 use makeandship\elasticsearch\admin\UserInterfaceManager;
+use makeandship\elasticsearch\domain\PostsManager;
 
 class AcfElasticsearchPlugin
 {
@@ -55,8 +56,8 @@ class AcfElasticsearchPlugin
 
         // taxonomies
         add_action('create_term', array(&$this, 'create_term'), 10, 3);
-        add_action('edit_term', array(&$this, 'edit_term'), 10, 3);
-        add_action('delete_term', array(&$this, 'delete_term'), 10, 3);
+        add_action('edited_term', array(&$this, 'edit_term'), 10, 3 );
+        add_action('delete_term', array(&$this, 'delete_term'), 10, 4);
         add_action('registered_taxonomy', array(&$this, 'registered_taxonomy'), 10, 3);
     }
 
@@ -194,6 +195,9 @@ class AcfElasticsearchPlugin
      */
     public function transition_post_status($new_status, $old_status, $post)
     {
+        if (!$this->should_index_post($post)) {
+            return;
+        }
         if (in_array($new_status, Constants::INDEX_POST_STATUSES) && $new_status != $old_status) {
             $this->indexer->add_or_update_document($post);
         }
@@ -207,7 +211,8 @@ class AcfElasticsearchPlugin
      */
     public function should_index_post($post)
     {
-        return true;
+        $manager = new PostsManager();
+        return $manager->valid($post->post_type);
     }
 
     /**
@@ -215,7 +220,16 @@ class AcfElasticsearchPlugin
      */
     public function create_term($term_id, $tt_id, $taxonomy)
     {
-        return true;
+        // get the term to index
+        $term = get_term( $term_id, $taxonomy );
+
+        // can't index empty terms
+        if ($term == null) {
+            return;
+        }
+
+        $this->indexer->add_or_update_document($term);
+        
     }
 
     /**
@@ -223,15 +237,24 @@ class AcfElasticsearchPlugin
      */
     public function edit_term($term_id, $tt_id, $taxonomy)
     {
-        return true;
+        // get the term to index
+        $term = get_term( $term_id, $taxonomy );
+
+        // can't index empty terms
+        if ($term == null) {
+            return;
+        }
+
+        $this->indexer->add_or_update_document($term);
     }
 
     /**
      *
      */
-    public function delete_term($term_id, $tt_id, $taxonomy)
+    public function delete_term($term_id, $tt_id, $taxonomy, $deleted_term)
     {
-        return true;
+        $term = get_term( $term_id, $taxonomy );
+        $this->indexer->remove_document($deleted_term);
     }
 
     /**
