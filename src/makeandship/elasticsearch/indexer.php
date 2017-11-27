@@ -286,15 +286,23 @@ class Indexer
             isset($id) && !empty($id)) {
             if ($private) {
                 // only index private documents in the private repository
-                $type = $this->type_factory->create($doc_type, false, true);
-                $type->addDocument(new \Elastica\Document($id, $document));
+                $primary_private_type = $this->type_factory->create($doc_type, false, true, true);
+                $primary_private_type->addDocument(new \Elastica\Document($id, $document));
+
+                $secondary_private_type = $this->type_factory->create($doc_type, false, true, false);
+                $secondary_private_type->addDocument(new \Elastica\Document($id, $document));
             } else {
                 // index public documents in the public repository
-                $type = $this->type_factory->create($doc_type, false, false);
-                $type->addDocument(new \Elastica\Document($id, $document));
+                $primary_public_type = $this->type_factory->create($doc_type, false, false, true);
+                $primary_public_type->addDocument(new \Elastica\Document($id, $document));
+                $secondary_public_type = $this->type_factory->create($doc_type, false, false, false);
+                $secondary_public_type->addDocument(new \Elastica\Document($id, $document));
+                
                 // index public documents in the private repository
-                $type = $this->type_factory->create($doc_type, false, true);
-                $type->addDocument(new \Elastica\Document($id, $document));
+                $primary_private_type = $this->type_factory->create($doc_type, false, true, true);
+                $primary_private_type->addDocument(new \Elastica\Document($id, $document));
+                $secondary_private_type = $this->type_factory->create($doc_type, false, true, false);
+                $secondary_private_type->addDocument(new \Elastica\Document($id, $document));
             }
         }
     }
