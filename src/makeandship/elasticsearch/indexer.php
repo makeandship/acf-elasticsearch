@@ -328,15 +328,58 @@ class Indexer
     public function remove_document($o)
     {
         $builder = $this->document_builder_factory->create($o);
+        $private = $builder->is_private($o);
         $id = $builder->get_id($o);
+        $doc_type = $builder->get_type($o);
 
         // ensure the document and id are valid before indexing
-        if (isset($document) && !empty($document) &&
+        if (isset($o) && !empty($o) &&
             isset($id) && !empty($id)) {
-            $type = $this->type_factory->create($o);
-            if ($type) {
+            if ($private) {
+                $primary_private_type = $this->type_factory->create($doc_type, false, true, true);
+                
                 try {
-                    $type->deleteById($id);
+                   $primary_private_type->deleteById($id);
+                } catch (\Elastica\Exception\NotFoundException $ex) {
+                    // ignore
+                }
+
+                $secondary_private_type = $this->type_factory->create($doc_type, false, true, false);
+                
+                try {
+                    $secondary_private_type->deleteById($id);
+                } catch (\Elastica\Exception\NotFoundException $ex) {
+                    // ignore
+                }
+            } else {
+                $primary_public_type = $this->type_factory->create($doc_type, false, false, true);
+                
+                try {
+                    $primary_public_type->deleteById($id);
+                } catch (\Elastica\Exception\NotFoundException $ex) {
+                    // ignore
+                }
+
+                $secondary_public_type = $this->type_factory->create($doc_type, false, false, false);
+
+                try {
+                    $secondary_public_type->deleteById($id);
+                } catch (\Elastica\Exception\NotFoundException $ex) {
+                    // ignore
+                }
+                
+                $primary_private_type = $this->type_factory->create($doc_type, false, true, true);
+                
+                try {
+                    $primary_private_type->deleteById($id);
+                } catch (\Elastica\Exception\NotFoundException $ex) {
+                    // ignore
+                }
+                
+                $secondary_private_type = $this->type_factory->create($doc_type, false, true, false);
+                
+                try {
+                    $secondary_private_type->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
                 }

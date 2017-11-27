@@ -177,6 +177,8 @@ class AcfElasticsearchPlugin
      */
     public function delete_post($post_id)
     {
+        $post = get_post($post_id);
+        $this->indexer->remove_document($post);
     }
 
     /**
@@ -192,8 +194,11 @@ class AcfElasticsearchPlugin
      */
     public function transition_post_status($new_status, $old_status, $post)
     {
-        if ($new_status != Constants::STATUS_PUBLISH && $new_status != $old_status) {
+        if (in_array($new_status, Constants::INDEX_POST_STATUSES) && $new_status != $old_status) {
             $this->indexer->add_or_update_document($post);
+        }
+        else {
+            $this->indexer->remove_document($post);
         }
     }
 
