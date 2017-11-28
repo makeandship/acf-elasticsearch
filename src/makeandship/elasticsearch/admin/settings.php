@@ -18,6 +18,7 @@ if (!empty($_POST)) {
     $username = trim($_POST['acf_elasticsearch_username']);
     $password = trim($_POST['acf_elasticsearch_password']);
     $post_types = HtmlUtils::create_post_types();
+    $capability = trim($_POST['acf_elasticsearch_capability']);
 
     SettingsManager::get_instance()->set(Constants::OPTION_SERVER, $server);
     SettingsManager::get_instance()->set(Constants::OPTION_PRIMARY_INDEX, $primary_index);
@@ -29,6 +30,7 @@ if (!empty($_POST)) {
     SettingsManager::get_instance()->set(Constants::OPTION_USERNAME, $username);
     SettingsManager::get_instance()->set(Constants::OPTION_PASSWORD, $password);
     SettingsManager::get_instance()->set(Constants::OPTION_POST_TYPES, $post_types);
+    SettingsManager::get_instance()->set(Constants::OPTION_CAPABILITY, $capability);
 }
 ?>
 <h1>ACF Elasticsearch</h1>
@@ -115,6 +117,14 @@ if (!empty($_POST)) {
                         );
                         echo HtmlUtils::render_post_type_choices(
                             'Post types'
+                        );
+                        echo HtmlUtils::render_field(
+                            'Capability',
+                            'acf_elasticsearch_capability',
+                            array(
+                                'class' => '',
+                                'placeholder' => 'Capability which allows private searching'
+                            )
                         );
                         echo HtmlUtils::render_buttons([
                             array(

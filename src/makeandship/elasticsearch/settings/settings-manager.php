@@ -55,6 +55,7 @@ class SettingsManager
             $this->settings[Constants::OPTION_USERNAME] = $this->get_option(Constants::OPTION_USERNAME);
             $this->settings[Constants::OPTION_PASSWORD] = $this->get_option(Constants::OPTION_PASSWORD);
             $this->settings[Constants::OPTION_POST_TYPES] = $this->get_option(Constants::OPTION_POST_TYPES);
+            $this->settings[Constants::OPTION_CAPABILITY] = $this->get_option(Constants::OPTION_CAPABILITY);
         }
         
         return $this->settings;
@@ -92,7 +93,8 @@ class SettingsManager
                 Constants::OPTION_INDEX_STATUS,
                 Constants::OPTION_USERNAME,
                 Constants::OPTION_PASSWORD,
-                Constants::OPTION_POST_TYPES
+                Constants::OPTION_POST_TYPES,
+                Constants::OPTION_CAPABILITY
             ])) {
                 return true;
             }

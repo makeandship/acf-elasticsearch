@@ -33,6 +33,7 @@ class Constants
     const OPTION_USERNAME = 'acf_elasticsearch_username';
     const OPTION_PASSWORD = 'acf_elasticsearch_password';
     const OPTION_POST_TYPES = 'acf_elasticsearch_post_types';
+    const OPTION_CAPABILITY = 'acf_elasticsearch_capability';
 
     // indexer
     const STATUS_PUBLISH = 'publish';
