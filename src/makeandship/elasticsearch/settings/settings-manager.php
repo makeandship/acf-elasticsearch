@@ -233,4 +233,17 @@ class SettingsManager
 
         return $indexes;
     }
+
+    public function get_post_types()
+    {
+        $post_types = $this->get(Constants::OPTION_POST_TYPES);
+
+        $types = [];
+
+        foreach ($post_types as $item) {
+            $types[] = $item['type'];
+        }
+
+        return $types;
+    }
 }

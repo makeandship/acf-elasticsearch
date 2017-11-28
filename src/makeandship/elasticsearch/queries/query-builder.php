@@ -36,7 +36,7 @@ class QueryBuilder
         // set fuzziness, weights and post_types
         // TODO fuzziness and weights into the plugin
         $this->fuzziness = 1;
-        $this->post_types = SettingsManager::get_instance()->get(Constants::OPTION_POST_TYPES);
+        $this->post_types = SettingsManager::get_instance()->get_post_types();
         $this->weights = array(
             'post_title' => 3,
             'post_content' => 3,

@@ -13,7 +13,6 @@ use \Elastica\Client;
 class Searcher
 {
     private $client;
-    private $index;
 
     public function __construct()
     {
@@ -21,8 +20,6 @@ class Searcher
         $client_settings = $settings_manager->get_client_settings();
 
         $this->client = new Client($client_settings);
-        $name = get_option(Constants::OPTION_PRIMARY_INDEX);
-        $this->index = $this->client->getIndex($name);
     }
 
     /**
@@ -41,7 +38,7 @@ class Searcher
 
         try {
             $search = new \Elastica\Search($this->client);
-            $search->addIndex($this->index);
+            $search->addIndex($this->get_index());
 
             $response = $search->search($query);
 
@@ -92,7 +89,7 @@ class Searcher
 
         try {
             $search = new \Elastica\Search($this->client);
-            $search->addIndex($this->index);
+            $search->addIndex($this->get_index());
 
             $search = Config::apply_filters('searcher_search', $search, $query);
 
@@ -104,5 +101,11 @@ class Searcher
 
             return null;
         }
+    }
+
+    private function get_index()
+    {
+        $name = get_option(Constants::OPTION_PRIMARY_INDEX);
+        return $this->client->getIndex($name);
     }
 }

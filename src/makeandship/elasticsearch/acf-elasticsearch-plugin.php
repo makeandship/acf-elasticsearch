@@ -70,13 +70,14 @@ class AcfElasticsearchPlugin
     {
         $indexes = SettingsManager::get_instance()->get_indexes();
         $indexer = new Indexer();
+
         foreach ($indexes as $index) {
             $name = $index['name'];
             $indexer->create($name);
-
-            $mapper = new Mapper($name);
-            $result = $mapper->map();
         }
+
+        $mapper = new Mapper();
+        $result = $mapper->map();
         
         // extract message from result
         $message = 'Mappings were created successfully';

@@ -6,16 +6,13 @@ use \Elastica\Type\Mapping;
 
 class Mapper
 {
-    public function __construct($index_name)
+    public function __construct()
     {
         // factory to manage individual mappers
         $this->mapping_builder_factory = new MappingBuilderFactory();
 
         // factory to manage types
         $this->type_factory = new TypeFactory();
-
-        // index to use
-        $this->index_name = $index_name;
     }
 
     public function map()
@@ -55,10 +52,22 @@ class Mapper
             $properties = $builder->build($type_name);
 
             if (isset($properties)) {
-                $type = $this->type_factory->create($type_name, $this->index_name);
+                $primary_type = $this->type_factory->create($type_name, false, false, true);
+                $private_primary_type = $this->type_factory->create($type_name, false, true, true);
+                $secondary_type = $this->type_factory->create($type_name, false, false, false);
+                $private_secondary_type = $this->type_factory->create($type_name, false, true, false);
 
-                $mapping = new Mapping($type, $properties);
-                $mapping->send();
+                $mapping_primary = new Mapping($primary_type, $properties);
+                $mapping_primary->send();
+
+                $mapping_private_primary = new Mapping($private_primary_type, $properties);
+                $mapping_private_primary->send();
+
+                $mapping_secondary = new Mapping($secondary_type, $properties);
+                $mapping_secondary->send();
+
+                $mapping_private_secondary = new Mapping($private_secondary_type, $properties);
+                $mapping_private_secondary->send();
             }
         }
     }

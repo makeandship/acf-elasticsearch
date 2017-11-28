@@ -12,12 +12,7 @@ class SettingsHelper
         // populate post types
         $types = Defaults::types();
         $option_post_types = SettingsManager::get_instance()->get(Constants::OPTION_POST_TYPES);
-
-        $option_types = [];
-
-        foreach ($option_post_types as $item) {
-            $option_types[] = $item['type'];
-        }
+        $option_types = SettingsManager::get_instance()->get_post_types();
 
         $post_type_checkboxes = [];
 
