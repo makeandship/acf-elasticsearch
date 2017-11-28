@@ -107,8 +107,9 @@ class Searcher
     {
         $private_index = get_option(Constants::OPTION_PRIVATE_PRIMARY_INDEX);
         $public_index = get_option(Constants::OPTION_PRIMARY_INDEX);
+        $capability = get_option(Constants::OPTION_CAPABILITY);
 
-        if (isset($private_index) && !empty($private_index) && current_user_can('search_restricted_fields')) {
+        if (isset($private_index) && !empty($private_index) && current_user_can($capability)) {
             return $this->client->getIndex($private_index);
         }
 
