@@ -129,7 +129,7 @@ jQuery(document).ready(function($) {
           if (!complete) {
             console.log("More posts to index");
             $("#indexing-messages").html(
-              `Indexed ${status.count} of ${status.total} in ${
+              `Indexed ${status.count} of ${status.total} to ${
                 status.index
               } index`
             );

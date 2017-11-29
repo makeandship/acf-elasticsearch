@@ -167,7 +167,7 @@ class AcfElasticsearchPlugin
         // index valid statuses
         if (in_array($post->post_status, Constants::INDEX_POST_STATUSES)) {
             // index
-            $this->indexer->add_or_update_document($post);
+            $this->indexer->add_or_update_document($post, true);
         } else {
             // remove
             $this->indexer->remove_document($post);
@@ -200,7 +200,7 @@ class AcfElasticsearchPlugin
             return;
         }
         if (in_array($new_status, Constants::INDEX_POST_STATUSES) && $new_status != $old_status) {
-            $this->indexer->add_or_update_document($post);
+            $this->indexer->add_or_update_document($post, true);
         }
         else {
             $this->indexer->remove_document($post);
@@ -229,7 +229,7 @@ class AcfElasticsearchPlugin
             return;
         }
 
-        $this->indexer->add_or_update_document($term);
+        $this->indexer->add_or_update_document($term, true);
         
     }
 
@@ -246,7 +246,7 @@ class AcfElasticsearchPlugin
             return;
         }
 
-        $this->indexer->add_or_update_document($term);
+        $this->indexer->add_or_update_document($term, true);
     }
 
     /**
