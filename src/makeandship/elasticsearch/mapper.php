@@ -52,22 +52,33 @@ class Mapper
             $properties = $builder->build($type_name);
 
             if (isset($properties)) {
+                // create mappings for the public primary index if required
                 $primary_type = $this->type_factory->create($type_name, false, false, true);
+                if ($primary_type) {
+                    $mapping_primary = new Mapping($primary_type, $properties);
+                    $mapping_primary->send();
+                }
+
+                // create mappings for the private primary index if required
                 $private_primary_type = $this->type_factory->create($type_name, false, true, true);
+                if ($private_primary_type) {
+                    $mapping_private_primary = new Mapping($private_primary_type, $properties);
+                    $mapping_private_primary->send();
+                }
+
+                // create mappings for the public secondary index if required
                 $secondary_type = $this->type_factory->create($type_name, false, false, false);
+                if ($secondary_type) {
+                    $mapping_secondary = new Mapping($secondary_type, $properties);
+                    $mapping_secondary->send();
+                }
+
+                // create mappings for the private secondary index if required
                 $private_secondary_type = $this->type_factory->create($type_name, false, true, false);
-
-                $mapping_primary = new Mapping($primary_type, $properties);
-                $mapping_primary->send();
-
-                $mapping_private_primary = new Mapping($private_primary_type, $properties);
-                $mapping_private_primary->send();
-
-                $mapping_secondary = new Mapping($secondary_type, $properties);
-                $mapping_secondary->send();
-
-                $mapping_private_secondary = new Mapping($private_secondary_type, $properties);
-                $mapping_private_secondary->send();
+                if ($private_secondary_type) {
+                    $mapping_private_secondary = new Mapping($private_secondary_type, $properties);
+                    $mapping_private_secondary->send();
+                }
             }
         }
     }
