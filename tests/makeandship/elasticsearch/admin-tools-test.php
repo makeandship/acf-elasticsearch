@@ -35,7 +35,7 @@ class AdminToolsTest extends WP_UnitTestCase
         ));
 
         $this->assertContains('<div class="acf-elasticsearch-row">', $rendered);
-        $this->assertContains('<div class="acf-elasticsearch-button-container">', $rendered);
+        $this->assertContains('<div class="twelvecol last acf-elasticsearch-button-container">', $rendered);
         $this->assertContains('<input type="submit"', $rendered);
         $this->assertContains('id="save"', $rendered);
     }

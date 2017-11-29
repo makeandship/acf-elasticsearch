@@ -7,11 +7,20 @@ use makeandship\elasticsearch\PostMappingBuilder;
 use makeandship\elasticsearch\SiteMappingBuilder;
 use makeandship\elasticsearch\TermDocumentBuilder;
 use makeandship\elasticsearch\TermMappingBuilder;
+use makeandship\elasticsearch\Constants;
+use makeandship\elasticsearch\settings\SettingsManager;
 
 class BuildersTest extends WP_UnitTestCase
 {
     public function testPostDocumentBuilder()
     {
+        SettingsManager::get_instance()->set(Constants::OPTION_POST_TYPES, array(
+            array(
+                'type' => 'post',
+                'exclude' => [],
+                'private' => []
+            )
+        ));
         $id = $this->factory->post->create( array( 'post_title' => 'Test Post' ) );        
     	$builder = new PostDocumentBuilder();
         $document = $builder->build(get_post($id));

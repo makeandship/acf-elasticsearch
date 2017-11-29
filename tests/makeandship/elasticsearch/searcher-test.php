@@ -19,6 +19,6 @@ class SearcherTest extends WP_UnitTestCase
         $searcher = new Searcher();
         $result = $searcher->search('for');
 
-        $this->assertNull($result);
+        $this->assertNotNull($result);
     }
 }
