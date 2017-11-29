@@ -45,6 +45,9 @@ class UserInterfaceManager
 
             add_site_option(Constants::OPTION_INDEX_STATUS, array());
             add_site_option(Constants::OPTION_POST_TYPES, array());
+            add_site_option(Constants::OPTION_CAPABILITY, '');
+            add_site_option(Constants::IS_INDEXING, false);
+
         } else {
             add_option(Constants::VERSION, $this->version);
             add_option(Constants::DB_VERSION, $this->db_version);
@@ -60,6 +63,8 @@ class UserInterfaceManager
 
             add_option(Constants::OPTION_INDEX_STATUS, array());
             add_option(Constants::OPTION_POST_TYPES, array());
+            add_site_option(Constants::OPTION_CAPABILITY, '');
+            add_site_option(Constants::IS_INDEXING, false);
         }
     }
 

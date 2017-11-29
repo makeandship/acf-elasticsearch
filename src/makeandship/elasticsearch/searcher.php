@@ -105,9 +105,17 @@ class Searcher
 
     private function get_index()
     {
-        $private_index = get_option(Constants::OPTION_PRIVATE_PRIMARY_INDEX);
-        $public_index = get_option(Constants::OPTION_PRIMARY_INDEX);
+        $is_indexing = get_option(Constants::OPTION_IS_INDEXING);
         $capability = get_option(Constants::OPTION_CAPABILITY);
+
+        if ($is_indexing) {
+            $private_index = get_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
+            $public_index = get_option(Constants::OPTION_SECONDARY_INDEX);
+        }
+        else {
+            $private_index = get_option(Constants::OPTION_PRIVATE_PRIMARY_INDEX);
+            $public_index = get_option(Constants::OPTION_PRIMARY_INDEX);
+        }
 
         if (isset($private_index) && !empty($private_index) && current_user_can($capability)) {
             return $this->client->getIndex($private_index);
