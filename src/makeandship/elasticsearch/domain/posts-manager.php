@@ -23,12 +23,12 @@ class PostsManager
     {
     }
 
-    public function initialise_status($include_private=false)
+    public function initialise_status()
     {
         if (is_multisite()) {
-            return $this->initialise_status_multisite($include_private);
+            return $this->initialise_status_multisite();
         } else {
-            return $this->initialise_status_singlesite($include_private);
+            return $this->initialise_status_singlesite();
         }
     }
 
@@ -38,7 +38,8 @@ class PostsManager
         $status = array(
             'page' => 1,
             'count' => 0,
-            'total' => $total
+            'total' => $total,
+            'index' => 'primary'
         );
 
         return $status;
@@ -60,7 +61,8 @@ class PostsManager
                 'page' => 1,
                 'count' => 0,
                 'total' => $total,
-                'blog_id' => $site->blog_id
+                'blog_id' => $site->blog_id,
+                'index' => 'primary'
             );
         }
 

@@ -157,7 +157,7 @@ class Indexer
         $posts_manager = new PostsManager();
         
         if ($fresh || (!isset($status) || empty($status))) {
-            $status = $posts_manager->initialise_status($include_private);
+            $status = $posts_manager->initialise_status();
 
             // store initial state
             SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
@@ -168,6 +168,16 @@ class Indexer
         foreach ($status as $site_status) {
             if ($site_status['count'] < $site_status['total']) {
                 $target_site = $site_status;
+                break;
+            }
+            elseif ($site_status['index'] == 'primary') {
+                $target_site = array(
+                    'page' => 1,
+                    'count' => 0,
+                    'total' => $site_status['total'],
+                    'blog_id' => $site_status['blog_id'],
+                    'index' => 'secondary'
+                );
                 break;
             }
         }
@@ -214,6 +224,16 @@ class Indexer
         // update status
         $status['page'] = $page + 1;
         $status['count'] = $status['count'] + $count;
+
+        if ($status['count'] >= $status['total'] && $status['index'] == "primary") {
+            $status = array(
+                'page' => 1,
+                'count' => 0,
+                'total' => $status['total'],
+                'index' => 'secondary'
+            );
+        }
+
         
         SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
 
@@ -273,9 +293,12 @@ class Indexer
      */
     public function add_or_update_document($o)
     {
+        $status = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
         $builder = $this->document_builder_factory->create($o);
 
         $private = $builder->is_private($o);
+        $primary = $status['index'] == "primary";
+
         $private_fields = $builder->has_private_fields();
         
         $document = $builder->build($o, false);
@@ -295,23 +318,16 @@ class Indexer
             isset($id) && !empty($id)) {
             if ($private) {
                 // only index private documents in the private repository
-                $primary_private_type = $this->type_factory->create($doc_type, false, true, true);
-                $primary_private_type->addDocument(new \Elastica\Document($id, $private_document));
-
-                $secondary_private_type = $this->type_factory->create($doc_type, false, true, false);
-                $secondary_private_type->addDocument(new \Elastica\Document($id, $private_document));
+                $private_type = $this->type_factory->create($doc_type, false, true, $primary);
+                $private_type->addDocument(new \Elastica\Document($id, $private_document));
             } else {
                 // index public documents in the public repository
-                $primary_public_type = $this->type_factory->create($doc_type, false, false, true);
-                $primary_public_type->addDocument(new \Elastica\Document($id, $document));
-                $secondary_public_type = $this->type_factory->create($doc_type, false, false, false);
-                $secondary_public_type->addDocument(new \Elastica\Document($id, $document));
+                $public_type = $this->type_factory->create($doc_type, false, false, $primary);
+                $public_type->addDocument(new \Elastica\Document($id, $document));
                 
                 // index public documents in the private repository
-                $primary_private_type = $this->type_factory->create($doc_type, false, true, true);
-                $primary_private_type->addDocument(new \Elastica\Document($id, $private_document));
-                $secondary_private_type = $this->type_factory->create($doc_type, false, true, false);
-                $secondary_private_type->addDocument(new \Elastica\Document($id, $private_document));
+                $private_type = $this->type_factory->create($doc_type, false, true, $primary);
+                $private_type->addDocument(new \Elastica\Document($id, $private_document));
             }
         }
     }

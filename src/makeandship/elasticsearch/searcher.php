@@ -105,10 +105,10 @@ class Searcher
 
     private function get_index()
     {
-        $is_indexing = get_option(Constants::OPTION_IS_INDEXING);
+        $status = get_option(Constants::OPTION_INDEX_STATUS);
         $capability = get_option(Constants::OPTION_CAPABILITY);
 
-        if ($is_indexing) {
+        if ($status['index'] == "primary") {
             $private_index = get_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
             $public_index = get_option(Constants::OPTION_SECONDARY_INDEX);
         }
