@@ -29,6 +29,49 @@ class BuildersTest extends WP_UnitTestCase
         $this->assertEquals($document['post_type'], 'post');
     }
 
+    public function testIsPrivate()
+    {
+        SettingsManager::get_instance()->set(Constants::OPTION_POST_TYPES, array(
+            array(
+                'type' => 'post',
+                'exclude' => [],
+                'private' => []
+            )
+        ));
+        $id = $this->factory->post->create( array( 
+                'post_title' => 'Test Post',
+                'post_status' => 'private' 
+            ) 
+        );        
+
+        $post = get_post($id);
+        $builder = new PostDocumentBuilder();
+        $is_private = $builder->is_private($post);
+        
+        $this->assertEquals($is_private, true);
+    }
+
+    public function testIsPrivate_2()
+    {
+        SettingsManager::get_instance()->set(Constants::OPTION_POST_TYPES, array(
+            array(
+                'type' => 'post',
+                'exclude' => [],
+                'private' => []
+            )
+        ));
+        $id = $this->factory->post->create( array( 
+                'post_title' => 'Test Post'
+            ) 
+        );        
+
+        $post = get_post($id);
+        $builder = new PostDocumentBuilder();
+        $is_private = $builder->is_private($post);
+        
+        $this->assertEquals($is_private, false);
+    }
+
     public function testPostMappingBuilder()
     {
         $id = $this->factory->post->create( array( 'post_title' => 'Test Post' ) );        
@@ -55,11 +98,16 @@ class BuildersTest extends WP_UnitTestCase
 
     public function testTermDocumentBuilder()
     {
-        $id = $this->factory->term->create( array( 'taxonomy' => 'category' ) );        
+        $id = $this->factory->term->create( array( 
+                'taxonomy' => 'category',
+                'name' => 'Term 1' 
+            ) 
+        );        
         $builder = new TermDocumentBuilder();
         $document = $builder->build(get_term($id));
 
-        $this->assertEquals($document['name_suggest'], 'Term 20');
+        $this->assertEquals($document['name_suggest'], 'Term 1');
+        $this->assertEquals($document['name'], 'Term 1');
     }
 
     public function testTermMappingBuilder()

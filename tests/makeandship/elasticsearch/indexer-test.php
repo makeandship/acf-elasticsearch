@@ -7,10 +7,6 @@ use makeandship\elasticsearch\Constants;
 
 class IndexerTest extends WP_UnitTestCase
 {
-    const CONFIG = array(
-        Constants::OPTION_SERVER => "http://127.0.0.1:9200/",
-        Constants::OPTION_INDEX_STATUS => "acf_elasticsearch_index_status"
-    );
 
     public function testCreateIndex()
     {
@@ -58,5 +54,18 @@ class IndexerTest extends WP_UnitTestCase
         $this->assertEquals($singlesite['page'], 1);
         $this->assertEquals($singlesite['count'], 0);
         $this->assertEquals($singlesite['total'], 0);
+    }
+
+    public function testIndexTaxonomies()
+    {
+        $id = $this->factory->term->create( array( 
+                'taxonomy' => 'tax',
+                'name' => 'Term 1' 
+            ) 
+        ); 
+        $indexer = new Indexer();
+        $count = $indexer->index_taxonomies("tax");
+
+        $this->assertEquals($count, 1);
     }
 }
