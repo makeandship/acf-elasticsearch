@@ -51,7 +51,11 @@ class SettingsHelper
     {
         // populate search fields
         $option_search_fields = SettingsManager::get_instance()->get(Constants::OPTION_SEARCH_FIELDS);
-        return implode("\n", $option_search_fields);;
+        $value = implode("\n", $option_search_fields);
+        if (!$value) {
+            $value = "post_title_suggest\nname_suggest";
+        }
+        return $value;
     }
 
     public static function get_weightings_data()
@@ -60,8 +64,14 @@ class SettingsHelper
         $weightings = array();
         $option_weightings = SettingsManager::get_instance()->get(Constants::OPTION_WEIGHTINGS);
         foreach($option_weightings as $field => $weight) {
-            $weightings[] = $field.'^'.$weight;
+            if ($field) {
+                $weightings[] = $field.'^'.$weight;
+            }
         }
-        return implode("\n", $weightings);;
+        $value = implode("\n", $weightings);
+        if (!$value) {
+            $value = "post_title^3\npost_content^3";
+        }
+        return $value;
     }
 }
