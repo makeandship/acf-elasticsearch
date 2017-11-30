@@ -37,10 +37,8 @@ class QueryBuilder
         // TODO fuzziness and weights into the plugin
         $this->fuzziness = 1;
         $this->post_types = SettingsManager::get_instance()->get_post_types();
-        $this->weights = array(
-            'post_title' => 3,
-            'post_content' => 3,
-        );
+        $this->weights = SettingsManager::get_instance()->get(Constants::OPTION_WEIGHTINGS);
+        $this->search_fields = SettingsManager::get_instance()->get(Constants::OPTION_SEARCH_FIELDS);
     }
 
     /**
@@ -74,9 +72,11 @@ class QueryBuilder
      *
      * @param weights array of weights
      */
-    public function weighted($weights)
+    public function weighted($weights=null)
     {
-        $this->weights = $weights;
+        if (isset($weights)) {
+            $this->weights = $weights;
+        }
 
         return $this;
     }
@@ -136,9 +136,11 @@ class QueryBuilder
         return $this;
     }
 
-    public function searching($fields)
+    public function searching($fields=null)
     {
-        $this->search_fields = $fields;
+        if (isset($fields)) {
+            $this->search_fields = $fields;
+        }
 
         return $this;
     }

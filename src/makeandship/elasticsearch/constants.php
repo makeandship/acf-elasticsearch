@@ -34,6 +34,8 @@ class Constants
     const OPTION_PASSWORD = 'acf_elasticsearch_password';
     const OPTION_POST_TYPES = 'acf_elasticsearch_post_types';
     const OPTION_CAPABILITY = 'acf_elasticsearch_capability';
+    const OPTION_SEARCH_FIELDS = 'acf_elasticsearch_search_fields';
+    const OPTION_WEIGHTINGS = 'acf_elasticsearch_weightings';
 
     // indexer
     const STATUS_PUBLISH = 'publish';

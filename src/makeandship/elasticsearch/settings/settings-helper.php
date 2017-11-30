@@ -46,4 +46,22 @@ class SettingsHelper
 
         return $post_type_checkboxes;
     }
+
+    public static function get_search_fields_data()
+    {
+        // populate search fields
+        $option_search_fields = SettingsManager::get_instance()->get(Constants::OPTION_SEARCH_FIELDS);
+        return implode("\n", $option_search_fields);;
+    }
+
+    public static function get_weightings_data()
+    {
+        // populate weightings
+        $weightings = array();
+        $option_weightings = SettingsManager::get_instance()->get(Constants::OPTION_WEIGHTINGS);
+        foreach($option_weightings as $field => $weight) {
+            $weightings[] = $field.'^'.$weight;
+        }
+        return implode("\n", $weightings);;
+    }
 }

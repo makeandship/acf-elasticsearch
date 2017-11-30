@@ -4,6 +4,7 @@ use makeandship\elasticsearch\admin\HtmlUtils;
 use makeandship\elasticsearch\Defaults;
 use makeandship\elasticsearch\Constants;
 use makeandship\elasticsearch\settings\SettingsManager;
+use makeandship\elasticsearch\settings\SettingsHelper;
 
 if (!empty($_POST)) {
         
@@ -19,6 +20,8 @@ if (!empty($_POST)) {
     $password = trim($_POST['acf_elasticsearch_password']);
     $post_types = HtmlUtils::create_post_types();
     $capability = trim($_POST['acf_elasticsearch_capability']);
+    $search_fields = HtmlUtils::create_search_fields();
+    $weightings = HtmlUtils::create_weightings();
 
     SettingsManager::get_instance()->set(Constants::OPTION_SERVER, $server);
     SettingsManager::get_instance()->set(Constants::OPTION_PRIMARY_INDEX, $primary_index);
@@ -31,6 +34,8 @@ if (!empty($_POST)) {
     SettingsManager::get_instance()->set(Constants::OPTION_PASSWORD, $password);
     SettingsManager::get_instance()->set(Constants::OPTION_POST_TYPES, $post_types);
     SettingsManager::get_instance()->set(Constants::OPTION_CAPABILITY, $capability);
+    SettingsManager::get_instance()->set(Constants::OPTION_SEARCH_FIELDS, $search_fields);
+    SettingsManager::get_instance()->set(Constants::OPTION_WEIGHTINGS, $weightings);
 }
 ?>
 <h1>ACF Elasticsearch</h1>
@@ -116,7 +121,7 @@ if (!empty($_POST)) {
                             )
                         );
                         echo HtmlUtils::render_post_type_choices(
-                            'Post types'
+                            'Post Types'
                         );
                         echo HtmlUtils::render_field(
                             'Capability',
@@ -124,6 +129,26 @@ if (!empty($_POST)) {
                             array(
                                 'class' => '',
                                 'placeholder' => 'Capability which allows private searching'
+                            )
+                        );
+                        echo HtmlUtils::render_field(
+                            'Search Fields',
+                            'acf_elasticsearch_search_fields',
+                            array(
+                                'type' => 'textarea',
+                                'class' => 'medium',
+                                'value' => SettingsHelper::get_search_fields_data(),
+                                'placeholder' => ''
+                            )
+                        );
+                        echo HtmlUtils::render_field(
+                            'Weightings',
+                            'acf_elasticsearch_weightings',
+                            array(
+                                'type' => 'textarea',
+                                'class' => 'medium',
+                                'value' => SettingsHelper::get_weightings_data(),
+                                'placeholder' => ''
                             )
                         );
                         echo HtmlUtils::render_buttons([
