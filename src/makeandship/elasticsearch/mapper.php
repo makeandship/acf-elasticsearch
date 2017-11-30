@@ -3,6 +3,7 @@
 namespace makeandship\elasticsearch;
 
 use \Elastica\Type\Mapping;
+use makeandship\elasticsearch\settings\SettingsManager;
 
 class Mapper
 {
@@ -18,9 +19,8 @@ class Mapper
     public function map()
     {
         // create mappings for each post type
-        $post_types = get_post_types(array(
-            'public' => true
-        ));
+        $post_types = $this->post_types = SettingsManager::get_instance()->get_post_types();
+        
         foreach ($post_types as $post_type) {
             $this->map_type(
                 new PostMappingBuilder(),
