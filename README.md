@@ -66,4 +66,24 @@ In the wordpress admin console, go to Settings->ACF Elasticsearch to configure t
    
    6.3. Enter the secondary index to be created by the plugin in the Secondary Index field (secondary index will be used                 when the primary is indexing)
    
+   6.4. Enter the private primary index to be created by the plugin in the Private Primary Index field (private primary index will contain all the data including private objects and fields).
+   
+   6.5. Enter the private secondary index to be created by the plugin in the Private Secondary Index field (private secondary index will be used when the private primary is indexing).
+   
+   6.6. Read/Write timeouts are configured in the Read Timeout and Write Timeout fields respectively.
+   
+   6.7. If you are using searchguard or any other security plugin in your elasticsearch cluster, enter the username and password in the Username and Password fields.
+   
+   6.8. Check the list of post types to be indexed and mapped, by default all post types are checked.
+   
+   6.9. For each selected post type you can exclude fields from indexing by entering them in the "Exclude fields from indexing" textarea, fields are separated by new line.
+   
+   6.10. For each selected post type you can indicate private fields to be added to the private index only in the "Fields for private searches only" textarea, fields are separated by new line.
+   
+   6.11. Enter the capability name which grants access to the private indexes in the capability field, if the user role has this capability the search will be against private indexes only. Make sure the capability is added to your wordpress config and granted to the right roles.
+   
+   6.12. Enter the list of searched fields in the Search Fields textarea, fields are separated by new line.
+   
+   6.13. Enter the list of weightings in the Weightings textarea, fields are separated by new line and each line has a format of field^weight e.g. post_content^3.
+   
 
