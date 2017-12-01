@@ -113,6 +113,8 @@ add_action( 'posts_request', '_cancel_query' );
 use makeandship\elasticsearch\queries\QueryBuilder;
 use makeandship\elasticsearch\Searcher;
 
+$searcher = new Searcher();
+
 // search the first 10 posts with keyword foo
 $query = new QueryBuilder();
 $query = $query->freetext('foo')
@@ -120,6 +122,8 @@ $query = $query->freetext('foo')
     ->weighted()
     ->with_category_counts(array('category' => 10))
     ->paged(0, 10);
+ 
+$result = $searcher->search($query->to_array());
 ```
    
    2.2. Taxonomies search:
@@ -128,11 +132,15 @@ $query = $query->freetext('foo')
 use makeandship\elasticsearch\queries\QueryBuilder;
 use makeandship\elasticsearch\Searcher;
 
+$searcher = new Searcher();
+
 // search the first 10 taxonomies with keyword foo
 $query = new QueryBuilder();
 $query = $query->freetext('foo')
     ->for_taxonomies([....])
     ->paged(0, 10);
+
+$result = $searcher->search($query->to_array());
 ```
 
    2.3 Specific fields search:
@@ -141,10 +149,14 @@ $query = $query->freetext('foo')
 use makeandship\elasticsearch\queries\QueryBuilder;
 use makeandship\elasticsearch\Searcher;
 
+$searcher = new Searcher();
+
 // search only in post_title and post_content and return id, post_title and post_content
 $query = new QueryBuilder();
 $query = $query->freetext('foo')
     ->paged(0, 10)
     ->searching(['post_title', 'post_content'])
     ->returning(['id', 'post_title', 'post_content']);
+
+$result = $searcher->search($query->to_array());
 ```
