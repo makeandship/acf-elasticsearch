@@ -101,4 +101,14 @@ class AdminToolsTest extends WP_UnitTestCase
         $this->assertEquals(array("acf_title","url"), $post_types[1]['exclude']);
         $this->assertEquals(array(), $post_types[1]['private']);
     }
+
+    public function testRenderTextareaField()
+    {
+        $rendered = HtmlUtils::render_textarea_field('search_fields', array(
+            "value" => "Search Fields",
+            "class" => "medium"
+        ));
+
+        $this->assertEquals('<textarea name="search_fields" class="medium">Search Fields</textarea>', $rendered);
+    }
 }
