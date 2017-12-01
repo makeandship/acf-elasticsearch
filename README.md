@@ -86,4 +86,23 @@ In the wordpress admin console, go to Settings->ACF Elasticsearch to configure t
    
    6.13. Enter the list of weightings in the Weightings textarea, fields are separated by new line and each line has a format of field^weight e.g. post_content^3.
    
+## Implementation in the theme
+
+6. Disable wp search
+
+You need to disable default wordpress search which slows down your site, so use the following hook in your theme function:
+
+```
+function _cancel_query( $query ) {
+ 
+    if ( !is_admin() && !is_feed() && is_search() ) {
+        $query = false;
+    }
+ 
+    return $query;
+}
+ 
+add_action( 'posts_request', '_cancel_query' );
+```
+   
 
