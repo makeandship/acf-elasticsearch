@@ -55,3 +55,15 @@ brew services start elasticsearch
    ```
    phpunit -c phpunit-multisite.xml
    ```
+   
+6. Configuration
+
+In the wordpress admin console, go to Settings->ACF Elasticsearch to configure the plugin:
+
+   6.1. Enter the server address in Server field (address must be terminated by /) e.g. https://your-es-host:9200/
+   
+   6.2. Enter the primary index to be created by the plugin in the Primary Index field
+   
+   6.3. Enter the secondary index to be created by the plugin in the Secondary Index field (secondary index will be used                 when the primary is indexing)
+   
+
