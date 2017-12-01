@@ -88,7 +88,7 @@ In the wordpress admin console, go to Settings->ACF Elasticsearch to configure t
    
 ## Implementation in the theme
 
-6. Disable wp search
+1. Disable wp search
 
 You need to disable default wordpress search which slows down your site, so use the following hook in your theme function:
 
@@ -104,5 +104,47 @@ function _cancel_query( $query ) {
  
 add_action( 'posts_request', '_cancel_query' );
 ```
-   
 
+2. Examples
+
+   2.1. Posts search:
+   
+```
+use makeandship\elasticsearch\queries\QueryBuilder;
+use makeandship\elasticsearch\Searcher;
+
+// search the first 10 posts with keyword foo
+$query = new QueryBuilder();
+$query = $query->freetext('foo')
+    ->with_fuzziness(1)
+    ->weighted()
+    ->with_category_counts(array('category' => 10))
+    ->paged(0, 10);
+```
+   
+   2.2. Taxonomies search:
+ 
+```
+use makeandship\elasticsearch\queries\QueryBuilder;
+use makeandship\elasticsearch\Searcher;
+
+// search the first 10 taxonomies with keyword foo
+$query = new QueryBuilder();
+$query = $query->freetext('foo')
+    ->for_taxonomies([....])
+    ->paged(0, 10);
+```
+
+   2.3 Specific fields search:
+   
+```
+use makeandship\elasticsearch\queries\QueryBuilder;
+use makeandship\elasticsearch\Searcher;
+
+// search only in post_title and post_content and return id, post_title and post_content
+$query = new QueryBuilder();
+$query = $query->freetext('foo')
+    ->paged(0, 10)
+    ->searching(['post_title', 'post_content'])
+    ->returning(['id', 'post_title', 'post_content']);
+```
