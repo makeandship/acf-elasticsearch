@@ -44,6 +44,12 @@ brew services start elasticsearch
 
 5. Run the tests
 
+5.1 singlesite tests
 ```
 phpunit
+```
+
+5.2 multisite tests
+```
+phpunit -c phpunit-multisite.xml
 ```
