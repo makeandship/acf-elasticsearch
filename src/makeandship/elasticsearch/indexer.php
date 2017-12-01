@@ -295,7 +295,14 @@ class Indexer
         $builder = $this->document_builder_factory->create($o);
 
         $private = $builder->is_private($o);
-        $primary = $status['index'] == "primary";
+        if (is_multisite()) {
+            $blog_id = get_current_blog_id();
+            $primary = $status[$blog_id]['index'] == "primary";
+        }
+        else {
+            $primary = $status['index'] == "primary";
+        }
+        
 
         $private_fields = $builder->has_private_fields();
         

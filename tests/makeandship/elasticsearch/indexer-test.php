@@ -30,30 +30,35 @@ class IndexerTest extends WP_UnitTestCase
         $indexer = new Indexer();
         $posts = $indexer->index_posts(true);
 
-        $this->assertEquals($posts['page'], 1);
-        $this->assertEquals($posts['count'], 0);
-        $this->assertEquals($posts['total'], 0);
+        if (is_multisite()) {
+            $this->assertEquals($posts[1]['page'], 2);
+            $this->assertEquals($posts[1]['count'], 0);
+            $this->assertEquals($posts[1]['total'], 0);
+            $this->assertEquals($posts[1]['blog_id'], 1);
+        }
+        else {
+            $this->assertEquals($posts['page'], 1);
+            $this->assertEquals($posts['count'], 0);
+            $this->assertEquals($posts['total'], 0);
+        }
     }
 
     public function testIndexPostsMultiSite()
     {
-        define('WP_ALLOW_MULTISITE', true);
         $indexer = new Indexer();
-        $mulisite = $indexer->index_posts(true);
+        $posts = $indexer->index_posts(true);
 
-        $this->assertEquals($mulisite['page'], 1);
-        $this->assertEquals($mulisite['count'], 0);
-        $this->assertEquals($mulisite['total'], 0);
-    }
-
-    public function testIndexPostsSingleSite()
-    {
-        $indexer = new Indexer();
-        $singlesite = $indexer->index_posts_singlesite(true);
-
-        $this->assertEquals($singlesite['page'], 1);
-        $this->assertEquals($singlesite['count'], 0);
-        $this->assertEquals($singlesite['total'], 0);
+        if (is_multisite()) {
+            $this->assertEquals($posts[1]['page'], 2);
+            $this->assertEquals($posts[1]['count'], 0);
+            $this->assertEquals($posts[1]['total'], 0);
+            $this->assertEquals($posts[1]['blog_id'], 1);
+        }
+        else {
+            $this->assertEquals($posts['page'], 1);
+            $this->assertEquals($posts['count'], 0);
+            $this->assertEquals($posts['total'], 0);
+        }
     }
 
     public function testIndexTaxonomies()

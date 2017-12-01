@@ -47,3 +47,5 @@ brew services start elasticsearch
 ```
 phpunit
 ```
+
+## Configuration
