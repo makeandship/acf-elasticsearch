@@ -520,7 +520,7 @@ class QueryBuilder
 
             foreach ($this->weights as $field => $weight) {
                 if ($field) {
-                    $highlights['highlights']['fields'][$field] = array();
+                    $highlights['highlights']['fields'][$field] = new \stdClass();
                 }
             }
         }
