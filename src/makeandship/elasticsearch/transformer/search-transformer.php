@@ -35,9 +35,10 @@ class SearchTransformer
         foreach ($response->getResults() as $result) {
             $id = $result->getId();
             $source = $result->getSource();
+            $hit = $result->getHit();
             $source['id'] = $id;
             
-            $highlight = Util::safely_get_attribute($result, 'highlight');
+            $highlight = Util::safely_get_attribute($hit, 'highlight');
             if ($highlight) {
                 $source['highlight'] = $highlight;
             }
