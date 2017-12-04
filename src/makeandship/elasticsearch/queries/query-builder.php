@@ -529,6 +529,6 @@ class QueryBuilder
             }
         }
 
-        return $fields;
+        return $highlights;
     }
 }
