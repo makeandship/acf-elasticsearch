@@ -199,8 +199,19 @@ class HtmlUtils
 
     public static function create_search_fields()
     {
-        $input = $_POST['acf_elasticsearch_search_fields'];        
-        return explode("\n", str_replace("\r", "", $input));
+        $search_fields = null;
+
+        $input = Util::safely_get_attribute($_POST, 'acf_elasticsearch_search_fields');
+        if ($input) {
+            $search_fields = explode("\n", str_replace("\r", "", $input));
+            $search_fields = array_map('trim', $search_fields);
+
+            if ($search_fields && count($search_fields) === 0) {
+                $search_fields = null;
+            }
+        }
+        
+        return $search_fields;
     }
 
     public static function create_weightings()
