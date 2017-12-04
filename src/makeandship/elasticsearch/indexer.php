@@ -222,9 +222,23 @@ class Indexer
         $page = $status['page'];
         $per = Constants::DEFAULT_POSTS_PER_PAGE;
 
-        // get and update posts
+        // gather posts and time
+        $before = microtime(true);
+
         $posts = $posts_manager->get_posts(null, $page, $per);
+
+        $after = microtime(true);
+        $search_time = ($after-$before) . " sec/search";
+        error_log("Gathering posts: ".$search_time);
+
+        // index documents and time
+        $before = microtime(true);
+
         $count = $this->add_or_update_documents($posts);
+
+        $after = microtime(true);
+        $search_time = ($after-$before) . " sec/search";
+        error_log("Indexing: ".$search_time);
 
         // update status
         $status['page'] = $page + 1;
