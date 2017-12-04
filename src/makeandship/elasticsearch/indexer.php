@@ -170,6 +170,16 @@ class Indexer
                 $target_site = $site_status;
                 break;
             }
+            elseif ($site_status['index'] == 'primary') {
+                $target_site = array(
+                    'page' => 1,
+                    'count' => 0,
+                    'total' => $site_status['total'],
+                    'blog_id' => $site_status['blog_id'],
+                    'index' => 'secondary'
+                );
+                break;
+            }
         }
 
         $blog_id = $target_site['blog_id'];
@@ -214,15 +224,23 @@ class Indexer
         // update status
         $status['page'] = $page + 1;
         $status['count'] = $status['count'] + $count;
+
+        if ($status['count'] >= $status['total'] && $status['index'] == "primary") {
+            $status = array(
+                'page' => 1,
+                'count' => 0,
+                'total' => $status['total'],
+                'index' => 'secondary'
+            );
+        }
+
         
         SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
-
-        error_log(print_r($status, true));
 
         return $status;
     }
 
-    public function index_taxonomies()
+    public function index_taxonomies($name)
     {
         $taxonomies_manager = new TaxonomiesManager();
         $terms = $taxonomies_manager->get_taxonomies();
@@ -271,21 +289,62 @@ class Indexer
      *
      * @param $o the wordpress object to add
      */
-    public function add_or_update_document($o)
+    public function add_or_update_document($o, $new=false)
     {
+        $status = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
         $builder = $this->document_builder_factory->create($o);
-        $document = $builder->build($o);
+
+        $private = $builder->is_private($o);
+        if (is_multisite()) {
+            $blog_id = get_current_blog_id();
+            $primary = $status[$blog_id]['index'] == "primary";
+        }
+        else {
+            $primary = $status['index'] == "primary";
+        }
+        
+
+        $private_fields = $builder->has_private_fields();
+        
+        $document = $builder->build($o, false);
+        
+        if ($private_fields) {
+            $private_document = $builder->build($o, true);
+        }
+        else {
+            $private_document = $document;
+        }
+
         $id = $builder->get_id($o);
         $doc_type = $builder->get_type($o);
 
         // ensure the document and id are valid before indexing
         if (isset($document) && !empty($document) &&
             isset($id) && !empty($id)) {
-            $type = $this->type_factory->create($doc_type);
-
-            $type->addDocument(new \Elastica\Document($id, $document));
-
-            // response ?
+            if(!$private) {
+                // index public documents in the public repository
+                $public_type = $this->type_factory->create($doc_type, false, false, $primary);
+                if ($public_type) {
+                    $public_type->addDocument(new \Elastica\Document($id, $document));
+                }
+                if($new) {
+                    $public_type = $this->type_factory->create($doc_type, false, false, !$primary);
+                    if ($public_type) {
+                        $public_type->addDocument(new \Elastica\Document($id, $document));
+                    }
+                }
+            }
+            // index everything to private index
+            $private_type = $this->type_factory->create($doc_type, false, true, $primary);
+            if ($private_type) {
+                $private_type->addDocument(new \Elastica\Document($id, $private_document));
+            }
+            if($new) {
+                $private_type = $this->type_factory->create($doc_type, false, true, !$primary);
+                if ($private_type) {
+                    $private_type->addDocument(new \Elastica\Document($id, $private_document));
+                }
+            }
         }
     }
 
@@ -301,17 +360,52 @@ class Indexer
     public function remove_document($o)
     {
         $builder = $this->document_builder_factory->create($o);
+        $private = $builder->is_private($o);
         $id = $builder->get_id($o);
+        $doc_type = $builder->get_type($o);
 
         // ensure the document and id are valid before indexing
-        if (isset($document) && !empty($document) &&
+        if (isset($o) && !empty($o) &&
             isset($id) && !empty($id)) {
-            $type = $this->type_factory->create($o);
-            if ($type) {
-                try {
-                    $type->deleteById($id);
-                } catch (\Elastica\Exception\NotFoundException $ex) {
+            if (!$private) {
+                $primary_public_type = $this->type_factory->create($doc_type, false, false, true);
+                
+                if ($primary_public_type) {
+                    try {
+                        $primary_public_type->deleteById($id);
+                    } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
+                    }
+                }
+
+                $secondary_public_type = $this->type_factory->create($doc_type, false, false, false);
+
+                if ($secondary_public_type) {
+                    try {
+                        $secondary_public_type->deleteById($id);
+                    } catch (\Elastica\Exception\NotFoundException $ex) {
+                    // ignore
+                    }
+                }
+            }
+
+            $primary_private_type = $this->type_factory->create($doc_type, false, true, true);
+                
+            if ($primary_private_type) {
+                try {
+                    $primary_private_type->deleteById($id);
+                } catch (\Elastica\Exception\NotFoundException $ex) {
+                // ignore
+                }
+            }
+
+            $secondary_private_type = $this->type_factory->create($doc_type, false, true, false);
+                
+            if ($secondary_private_type) {
+                try {
+                    $secondary_private_type->deleteById($id);
+                } catch (\Elastica\Exception\NotFoundException $ex) {
+                // ignore
                 }
             }
         }

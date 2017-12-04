@@ -25,16 +25,23 @@ class Constants
     const OPTION_SERVER = 'acf_elasticsearch_server';
     const OPTION_PRIMARY_INDEX = 'acf_elasticsearch_primary_index';
     const OPTION_SECONDARY_INDEX = 'acf_elasticsearch_secondary_index';
+    const OPTION_PRIVATE_PRIMARY_INDEX = 'acf_elasticsearch_private_primary_index';
+    const OPTION_PRIVATE_SECONDARY_INDEX = 'acf_elasticsearch_private_secondary_index';
     const OPTION_READ_TIMEOUT = 'acf_elasticsearch_read_timeout';
     const OPTION_WRITE_TIMEOUT = 'acf_elasticsearch_write_timeout';
     const OPTION_INDEX_STATUS = 'acf_elasticsearch_index_status';
     const OPTION_USERNAME = 'acf_elasticsearch_username';
     const OPTION_PASSWORD = 'acf_elasticsearch_password';
     const OPTION_POST_TYPES = 'acf_elasticsearch_post_types';
+    const OPTION_CAPABILITY = 'acf_elasticsearch_capability';
+    const OPTION_SEARCH_FIELDS = 'acf_elasticsearch_search_fields';
+    const OPTION_WEIGHTINGS = 'acf_elasticsearch_weightings';
+    const OPTION_FUZZINESS = 'acf_elasticsearch_fuzziness';
 
     // indexer
     const STATUS_PUBLISH = 'publish';
-    const INDEX_POST_STATUSES = [Constants::STATUS_PUBLISH];
+    const STATUS_PRIVATE = 'private';
+    const INDEX_POST_STATUSES = [Constants::STATUS_PUBLISH, Constants::STATUS_PRIVATE];
 
     // TODO move to settings
     const DEFAULT_POSTS_PER_PAGE = 20;

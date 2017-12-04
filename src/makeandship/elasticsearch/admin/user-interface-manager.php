@@ -37,12 +37,18 @@ class UserInterfaceManager
             add_site_option(Constants::OPTION_SERVER, '');
             add_site_option(Constants::OPTION_PRIMARY_INDEX, '');
             add_site_option(Constants::OPTION_SECONDARY_INDEX, '');
+            add_site_option(Constants::OPTION_PRIVATE_PRIMARY_INDEX, '');
+            add_site_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX, '');
 
             add_site_option(Constants::OPTION_READ_TIMEOUT, 30);
             add_site_option(Constants::OPTION_WRITE_TIMEOUT, 30);
 
             add_site_option(Constants::OPTION_INDEX_STATUS, array());
             add_site_option(Constants::OPTION_POST_TYPES, array());
+            add_site_option(Constants::OPTION_CAPABILITY, '');
+            add_site_option(Constants::OPTION_SEARCH_FIELDS, array());
+            add_site_option(Constants::OPTION_WEIGHTINGS, array());
+
         } else {
             add_option(Constants::VERSION, $this->version);
             add_option(Constants::DB_VERSION, $this->db_version);
@@ -50,12 +56,17 @@ class UserInterfaceManager
             add_option(Constants::OPTION_SERVER, '');
             add_option(Constants::OPTION_PRIMARY_INDEX, '');
             add_option(Constants::OPTION_SECONDARY_INDEX, '');
+            add_option(Constants::OPTION_PRIVATE_PRIMARY_INDEX, '');
+            add_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX, '');
 
             add_option(Constants::OPTION_READ_TIMEOUT, 30);
             add_option(Constants::OPTION_WRITE_TIMEOUT, 30);
 
             add_option(Constants::OPTION_INDEX_STATUS, array());
             add_option(Constants::OPTION_POST_TYPES, array());
+            add_option(Constants::OPTION_CAPABILITY, '');
+            add_option(Constants::OPTION_SEARCH_FIELDS, array());
+            add_option(Constants::OPTION_WEIGHTINGS, array());
         }
     }
 
@@ -89,6 +100,20 @@ class UserInterfaceManager
             'acf_elasticsearch_secondary_index',
             'Secondary Index',
             array($this, 'render_option_secondary_index'),
+            'acf_elasticsearch_settings_page',
+            'acf_elasticsearch_settings'
+        );
+        add_settings_field(
+            'acf_elasticsearch_private_primary_index',
+            'Private Primary Index',
+            array($this, 'render_option_private_primary_index'),
+            'acf_elasticsearch_settings_page',
+            'acf_elasticsearch_settings'
+        );
+        add_settings_field(
+            'acf_elasticsearch_private_secondary_index',
+            'Private Secondary Index',
+            array($this, 'render_option_private_secondary_index'),
             'acf_elasticsearch_settings_page',
             'acf_elasticsearch_settings'
         );
@@ -130,6 +155,16 @@ class UserInterfaceManager
             'acf_elasticsearch_settings',
             'acf_elasticsearch_secondary_index',
             array( $this, 'sanitize_secondary_index')
+        );
+        register_setting(
+            'acf_elasticsearch_settings',
+            'acf_elasticsearch_private_primary_index',
+            array( $this, 'sanitize_private_primary_index')
+        );
+        register_setting(
+            'acf_elasticsearch_settings',
+            'acf_elasticsearch_private_secondary_index',
+            array( $this, 'sanitize_private_secondary_index')
         );
         register_setting(
             'acf_elasticsearch_settings',
@@ -214,6 +249,16 @@ class UserInterfaceManager
     }
 
     public function sanitize_secondary_index($input)
+    {
+        return trim($input);
+    }
+
+    public function sanitize_private_primary_index($input)
+    {
+        return trim($input);
+    }
+
+    public function sanitize_private_secondary_index($input)
     {
         return trim($input);
     }

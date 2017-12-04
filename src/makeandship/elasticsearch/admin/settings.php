@@ -1,9 +1,10 @@
 <div class="wrap">
 <?php
-    use makeandship\elasticsearch\admin\HtmlUtils;
+use makeandship\elasticsearch\admin\HtmlUtils;
 use makeandship\elasticsearch\Defaults;
 use makeandship\elasticsearch\Constants;
 use makeandship\elasticsearch\settings\SettingsManager;
+use makeandship\elasticsearch\settings\SettingsHelper;
 
 if (!empty($_POST)) {
         
@@ -11,20 +12,32 @@ if (!empty($_POST)) {
     $server = esc_url($_POST['acf_elasticsearch_server']);
     $primary_index = trim($_POST['acf_elasticsearch_primary_index']);
     $secondary_index = trim($_POST['acf_elasticsearch_secondary_index']);
+    $private_primary_index = trim($_POST['acf_elasticsearch_private_primary_index']);
+    $private_secondary_index = trim($_POST['acf_elasticsearch_private_secondary_index']);
     $read_timeout = intval(trim($_POST['acf_elasticsearch_read_timeout']));
     $write_timeout = intval(trim($_POST['acf_elasticsearch_write_timeout']));
     $username = trim($_POST['acf_elasticsearch_username']);
     $password = trim($_POST['acf_elasticsearch_password']);
     $post_types = HtmlUtils::create_post_types();
+    $capability = trim($_POST['acf_elasticsearch_capability']);
+    $search_fields = HtmlUtils::create_search_fields();
+    $weightings = HtmlUtils::create_weightings();
+    $fuzziness = intval(trim($_POST['acf_elasticsearch_fuzziness']));
 
     SettingsManager::get_instance()->set(Constants::OPTION_SERVER, $server);
     SettingsManager::get_instance()->set(Constants::OPTION_PRIMARY_INDEX, $primary_index);
     SettingsManager::get_instance()->set(Constants::OPTION_SECONDARY_INDEX, $secondary_index);
+    SettingsManager::get_instance()->set(Constants::OPTION_PRIVATE_PRIMARY_INDEX, $private_primary_index);
+    SettingsManager::get_instance()->set(Constants::OPTION_PRIVATE_SECONDARY_INDEX, $private_secondary_index);
     SettingsManager::get_instance()->set(Constants::OPTION_READ_TIMEOUT, $read_timeout);
     SettingsManager::get_instance()->set(Constants::OPTION_WRITE_TIMEOUT, $write_timeout);
     SettingsManager::get_instance()->set(Constants::OPTION_USERNAME, $username);
     SettingsManager::get_instance()->set(Constants::OPTION_PASSWORD, $password);
     SettingsManager::get_instance()->set(Constants::OPTION_POST_TYPES, $post_types);
+    SettingsManager::get_instance()->set(Constants::OPTION_CAPABILITY, $capability);
+    SettingsManager::get_instance()->set(Constants::OPTION_SEARCH_FIELDS, $search_fields);
+    SettingsManager::get_instance()->set(Constants::OPTION_WEIGHTINGS, $weightings);
+    SettingsManager::get_instance()->set(Constants::OPTION_FUZZINESS, $fuzziness);
 }
 ?>
 <h1>ACF Elasticsearch</h1>
@@ -54,6 +67,22 @@ if (!empty($_POST)) {
                         echo HtmlUtils::render_field(
                             'Secondary Index',
                             'acf_elasticsearch_secondary_index',
+                            array(
+                                'class' => '',
+                                'placeholder' => ''
+                            )
+                        );
+                        echo HtmlUtils::render_field(
+                            'Private Primary Index',
+                            'acf_elasticsearch_private_primary_index',
+                            array(
+                                'class' => '',
+                                'placeholder' => ''
+                            )
+                        );
+                        echo HtmlUtils::render_field(
+                            'Private Secondary Index',
+                            'acf_elasticsearch_private_secondary_index',
                             array(
                                 'class' => '',
                                 'placeholder' => ''
@@ -94,7 +123,44 @@ if (!empty($_POST)) {
                             )
                         );
                         echo HtmlUtils::render_post_type_choices(
-                            'Post types'
+                            'Post Types'
+                        );
+                        echo HtmlUtils::render_field(
+                            'Capability',
+                            'acf_elasticsearch_capability',
+                            array(
+                                'class' => '',
+                                'placeholder' => 'Capability which allows private searching'
+                            )
+                        );
+                        echo HtmlUtils::render_field(
+                            'Search Fields',
+                            'acf_elasticsearch_search_fields',
+                            array(
+                                'type' => 'textarea',
+                                'class' => 'medium',
+                                'value' => SettingsHelper::get_search_fields_data(),
+                                'placeholder' => ''
+                            )
+                        );
+                        echo HtmlUtils::render_field(
+                            'Weightings',
+                            'acf_elasticsearch_weightings',
+                            array(
+                                'type' => 'textarea',
+                                'class' => 'medium',
+                                'value' => SettingsHelper::get_weightings_data(),
+                                'placeholder' => ''
+                            )
+                        );
+                        echo HtmlUtils::render_field(
+                            'Fuzziness',
+                            'acf_elasticsearch_fuzziness',
+                            array(
+                                'class' => 'short',
+                                'placeholder' => '',
+                                'value' => 1
+                            )
                         );
                         echo HtmlUtils::render_buttons([
                             array(

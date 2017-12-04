@@ -38,7 +38,8 @@ class PostsManager
         $status = array(
             'page' => 1,
             'count' => 0,
-            'total' => $total
+            'total' => $total,
+            'index' => 'primary'
         );
 
         return $status;
@@ -60,7 +61,8 @@ class PostsManager
                 'page' => 1,
                 'count' => 0,
                 'total' => $total,
-                'blog_id' => $site->blog_id
+                'blog_id' => $site->blog_id,
+                'index' => 'primary'
             );
         }
 
@@ -107,10 +109,11 @@ class PostsManager
     private function get_count_post_args()
     {
         $post_types = $this->get_valid_post_types();
+        $post_status = array('publish', 'private');
         
         $args = array(
             'post_type' => $post_types,
-            'post_status' => 'publish',
+            'post_status' => $post_status,
             'fields' => 'count'
         );
 
@@ -120,10 +123,11 @@ class PostsManager
     private function get_paginated_post_args($page, $per)
     {
         $post_types = $this->get_valid_post_types();
+        $post_status =  array( 'publish', 'private' );
         
         $args = array(
             'post_type' => $post_types,
-            'post_status' => 'publish',
+            'post_status' => $post_status,
             'posts_per_page' => $per,
             'paged' => $page
         );
@@ -155,13 +159,7 @@ class PostsManager
 
     public function valid($post_type)
     {
-        $option_post_types = SettingsManager::get_instance()->get(Constants::OPTION_POST_TYPES);
-
-        $types = [];
-
-        foreach ($option_post_types as $item) {
-            $types[] = $item['type'];
-        }
+        $types = SettingsManager::get_instance()->get_post_types();
 
         if (!$types) {
             return false;

@@ -47,12 +47,18 @@ class SettingsManager
             $this->settings[Constants::OPTION_SERVER] = $this->get_option(Constants::OPTION_SERVER);
             $this->settings[Constants::OPTION_PRIMARY_INDEX] = $this->get_option(Constants::OPTION_PRIMARY_INDEX);
             $this->settings[Constants::OPTION_SECONDARY_INDEX] = $this->get_option(Constants::OPTION_SECONDARY_INDEX);
+            $this->settings[Constants::OPTION_PRIVATE_PRIMARY_INDEX] = $this->get_option(Constants::OPTION_PRIVATE_PRIMARY_INDEX);
+            $this->settings[Constants::OPTION_PRIVATE_SECONDARY_INDEX] = $this->get_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
             $this->settings[Constants::OPTION_READ_TIMEOUT] = $this->get_option(Constants::OPTION_READ_TIMEOUT);
             $this->settings[Constants::OPTION_WRITE_TIMEOUT] = $this->get_option(Constants::OPTION_WRITE_TIMEOUT);
             $this->settings[Constants::OPTION_INDEX_STATUS] = $this->get_option(Constants::OPTION_INDEX_STATUS);
             $this->settings[Constants::OPTION_USERNAME] = $this->get_option(Constants::OPTION_USERNAME);
             $this->settings[Constants::OPTION_PASSWORD] = $this->get_option(Constants::OPTION_PASSWORD);
             $this->settings[Constants::OPTION_POST_TYPES] = $this->get_option(Constants::OPTION_POST_TYPES);
+            $this->settings[Constants::OPTION_CAPABILITY] = $this->get_option(Constants::OPTION_CAPABILITY);
+            $this->settings[Constants::OPTION_SEARCH_FIELDS] = $this->get_option(Constants::OPTION_SEARCH_FIELDS);
+            $this->settings[Constants::OPTION_WEIGHTINGS] = $this->get_option(Constants::OPTION_WEIGHTINGS);
+            $this->settings[Constants::OPTION_FUZZINESS] = $this->get_option(Constants::OPTION_FUZZINESS);
         }
         
         return $this->settings;
@@ -83,12 +89,18 @@ class SettingsManager
                 Constants::OPTION_SERVER,
                 Constants::OPTION_PRIMARY_INDEX,
                 Constants::OPTION_SECONDARY_INDEX,
+                Constants::OPTION_PRIVATE_PRIMARY_INDEX,
+                Constants::OPTION_PRIVATE_SECONDARY_INDEX,
                 Constants::OPTION_READ_TIMEOUT,
                 Constants::OPTION_WRITE_TIMEOUT,
                 Constants::OPTION_INDEX_STATUS,
                 Constants::OPTION_USERNAME,
                 Constants::OPTION_PASSWORD,
-                Constants::OPTION_POST_TYPES
+                Constants::OPTION_POST_TYPES,
+                Constants::OPTION_CAPABILITY,
+                Constants::OPTION_SEARCH_FIELDS,
+                Constants::OPTION_WEIGHTINGS,
+                Constants::OPTION_FUZZINESS
             ])) {
                 return true;
             }
@@ -182,5 +194,64 @@ class SettingsManager
         }
 
         return $exclude;
+    }
+
+    public function get_indexes()
+    {
+        $indexes = array();
+        // public primary index
+        $primary = $this->get(Constants::OPTION_PRIMARY_INDEX);
+        if ($primary) {
+            $indexes[] = array(
+                'name' => $primary,
+                'type' => 'primary',
+                'public' => true
+            );
+        }
+
+        // public secondary index
+        $secondary = $this->get(Constants::OPTION_SECONDARY_INDEX);
+        if ($secondary) {
+            $indexes[] = array(
+                'name' => $secondary,
+                'type' => 'secondary',
+                'public' => true
+            );
+        }
+
+        // private primary index
+        $private_primary = $this->get(Constants::OPTION_PRIVATE_PRIMARY_INDEX);
+        if ($private_primary) {
+            $indexes[] = array(
+                'name' => $private_primary,
+                'type' => 'primary',
+                'public' => false
+            );
+        }
+
+        // private secondary index
+        $private_secondary = $this->get(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
+        if ($private_secondary) {
+            $indexes[] = array(
+                'name' => $private_secondary,
+                'type' => 'secondary',
+                'public' => false
+            );
+        }
+
+        return $indexes;
+    }
+
+    public function get_post_types()
+    {
+        $post_types = $this->get(Constants::OPTION_POST_TYPES);
+
+        $types = [];
+
+        foreach ($post_types as $item) {
+            $types[] = $item['type'];
+        }
+
+        return $types;
     }
 }

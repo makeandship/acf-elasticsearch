@@ -7,14 +7,10 @@ use makeandship\elasticsearch\Constants;
 
 class IndexerTest extends WP_UnitTestCase
 {
-    const CONFIG = array(
-        Constants::OPTION_SERVER => "http://127.0.0.1:9200/",
-        Constants::OPTION_INDEX_STATUS => "acf_elasticsearch_index_status"
-    );
 
     public function testCreateIndex()
     {
-        $indexer = new Indexer(self::CONFIG);
+        $indexer = new Indexer();
         $index = $indexer->create('elastictest');
 
         $this->assertNotNull($index);
@@ -22,7 +18,7 @@ class IndexerTest extends WP_UnitTestCase
 
     public function testClearIndex()
     {
-        $indexer = new Indexer(self::CONFIG);
+        $indexer = new Indexer();
         $index = $indexer->create('elastictest');
         $indexer->clear('elastictest');
 
@@ -31,31 +27,50 @@ class IndexerTest extends WP_UnitTestCase
 
     public function testIndexPosts()
     {
-        $indexer = new Indexer(self::CONFIG);
+        $indexer = new Indexer();
         $posts = $indexer->index_posts(true);
 
-        $this->assertEquals($posts['page'], 2);
-        $this->assertEquals($posts['count'], 0);
-        $this->assertEquals($posts['total'], 0);
+        if (is_multisite()) {
+            $this->assertEquals($posts[1]['page'], 2);
+            $this->assertEquals($posts[1]['count'], 0);
+            $this->assertEquals($posts[1]['total'], 0);
+            $this->assertEquals($posts[1]['blog_id'], 1);
+        }
+        else {
+            $this->assertEquals($posts['page'], 1);
+            $this->assertEquals($posts['count'], 0);
+            $this->assertEquals($posts['total'], 0);
+        }
     }
 
     public function testIndexPostsMultiSite()
     {
-        $indexer = new Indexer(self::CONFIG);
-        $mulisite = $indexer->index_posts_multisite(true);
+        $indexer = new Indexer();
+        $posts = $indexer->index_posts(true);
 
-        $this->assertEquals($mulisite['page'], 1);
-        $this->assertEquals($mulisite['count'], 0);
-        $this->assertEquals($mulisite['total'], 0);
+        if (is_multisite()) {
+            $this->assertEquals($posts[1]['page'], 2);
+            $this->assertEquals($posts[1]['count'], 0);
+            $this->assertEquals($posts[1]['total'], 0);
+            $this->assertEquals($posts[1]['blog_id'], 1);
+        }
+        else {
+            $this->assertEquals($posts['page'], 1);
+            $this->assertEquals($posts['count'], 0);
+            $this->assertEquals($posts['total'], 0);
+        }
     }
 
-    public function testIndexPostsSingleSite()
+    public function testIndexTaxonomies()
     {
-        $indexer = new Indexer(self::CONFIG);
-        $singlesite = $indexer->index_posts_singlesite(true);
+        $id = $this->factory->term->create( array( 
+                'taxonomy' => 'tax',
+                'name' => 'Term 1' 
+            ) 
+        ); 
+        $indexer = new Indexer();
+        $count = $indexer->index_taxonomies("tax");
 
-        $this->assertEquals($singlesite['page'], 2);
-        $this->assertEquals($singlesite['count'], 0);
-        $this->assertEquals($singlesite['total'], 0);
+        $this->assertEquals($count, 1);
     }
 }

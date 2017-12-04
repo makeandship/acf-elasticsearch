@@ -13,7 +13,6 @@ use \Elastica\Client;
 class Searcher
 {
     private $client;
-    private $index;
 
     public function __construct()
     {
@@ -21,8 +20,6 @@ class Searcher
         $client_settings = $settings_manager->get_client_settings();
 
         $this->client = new Client($client_settings);
-        $name = get_option(Constants::OPTION_PRIMARY_INDEX);
-        $this->index = $this->client->getIndex($name);
     }
 
     /**
@@ -41,7 +38,7 @@ class Searcher
 
         try {
             $search = new \Elastica\Search($this->client);
-            $search->addIndex($this->index);
+            $search->addIndex($this->get_index());
 
             $response = $search->search($query);
 
@@ -92,7 +89,7 @@ class Searcher
 
         try {
             $search = new \Elastica\Search($this->client);
-            $search->addIndex($this->index);
+            $search->addIndex($this->get_index());
 
             $search = Config::apply_filters('searcher_search', $search, $query);
 
@@ -104,5 +101,26 @@ class Searcher
 
             return null;
         }
+    }
+
+    private function get_index()
+    {
+        $status = get_option(Constants::OPTION_INDEX_STATUS);
+        $capability = get_option(Constants::OPTION_CAPABILITY);
+
+        if ($status['index'] == "primary") {
+            $private_index = get_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
+            $public_index = get_option(Constants::OPTION_SECONDARY_INDEX);
+        }
+        else {
+            $private_index = get_option(Constants::OPTION_PRIVATE_PRIMARY_INDEX);
+            $public_index = get_option(Constants::OPTION_PRIMARY_INDEX);
+        }
+
+        if (isset($private_index) && !empty($private_index) && current_user_can($capability)) {
+            return $this->client->getIndex($private_index);
+        }
+
+        return $this->client->getIndex($public_index);
     }
 }

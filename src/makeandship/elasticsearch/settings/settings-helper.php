@@ -12,12 +12,7 @@ class SettingsHelper
         // populate post types
         $types = Defaults::types();
         $option_post_types = SettingsManager::get_instance()->get(Constants::OPTION_POST_TYPES);
-
-        $option_types = [];
-
-        foreach ($option_post_types as $item) {
-            $option_types[] = $item['type'];
-        }
+        $option_types = SettingsManager::get_instance()->get_post_types();
 
         $post_type_checkboxes = [];
 
@@ -50,5 +45,33 @@ class SettingsHelper
         }
 
         return $post_type_checkboxes;
+    }
+
+    public static function get_search_fields_data()
+    {
+        // populate search fields
+        $option_search_fields = SettingsManager::get_instance()->get(Constants::OPTION_SEARCH_FIELDS);
+        $value = implode("\n", $option_search_fields);
+        if (!$value) {
+            $value = "post_title_suggest\nname_suggest";
+        }
+        return $value;
+    }
+
+    public static function get_weightings_data()
+    {
+        // populate weightings
+        $weightings = array();
+        $option_weightings = SettingsManager::get_instance()->get(Constants::OPTION_WEIGHTINGS);
+        foreach($option_weightings as $field => $weight) {
+            if ($field) {
+                $weightings[] = $field.'^'.$weight;
+            }
+        }
+        $value = implode("\n", $weightings);
+        if (!$value) {
+            $value = "post_title^3\npost_content^3";
+        }
+        return $value;
     }
 }

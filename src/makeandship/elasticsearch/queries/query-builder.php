@@ -34,13 +34,10 @@ class QueryBuilder
     private function set_plugin_defaults()
     {
         // set fuzziness, weights and post_types
-        // TODO fuzziness and weights into the plugin
-        $this->fuzziness = 1;
-        $this->post_types = SettingsManager::get_instance()->get(Constants::OPTION_POST_TYPES);
-        $this->weights = array(
-            'post_title' => 3,
-            'post_content' => 3,
-        );
+        $this->fuzziness = intval(SettingsManager::get_instance()->get(Constants::OPTION_FUZZINESS));
+        $this->post_types = SettingsManager::get_instance()->get_post_types();
+        $this->weights = SettingsManager::get_instance()->get(Constants::OPTION_WEIGHTINGS);
+        $this->search_fields = SettingsManager::get_instance()->get(Constants::OPTION_SEARCH_FIELDS);
     }
 
     /**
@@ -60,9 +57,11 @@ class QueryBuilder
      *
      * @param fuzziness a level of fuzziness - letters allowed to swop
      */
-    public function with_fuzziness($fuzziness)
+    public function with_fuzziness($fuzziness=null)
     {
-        $this->fuzziness = $fuzziness;
+        if (isset($fuzziness)) {
+            $this->fuzziness = $fuzziness;
+        }
 
         return $this;
     }
@@ -74,9 +73,11 @@ class QueryBuilder
      *
      * @param weights array of weights
      */
-    public function weighted($weights)
+    public function weighted($weights=null)
     {
-        $this->weights = $weights;
+        if (isset($weights)) {
+            $this->weights = $weights;
+        }
 
         return $this;
     }
@@ -136,9 +137,11 @@ class QueryBuilder
         return $this;
     }
 
-    public function searching($fields)
+    public function searching($fields=null)
     {
-        $this->search_fields = $fields;
+        if (isset($fields)) {
+            $this->search_fields = $fields;
+        }
 
         return $this;
     }
@@ -239,7 +242,7 @@ class QueryBuilder
             }
         } else {
             $query_text = array(
-                'match_all' => array()
+                'match_all' => (object) array()
             );
         }
 
@@ -466,9 +469,16 @@ class QueryBuilder
                 $sorts['sort'][$sort] = $order;
             }
         } else {
-            $sorts['sort'] = array(
-                '_score'
-            );
+            if (!$this->freetext) {
+                $sorts['sort'] = array(
+                    'post_date' => 'desc'
+                );
+            }
+            else {
+                $sorts['sort'] = array(
+                    '_score'
+                );
+            }
         }
 
         return $sorts;

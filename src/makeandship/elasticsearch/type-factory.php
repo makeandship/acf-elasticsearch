@@ -49,19 +49,29 @@ class TypeFactory
     /**
      * Return a type to support an index or delete call
      */
-    public function create($type_name, $writable=false)
+    public function create($type_name, $writable=false, $private=false, $primary=true)
     {
         $type = null;
 
         $client = $this->get_client($writable);
         
-        $primary_index = SettingsManager::get_instance()->get(Constants::OPTION_PRIMARY_INDEX);
+        if (isset($client)) {
+            if ($private) {
+                $index = $primary ?
+                    SettingsManager::get_instance()->get(Constants::OPTION_PRIVATE_PRIMARY_INDEX) :
+                    SettingsManager::get_instance()->get(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
+            } else {
+                $index = $primary ?
+                    SettingsManager::get_instance()->get(Constants::OPTION_PRIMARY_INDEX) :
+                    SettingsManager::get_instance()->get(Constants::OPTION_SECONDARY_INDEX);
+            }
+            
+            if ($index) {
+                $index = $client->getIndex($index);
 
-        if (isset($client) && $primary_index) {
-            $index = $client->getIndex($primary_index);
-
-            if (isset($index)) {
-                $type = $index->getType($type_name);
+                if (isset($index)) {
+                    $type = $index->getType($type_name);
+                }
             }
         }
 

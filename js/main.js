@@ -112,14 +112,14 @@ jQuery(document).ready(function($) {
         if (status) {
           var complete = true;
 
-          if (status.count && status.page && status.total) {
-            if (status.count < status.total) {
+          if (status.page && status.total) {
+            if (status.count < status.total || status.index === "primary") {
               complete = false;
             }
           } else {
             for (var blogId in status) {
               var site = status[blogId];
-              if (site.count < site.total) {
+              if (site.count < site.total || status.index === "primary") {
                 complete = false;
                 break;
               }
@@ -129,7 +129,9 @@ jQuery(document).ready(function($) {
           if (!complete) {
             console.log("More posts to index");
             $("#indexing-messages").html(
-              `Indexed ${status.count} of ${status.total}`
+              `Indexed ${status.count} of ${status.total} to ${
+                status.index
+              } index`
             );
             indexPosts();
           } else {

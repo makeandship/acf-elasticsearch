@@ -287,6 +287,11 @@
   width: 100%;
   height: 100px;
 }
+
+.acf-elasticsearch-row textarea.medium {
+  width: 60%;
+}
+
 .acf-elasticsearch-row input[type="text"] {
   width: 60%;
 }

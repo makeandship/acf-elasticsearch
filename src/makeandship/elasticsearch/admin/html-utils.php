@@ -23,6 +23,9 @@ class HtmlUtils
                 case 'text':
                     $field = self::render_text_field($name, $args);
                     break;
+                case 'textarea':
+                    $field = self::render_textarea_field($name, $args);
+                    break;
             }
 
             $html = [
@@ -50,7 +53,7 @@ class HtmlUtils
             $option = get_option($name);
         }
 
-        if (isset($option)) {
+        if (isset($option) && !empty($option)) {
             $value = $option;
         } else {
             if (array_key_exists('value', $args)) {
@@ -168,6 +171,17 @@ class HtmlUtils
         return implode($html, PHP_EOL);
     }
 
+    public static function render_textarea_field($name, $args)
+    {
+        $value = $args['value'];
+        $clazz = $args['class'];
+
+        $html[] = '<textarea name="'.$name.'" class="'.$clazz.'">'.$value.'</textarea>';
+        
+
+        return implode($html, PHP_EOL);
+    }
+
     public static function create_post_types()
     {
         $post_types = array();
@@ -181,6 +195,25 @@ class HtmlUtils
         }
         
         return $post_types;
+    }
+
+    public static function create_search_fields()
+    {
+        $input = $_POST['acf_elasticsearch_search_fields'];        
+        return explode("\n", str_replace("\r", "", $input));
+    }
+
+    public static function create_weightings()
+    {
+        $weights = array();
+        $input = $_POST['acf_elasticsearch_weightings'];        
+        $weightings = explode("\n", str_replace("\r", "", $input));
+            foreach($weightings as $weighting) {
+                $field = explode("^", $weighting)[0];
+                $weight = explode("^", $weighting)[1];
+                $weights[$field] = $weight;
+            }
+        return $weights;
     }
 
     private static function get_array_data($type, $category)
