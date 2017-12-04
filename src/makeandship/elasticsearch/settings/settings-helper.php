@@ -50,9 +50,8 @@ class SettingsHelper
     {
         // populate search fields
         $option_search_fields = SettingsManager::get_instance()->get(Constants::OPTION_SEARCH_FIELDS);
-        $value = implode("\n", $option_search_fields);
-        if (!$value) {
-            $value = "post_title_suggest\nname_suggest";
+        if ($option_search_fields) {
+            $value = implode("\n", $option_search_fields);
         }
         return $value;
     }
