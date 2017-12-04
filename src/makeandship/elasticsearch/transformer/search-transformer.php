@@ -37,6 +37,11 @@ class SearchTransformer
             $source = $result->getSource();
             $source['id'] = $id;
             
+            $highlight = Util::safely_get_attribute($result, 'highlight');
+            if ($highlight) {
+                $source['highlight'] = $highlight;
+            }
+            
             $val['ids'][] = $id;
             $val['results'][] = $source;
         }
