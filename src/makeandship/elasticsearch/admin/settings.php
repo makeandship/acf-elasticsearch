@@ -22,6 +22,7 @@ if (!empty($_POST)) {
     $capability = trim($_POST['acf_elasticsearch_capability']);
     $search_fields = HtmlUtils::create_search_fields();
     $weightings = HtmlUtils::create_weightings();
+    $fuzziness = intval(trim($_POST['acf_elasticsearch_fuzziness']));
 
     SettingsManager::get_instance()->set(Constants::OPTION_SERVER, $server);
     SettingsManager::get_instance()->set(Constants::OPTION_PRIMARY_INDEX, $primary_index);
@@ -36,6 +37,7 @@ if (!empty($_POST)) {
     SettingsManager::get_instance()->set(Constants::OPTION_CAPABILITY, $capability);
     SettingsManager::get_instance()->set(Constants::OPTION_SEARCH_FIELDS, $search_fields);
     SettingsManager::get_instance()->set(Constants::OPTION_WEIGHTINGS, $weightings);
+    SettingsManager::get_instance()->set(Constants::OPTION_FUZZINESS, $fuzziness);
 }
 ?>
 <h1>ACF Elasticsearch</h1>
@@ -149,6 +151,15 @@ if (!empty($_POST)) {
                                 'class' => 'medium',
                                 'value' => SettingsHelper::get_weightings_data(),
                                 'placeholder' => ''
+                            )
+                        );
+                        echo HtmlUtils::render_field(
+                            'Fuzziness',
+                            'acf_elasticsearch_fuzziness',
+                            array(
+                                'class' => 'short',
+                                'placeholder' => '',
+                                'value' => 1
                             )
                         );
                         echo HtmlUtils::render_buttons([

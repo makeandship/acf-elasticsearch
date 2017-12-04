@@ -34,8 +34,7 @@ class QueryBuilder
     private function set_plugin_defaults()
     {
         // set fuzziness, weights and post_types
-        // TODO fuzziness and weights into the plugin
-        $this->fuzziness = 1;
+        $this->fuzziness = intval(SettingsManager::get_instance()->get(Constants::OPTION_FUZZINESS));
         $this->post_types = SettingsManager::get_instance()->get_post_types();
         $this->weights = SettingsManager::get_instance()->get(Constants::OPTION_WEIGHTINGS);
         $this->search_fields = SettingsManager::get_instance()->get(Constants::OPTION_SEARCH_FIELDS);
@@ -58,9 +57,11 @@ class QueryBuilder
      *
      * @param fuzziness a level of fuzziness - letters allowed to swop
      */
-    public function with_fuzziness($fuzziness)
+    public function with_fuzziness($fuzziness=null)
     {
-        $this->fuzziness = $fuzziness;
+        if (isset($fuzziness)) {
+            $this->fuzziness = $fuzziness;
+        }
 
         return $this;
     }

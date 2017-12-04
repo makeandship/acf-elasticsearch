@@ -53,7 +53,7 @@ class HtmlUtils
             $option = get_option($name);
         }
 
-        if (isset($option)) {
+        if (isset($option) && !empty($option)) {
             $value = $option;
         } else {
             if (array_key_exists('value', $args)) {

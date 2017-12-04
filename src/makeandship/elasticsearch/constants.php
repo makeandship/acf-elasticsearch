@@ -36,6 +36,7 @@ class Constants
     const OPTION_CAPABILITY = 'acf_elasticsearch_capability';
     const OPTION_SEARCH_FIELDS = 'acf_elasticsearch_search_fields';
     const OPTION_WEIGHTINGS = 'acf_elasticsearch_weightings';
+    const OPTION_FUZZINESS = 'acf_elasticsearch_fuzziness';
 
     // indexer
     const STATUS_PUBLISH = 'publish';
