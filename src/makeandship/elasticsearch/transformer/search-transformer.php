@@ -2,7 +2,7 @@
 
 namespace makeandship\elasticsearch\transformer;
 
-use makeandship\elasticsearch\Config;
+use makeandship\elasticsearch\Util;
 
 class SearchTransformer
 {
@@ -41,6 +41,6 @@ class SearchTransformer
             $val['results'][] = $source;
         }
 
-        return Config::apply_filters('searcher_results', $val, $response);
+        return Util::apply_filters('searcher_results', $val, $response);
     }
 }

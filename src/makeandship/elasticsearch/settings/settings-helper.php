@@ -3,14 +3,13 @@
 namespace makeandship\elasticsearch\settings;
 
 use makeandship\elasticsearch\Constants;
-use makeandship\elasticsearch\Defaults;
 
 class SettingsHelper
 {
     public static function get_post_type_checkbox_data()
     {
         // populate post types
-        $types = Defaults::types();
+        $types = self::types();
         $option_post_types = SettingsManager::get_instance()->get(Constants::OPTION_POST_TYPES);
         $option_types = SettingsManager::get_instance()->get_post_types();
 
@@ -74,4 +73,21 @@ class SettingsHelper
         }
         return $value;
     }
+
+    static function types()
+	{
+		$types = get_post_types();
+
+		$available = array();
+
+		foreach ($types as $type) {
+			$tobject = get_post_type_object($type);
+
+			if (!$tobject->exclude_from_search && $type != 'attachment') {
+				$available[] = $type;
+			}
+		}
+
+		return $available;
+	}
 }
