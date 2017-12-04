@@ -187,6 +187,10 @@ class QueryBuilder
         $fields = $this->build_fields();
         $query = array_merge($query, $fields);
 
+        // highlights
+        $highlights = $this->build_highlights();
+        $query = array_merge($query, $highlights);
+
         error_log(print_r(json_encode($query), true));
 
         return $query;
@@ -495,6 +499,34 @@ class QueryBuilder
 
         if ($this->return_fields) {
             $fields['_source'] = $this->return_fields;
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Build query body to control which fields are checked for highlights
+     *
+     * @return array for the highlights attribute
+     */
+    private function build_highlights()
+    {
+        $highlights = array();
+
+        if ($this->weights) {
+            $highlights['highlights'] = array(
+                'fields' => array()
+            );
+
+            foreach($this->weights as $weight) {
+                $weight_components = explode('^', $weight);
+                if ($weight_components && count($weight_components) == 2) {
+                    $field = $weight_components[0];
+                    if ($field) {
+                        $highlight['highlights']['fields'][] = $field;
+                    }
+                }
+            }
         }
 
         return $fields;
