@@ -518,13 +518,9 @@ class QueryBuilder
                 'fields' => array()
             );
 
-            foreach($this->weights as $weight) {
-                $weight_components = explode('^', $weight);
-                if ($weight_components && count($weight_components) == 2) {
-                    $field = $weight_components[0];
-                    if ($field) {
-                        $highlight['highlights']['fields'][] = $field;
-                    }
+            foreach ($this->weights as $field => $weight) {
+                if ($field) {
+                    $highlight['highlights']['fields'][] = $field;
                 }
             }
         }
