@@ -77,4 +77,25 @@ class QueryBuilderTest extends WP_UnitTestCase
         $this->assertEquals($query['_source'][1], 'title');
     }
 
+    public function testSearchQueryWithEmptyText()
+    {
+        $query = new QueryBuilder();
+        $query = $query->freetext('')
+            ->with_fuzziness(1)
+            ->weighted(array(
+                'post_title' => 3,
+                'post_content' => 3
+            ))
+            ->for_categories([])
+            ->with_category_counts(array('category' => 5))
+            ->paged(0, 10)
+            ->to_array();
+
+        $this->assertEquals($query['query']['bool']['must']['match_all'], (object) array());
+        $this->assertEquals($query['aggs']['category']['aggs']['facet']['terms']['field'], 'category');
+        $this->assertEquals($query['aggs']['category']['aggs']['facet']['terms']['size'], 5);
+        $this->assertEquals($query['from'], 0);
+        $this->assertEquals($query['size'], 10);
+    }
+
 }
