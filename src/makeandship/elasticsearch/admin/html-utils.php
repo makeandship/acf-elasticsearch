@@ -201,7 +201,7 @@ class HtmlUtils
     {
         $search_fields = null;
 
-        $input = Util::safely_get_attribute($_POST, 'acf_elasticsearch_search_fields');
+        $input = $_POST['acf_elasticsearch_search_fields'];
         if ($input) {
             $search_fields = explode("\n", str_replace("\r", "", $input));
             $search_fields = array_map('trim', $search_fields);
