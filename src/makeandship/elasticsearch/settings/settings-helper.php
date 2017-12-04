@@ -48,11 +48,14 @@ class SettingsHelper
 
     public static function get_search_fields_data()
     {
+        $value = null;
+        
         // populate search fields
         $option_search_fields = SettingsManager::get_instance()->get(Constants::OPTION_SEARCH_FIELDS);
         if ($option_search_fields) {
             $value = implode("\n", $option_search_fields);
         }
+        
         return $value;
     }
 
