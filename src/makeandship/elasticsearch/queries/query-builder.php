@@ -469,9 +469,16 @@ class QueryBuilder
                 $sorts['sort'][$sort] = $order;
             }
         } else {
-            $sorts['sort'] = array(
-                '_score'
-            );
+            if (!$this->freetext) {
+                $sorts['sort'] = array(
+                    'post_date' => 'desc'
+                );
+            }
+            else {
+                $sorts['sort'] = array(
+                    '_score'
+                );
+            }
         }
 
         return $sorts;
