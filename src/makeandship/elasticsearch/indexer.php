@@ -171,13 +171,18 @@ class Indexer
                 break;
             }
             elseif ($site_status['index'] == 'primary') {
-                $target_site = array(
-                    'page' => 1,
-                    'count' => 0,
-                    'total' => $site_status['total'],
-                    'blog_id' => $site_status['blog_id'],
-                    'index' => 'secondary'
-                );
+                $secondary = get_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
+                $use_secondary = isset($secondary) && !empty($secondary);
+
+                if ($use_secondary) {
+                    $target_site = array(
+                        'page' => 1,
+                        'count' => 0,
+                        'total' => $site_status['total'],
+                        'blog_id' => $site_status['blog_id'],
+                        'index' => 'secondary'
+                    );
+                }
                 break;
             }
         }
@@ -226,12 +231,17 @@ class Indexer
         $status['count'] = $status['count'] + $count;
 
         if ($status['count'] >= $status['total'] && $status['index'] == "primary") {
-            $status = array(
-                'page' => 1,
-                'count' => 0,
-                'total' => $status['total'],
-                'index' => 'secondary'
-            );
+            $secondary = get_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
+            $use_secondary = isset($secondary) && !empty($secondary);
+
+            if ($use_secondary) {
+                $status = array(
+                    'page' => 1,
+                    'count' => 0,
+                    'total' => $status['total'],
+                    'index' => 'secondary'
+                );
+            }
         }
 
         
