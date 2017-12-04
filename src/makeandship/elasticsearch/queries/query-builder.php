@@ -241,7 +241,7 @@ class QueryBuilder
             }
         } else {
             $query_text = array(
-                'match_all' => array()
+                'match_all' => (object) array()
             );
         }
 
