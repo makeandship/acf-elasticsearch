@@ -507,20 +507,20 @@ class QueryBuilder
     /**
      * Build query body to control which fields are checked for highlights
      *
-     * @return array for the highlights attribute
+     * @return array for the highlight attribute
      */
     private function build_highlights()
     {
         $highlights = array();
 
         if ($this->weights) {
-            $highlights['highlights'] = array(
+            $highlights['highlight'] = array(
                 'fields' => array()
             );
 
             foreach ($this->weights as $field => $weight) {
                 if ($field) {
-                    $highlights['highlights']['fields'][$field] = new \stdClass();
+                    $highlights['highlight']['fields'][$field] = new \stdClass();
                 }
             }
         }
