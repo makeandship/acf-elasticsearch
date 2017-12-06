@@ -18,11 +18,16 @@ use \Elastica\Response;
 
 class Indexer
 {
-    public function __construct()
+    public function __construct($bulk=false)
     {
         // factories
         $this->document_builder_factory = new DocumentBuilderFactory();
         $this->type_factory = new TypeFactory();
+        $this->bulk = $bulk;
+        
+        // bulk indexing
+        $this->queues = array();
+        $this->types = array();
     }
 
     /**
@@ -169,8 +174,7 @@ class Indexer
             if ($site_status['count'] < $site_status['total']) {
                 $target_site = $site_status;
                 break;
-            }
-            elseif ($site_status['index'] == 'primary') {
+            } elseif ($site_status['index'] == 'primary') {
                 $secondary = get_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
                 $use_secondary = isset($secondary) && !empty($secondary);
 
@@ -235,6 +239,11 @@ class Indexer
         $before = microtime(true);
 
         $count = $this->add_or_update_documents($posts);
+
+        // flush bulk indexing
+        if ($this->bulk) {
+            $this->flush();
+        }
 
         $after = microtime(true);
         $search_time = ($after-$before) . " sec/search";
@@ -322,20 +331,17 @@ class Indexer
         if (is_multisite()) {
             $blog_id = get_current_blog_id();
             $primary = $status[$blog_id]['index'] == "primary";
-        }
-        else {
+        } else {
             $primary = $status['index'] == "primary";
         }
         
-
         $private_fields = $builder->has_private_fields();
         
         $document = $builder->build($o, false);
         
         if ($private_fields) {
             $private_document = $builder->build($o, true);
-        }
-        else {
+        } else {
             $private_document = $document;
         }
 
@@ -345,28 +351,99 @@ class Indexer
         // ensure the document and id are valid before indexing
         if (isset($document) && !empty($document) &&
             isset($id) && !empty($id)) {
-            if(!$private) {
+            if (!$private) {
                 // index public documents in the public repository
                 $public_type = $this->type_factory->create($doc_type, false, false, $primary);
                 if ($public_type) {
-                    $public_type->addDocument(new \Elastica\Document($id, $document));
+                    if ($this->bulk) {
+                        $this->queue($public_type, new \Elastica\Document($id, $document));
+                    } else {
+                        $public_type->addDocument(new \Elastica\Document($id, $document));
+                    }
                 }
-                if($new) {
+                if ($new) {
                     $public_type = $this->type_factory->create($doc_type, false, false, !$primary);
                     if ($public_type) {
-                        $public_type->addDocument(new \Elastica\Document($id, $document));
+                        if ($this->bulk) {
+                            $this->queue($public_type, new \Elastica\Document($id, $document));
+                        } else {
+                            $public_type->addDocument(new \Elastica\Document($id, $document));
+                        }
                     }
                 }
             }
             // index everything to private index
             $private_type = $this->type_factory->create($doc_type, false, true, $primary);
             if ($private_type) {
-                $private_type->addDocument(new \Elastica\Document($id, $private_document));
+                if ($this->bulk) {
+                    $this->queue($private_type, new \Elastica\Document($id, $private_document));
+                } else {
+                    $private_type->addDocument(new \Elastica\Document($id, $private_document));
+                }
             }
-            if($new) {
+            if ($new) {
                 $private_type = $this->type_factory->create($doc_type, false, true, !$primary);
                 if ($private_type) {
-                    $private_type->addDocument(new \Elastica\Document($id, $private_document));
+                    if ($this->bulk) {
+                        $this->queue($private_type, new \Elastica\Document($id, $private_document));
+                    } else {
+                        $private_type->addDocument(new \Elastica\Document($id, $private_document));
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * For bulk indexing add a document to a queue
+     */
+    private function queue($type, $document)
+    {
+        if ($type) {
+            $type_name = $type->getName();
+            $index = $type->getIndex();
+            if ($index) {
+                $index_name = $index->getName();
+
+                $key = $index_name . $type_name;
+
+                if ($key) {
+                    if (!$this->queues) {
+                        $this->queues = array();
+                    }
+                    if (!array_key_exists($key, $this->queues)) {
+                        $this->queues[$key] = array();
+                    }
+                    $this->queues[$key][] = $document;
+
+                    if (!$this->types) {
+                        $this->types = array();
+                    }
+
+                    if (!array_key_exists($key, $this->types)) {
+                        $this->types[$key] = $type;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Flush all queues
+     *
+     */
+    public function flush()
+    {
+        if ($this->types && $this->queues) {
+            foreach ($this->queues as $key => $documents) {
+                $type = $this->types[$key];
+
+                if ($type && $documents && count($documents) > 0) {
+                    // add the documents
+                    $type->addDocuments($documents);
+                    $type->getIndex()->refresh();
+
+                    unset($this->queues[$key]);
                 }
             }
         }
@@ -398,7 +475,7 @@ class Indexer
                     try {
                         $primary_public_type->deleteById($id);
                     } catch (\Elastica\Exception\NotFoundException $ex) {
-                    // ignore
+                        // ignore
                     }
                 }
 
@@ -408,7 +485,7 @@ class Indexer
                     try {
                         $secondary_public_type->deleteById($id);
                     } catch (\Elastica\Exception\NotFoundException $ex) {
-                    // ignore
+                        // ignore
                     }
                 }
             }
@@ -419,7 +496,7 @@ class Indexer
                 try {
                     $primary_private_type->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
-                // ignore
+                    // ignore
                 }
             }
 
@@ -429,7 +506,7 @@ class Indexer
                 try {
                     $secondary_private_type->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
-                // ignore
+                    // ignore
                 }
             }
         }
