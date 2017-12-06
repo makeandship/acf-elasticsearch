@@ -39,7 +39,8 @@ class PostsManager
             'page' => 1,
             'count' => 0,
             'total' => $total,
-            'index' => 'primary'
+            'index' => 'primary',
+            'completed' => false
         );
 
         return $status;
@@ -65,6 +66,8 @@ class PostsManager
                 'index' => 'primary'
             );
         }
+
+        $status['completed'] = false;
 
         return $status;
     }

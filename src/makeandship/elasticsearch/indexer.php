@@ -170,23 +170,24 @@ class Indexer
 
         // find the next site to index (or next page in a site to index)
         $target_site = null;
+        $completed = false;
+        $secondary = get_option(Constants::OPTION_SECONDARY_INDEX);
+        $use_secondary = isset($secondary) && !empty($secondary);
         foreach ($status as $site_status) {
+            $completed = true;
             if ($site_status['count'] < $site_status['total']) {
                 $target_site = $site_status;
+                $completed = false;
                 break;
-            } elseif ($site_status['index'] == 'primary') {
-                $secondary = get_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
-                $use_secondary = isset($secondary) && !empty($secondary);
-
-                if ($use_secondary) {
-                    $target_site = array(
-                        'page' => 1,
-                        'count' => 0,
-                        'total' => $site_status['total'],
-                        'blog_id' => $site_status['blog_id'],
-                        'index' => 'secondary'
-                    );
-                }
+            } elseif ($site_status['index'] == 'primary' && $use_secondary) {
+                $target_site = array(
+                    'page' => 1,
+                    'count' => 0,
+                    'total' => $site_status['total'],
+                    'blog_id' => $site_status['blog_id'],
+                    'index' => 'secondary'
+                );
+                $completed = false;
                 break;
             }
         }
@@ -209,6 +210,7 @@ class Indexer
         $target_site['page'] = $page + 1;
         $target_site['count'] = $target_site['count'] + $count;
         $status[$blog_id] = $target_site;
+        $status['completed'] = $completed;
         SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
 
         return $status;
@@ -258,17 +260,21 @@ class Indexer
         $status['page'] = $page + 1;
         $status['count'] = $status['count'] + $count;
 
-        if ($status['count'] >= $status['total'] && $status['index'] == "primary") {
-            $secondary = get_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
+        if ($status['count'] >= $status['total']) {
+            $secondary = get_option(Constants::OPTION_SECONDARY_INDEX);
             $use_secondary = isset($secondary) && !empty($secondary);
 
-            if ($use_secondary) {
+            if ($status['index'] == "primary" && $use_secondary) {
                 $status = array(
                     'page' => 1,
                     'count' => 0,
                     'total' => $status['total'],
-                    'index' => 'secondary'
+                    'index' => 'secondary',
+                    'completed' => false
                 );
+            }
+            else {
+                $status['completed'] = true;
             }
         }
 

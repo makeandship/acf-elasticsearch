@@ -110,23 +110,7 @@ jQuery(document).ready(function($) {
       function(response) {
         var status = response.status;
         if (status) {
-          var complete = true;
-
-          if (status.page && status.total) {
-            if (status.count < status.total || status.index === "primary") {
-              complete = false;
-            }
-          } else {
-            for (var blogId in status) {
-              var site = status[blogId];
-              if (site.count < site.total || status.index === "primary") {
-                complete = false;
-                break;
-              }
-            }
-          }
-
-          if (!complete) {
+          if (!status.completed) {
             console.log("More posts to index");
             $("#indexing-messages").html(
               `Indexed ${status.count} of ${status.total} to ${
