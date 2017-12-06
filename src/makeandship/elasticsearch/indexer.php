@@ -199,6 +199,11 @@ class Indexer
         $posts = $posts_manager->get_posts($blog_id, $page, $per);
         $count = $this->add_or_update_documents($posts);
 
+        // flush bulk indexing
+        if ($this->bulk) {
+            $this->flush();
+        }
+
         // update status
         $target_site['count'] = $target_site['count'] || 0;
         $target_site['page'] = $page + 1;
@@ -278,6 +283,11 @@ class Indexer
         $taxonomies_manager = new TaxonomiesManager();
         $terms = $taxonomies_manager->get_taxonomies();
         $count = $this->add_or_update_documents($terms);
+
+        // flush bulk indexing
+        if ($this->bulk) {
+            $this->flush();
+        }
 
         error_log('Indexed '.strval($count).' terms');
 

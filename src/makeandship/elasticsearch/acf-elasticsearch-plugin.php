@@ -56,7 +56,7 @@ class AcfElasticsearchPlugin
 
         // taxonomies
         add_action('create_term', array(&$this, 'create_term'), 10, 3);
-        add_action('edited_term', array(&$this, 'edit_term'), 10, 3 );
+        add_action('edited_term', array(&$this, 'edit_term'), 10, 3);
         add_action('delete_term', array(&$this, 'delete_term'), 10, 4);
         add_action('registered_taxonomy', array(&$this, 'registered_taxonomy'), 10, 3);
     }
@@ -93,8 +93,7 @@ class AcfElasticsearchPlugin
     {
         $fresh = isset($_POST['fresh']) ? ($_POST['fresh'] === 'true') : false;
 
-        $indexes = SettingsManager::get_instance()->get_indexes();
-        $indexer = new Indexer();
+        $indexer = new Indexer(true); // use bulk indexing
         $status = 0;
 
         $status = $indexer->index_posts($fresh);
@@ -113,7 +112,7 @@ class AcfElasticsearchPlugin
         error_log('index_taxonomies()');
 
         $indexes = SettingsManager::get_instance()->get_indexes();
-        $indexer = new Indexer();
+        $indexer = new Indexer(true);
         $index = 0;
         foreach ($indexes as $index) {
             $name = $index['name'];
@@ -201,8 +200,7 @@ class AcfElasticsearchPlugin
         }
         if (in_array($new_status, Constants::INDEX_POST_STATUSES) && $new_status != $old_status) {
             $this->indexer->add_or_update_document($post, true);
-        }
-        else {
+        } else {
             $this->indexer->remove_document($post);
         }
     }
@@ -222,7 +220,7 @@ class AcfElasticsearchPlugin
     public function create_term($term_id, $tt_id, $taxonomy)
     {
         // get the term to index
-        $term = get_term( $term_id, $taxonomy );
+        $term = get_term($term_id, $taxonomy);
 
         // can't index empty terms
         if ($term == null) {
@@ -230,7 +228,6 @@ class AcfElasticsearchPlugin
         }
 
         $this->indexer->add_or_update_document($term, true);
-        
     }
 
     /**
@@ -239,7 +236,7 @@ class AcfElasticsearchPlugin
     public function edit_term($term_id, $tt_id, $taxonomy)
     {
         // get the term to index
-        $term = get_term( $term_id, $taxonomy );
+        $term = get_term($term_id, $taxonomy);
 
         // can't index empty terms
         if ($term == null) {
@@ -254,7 +251,7 @@ class AcfElasticsearchPlugin
      */
     public function delete_term($term_id, $tt_id, $taxonomy, $deleted_term)
     {
-        $term = get_term( $term_id, $taxonomy );
+        $term = get_term($term_id, $taxonomy);
         $this->indexer->remove_document($deleted_term);
     }
 
