@@ -24,11 +24,13 @@ class SettingsHelper
 
             $exclude = "";
             $private = "";
-
-            foreach ($option_post_types as $item) {
-                if ($item['type'] == $post_type) {
-                    $exclude = implode("\n", $item['exclude']);
-                    $private = implode("\n", $item['private']);
+            
+            if (isset($option_post_types) && !empty($option_post_types)) {
+                foreach ($option_post_types as $item) {
+                    if ($item['type'] == $post_type) {
+                        $exclude = implode("\n", $item['exclude']);
+                        $private = implode("\n", $item['private']);
+                    }
                 }
             }
             
@@ -64,9 +66,11 @@ class SettingsHelper
         // populate weightings
         $weightings = array();
         $option_weightings = SettingsManager::get_instance()->get(Constants::OPTION_WEIGHTINGS);
-        foreach($option_weightings as $field => $weight) {
-            if ($field) {
-                $weightings[] = $field.'^'.$weight;
+        if (isset($option_weightings) && !empty($option_weightings)) {
+            foreach($option_weightings as $field => $weight) {
+                if ($field) {
+                    $weightings[] = $field.'^'.$weight;
+                }
             }
         }
         $value = implode("\n", $weightings);

@@ -248,8 +248,10 @@ class SettingsManager
 
         $types = [];
 
-        foreach ($post_types as $item) {
-            $types[] = $item['type'];
+        if (isset($post_types) && !empty($post_types)) {
+            foreach ($post_types as $item) {
+                $types[] = $item['type'];
+            }
         }
 
         return $types;
