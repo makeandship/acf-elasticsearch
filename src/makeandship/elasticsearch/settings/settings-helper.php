@@ -61,6 +61,19 @@ class SettingsHelper
         return $value;
     }
 
+    public static function get_exclusion_slugs_data()
+    {
+        $value = null;
+        
+        // populate search fields
+        $option_slugs_to_exclude = SettingsManager::get_instance()->get(Constants::OPTION_SLUGS_TO_EXCLUDE);
+        if ($option_slugs_to_exclude) {
+            $value = implode("\n", $option_slugs_to_exclude);
+        }
+        
+        return $value;
+    }
+
     public static function get_weightings_data()
     {
         // populate weightings

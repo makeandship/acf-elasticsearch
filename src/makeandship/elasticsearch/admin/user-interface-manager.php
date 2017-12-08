@@ -48,6 +48,7 @@ class UserInterfaceManager
             add_site_option(Constants::OPTION_CAPABILITY, '');
             add_site_option(Constants::OPTION_SEARCH_FIELDS, array());
             add_site_option(Constants::OPTION_WEIGHTINGS, array());
+            add_site_option(Constants::OPTION_SLUGS_TO_EXCLUDE, array());
 
         } else {
             add_option(Constants::VERSION, $this->version);
@@ -67,6 +68,7 @@ class UserInterfaceManager
             add_option(Constants::OPTION_CAPABILITY, '');
             add_option(Constants::OPTION_SEARCH_FIELDS, array());
             add_option(Constants::OPTION_WEIGHTINGS, array());
+            add_option(Constants::OPTION_SLUGS_TO_EXCLUDE, array());
         }
     }
 

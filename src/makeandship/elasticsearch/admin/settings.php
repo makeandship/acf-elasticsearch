@@ -23,6 +23,8 @@ if (!empty($_POST)) {
     $search_fields = HtmlUtils::create_search_fields();
     $weightings = HtmlUtils::create_weightings();
     $fuzziness = intval(trim($_POST['acf_elasticsearch_fuzziness']));
+    $slugs_to_exclude = HtmlUtils::create_slugs_to_exclude();
+    $ids_to_exclude = HtmlUtils::create_ids_from_slugs($slugs_to_exclude);
 
     SettingsManager::get_instance()->set(Constants::OPTION_SERVER, $server);
     SettingsManager::get_instance()->set(Constants::OPTION_PRIMARY_INDEX, $primary_index);
@@ -38,6 +40,8 @@ if (!empty($_POST)) {
     SettingsManager::get_instance()->set(Constants::OPTION_SEARCH_FIELDS, $search_fields);
     SettingsManager::get_instance()->set(Constants::OPTION_WEIGHTINGS, $weightings);
     SettingsManager::get_instance()->set(Constants::OPTION_FUZZINESS, $fuzziness);
+    SettingsManager::get_instance()->set(Constants::OPTION_SLUGS_TO_EXCLUDE, $slugs_to_exclude);
+    SettingsManager::get_instance()->set(Constants::OPTION_IDS_TO_EXCLUDE, $ids_to_exclude);
 }
 ?>
 <h1>ACF Elasticsearch</h1>
@@ -150,6 +154,16 @@ if (!empty($_POST)) {
                                 'type' => 'textarea',
                                 'class' => 'medium',
                                 'value' => SettingsHelper::get_weightings_data(),
+                                'placeholder' => ''
+                            )
+                        );
+                        echo HtmlUtils::render_field(
+                            'Slugs to exclude',
+                            'acf_elasticsearch_slugs_to_exclude',
+                            array(
+                                'type' => 'textarea',
+                                'class' => 'medium',
+                                'value' => SettingsHelper::get_exclusion_slugs_data(),
                                 'placeholder' => ''
                             )
                         );
