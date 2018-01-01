@@ -2,6 +2,7 @@
 
 namespace makeandship\elasticsearch\admin;
 
+use makeandship\elasticsearch\Constants;
 use makeandship\elasticsearch\settings\SettingsHelper;
 
 class HtmlUtils
@@ -212,6 +213,47 @@ class HtmlUtils
         }
         
         return $search_fields;
+    }
+
+    public static function create_slugs_to_exclude()
+    {
+        $slugs_to_exclude = null;
+
+        $input = $_POST['acf_elasticsearch_slugs_to_exclude'];
+        if ($input) {
+            $slugs_to_exclude = explode("\n", str_replace("\r", "", $input));
+            $slugs_to_exclude = array_map('trim', $slugs_to_exclude);
+
+            if ($slugs_to_exclude && count($slugs_to_exclude) === 0) {
+                $slugs_to_exclude = null;
+            }
+        }
+        
+        return $slugs_to_exclude;
+    }
+
+    public static function create_ids_from_slugs($slugs)
+    {
+        if (isset($slugs) && !empty($slugs)) {
+            $args = array(
+                'post_type' => get_post_types(),
+                'post_status' => Constants::INDEX_POST_STATUSES,
+                'post_name__in' => $slugs,
+                'fields' => 'ids'
+            );
+
+            $query = new \WP_Query($args);
+            $ids = array();
+            if ($query->have_posts()) {
+                foreach( $query->posts as $id ) {
+                    $ids[] = $id;
+                }
+            }
+            
+            return $ids;
+        }
+
+        return array();
     }
 
     public static function create_weightings()

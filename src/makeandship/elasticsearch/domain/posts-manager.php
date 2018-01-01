@@ -113,10 +113,12 @@ class PostsManager
     {
         $post_types = $this->get_valid_post_types();
         $post_status = array('publish', 'private');
+        $ids_to_exclude = SettingsManager::get_instance()->get(Constants::OPTION_IDS_TO_EXCLUDE);
         
         $args = array(
             'post_type' => $post_types,
             'post_status' => $post_status,
+            'post__not_in' => $ids_to_exclude,
             'fields' => 'count'
         );
 
@@ -127,10 +129,12 @@ class PostsManager
     {
         $post_types = $this->get_valid_post_types();
         $post_status =  array( 'publish', 'private' );
+        $ids_to_exclude = SettingsManager::get_instance()->get(Constants::OPTION_IDS_TO_EXCLUDE);
         
         $args = array(
             'post_type' => $post_types,
             'post_status' => $post_status,
+            'exclude' => $ids_to_exclude,
             'posts_per_page' => $per,
             'paged' => $page
         );
