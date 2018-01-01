@@ -38,6 +38,7 @@ class Constants
     const OPTION_WEIGHTINGS = 'acf_elasticsearch_weightings';
     const OPTION_FUZZINESS = 'acf_elasticsearch_fuzziness';
     const OPTION_SLUGS_TO_EXCLUDE = 'acf_elasticsearch_slugs_to_exclude';
+    const OPTION_EXCLUSION_FIELD = 'acf_elasticsearch_exclusion_field';
     const OPTION_IDS_TO_EXCLUDE = 'acf_elasticsearch_ids_to_exclude';
 
     // indexer

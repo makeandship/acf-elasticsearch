@@ -60,6 +60,7 @@ class SettingsManager
             $this->settings[Constants::OPTION_WEIGHTINGS] = $this->get_option(Constants::OPTION_WEIGHTINGS);
             $this->settings[Constants::OPTION_FUZZINESS] = $this->get_option(Constants::OPTION_FUZZINESS);
             $this->settings[Constants::OPTION_SLUGS_TO_EXCLUDE] = $this->get_option(Constants::OPTION_SLUGS_TO_EXCLUDE);
+            $this->settings[Constants::OPTION_EXCLUSION_FIELD] = $this->get_option(Constants::OPTION_EXCLUSION_FIELD);
             $this->settings[Constants::OPTION_IDS_TO_EXCLUDE] = $this->get_option(Constants::OPTION_IDS_TO_EXCLUDE);
         }
         
@@ -104,6 +105,7 @@ class SettingsManager
                 Constants::OPTION_WEIGHTINGS,
                 Constants::OPTION_FUZZINESS,
                 Constants::OPTION_SLUGS_TO_EXCLUDE,
+                Constants::OPTION_EXCLUSION_FIELD,
                 Constants::OPTION_IDS_TO_EXCLUDE
             ])) {
                 return true;
