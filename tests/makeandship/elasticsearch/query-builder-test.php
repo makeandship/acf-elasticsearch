@@ -42,6 +42,7 @@ class QueryBuilderTest extends WP_UnitTestCase
             ->paged(0, 10)
             ->searching(array('name'))
             ->returning(array('name', 'title'))
+            ->with_fuzziness(1)
             ->to_array();
 
         $this->assertEquals($query['query']['bool']['must']['multi_match']['query'], 'Ace');
@@ -63,6 +64,7 @@ class QueryBuilderTest extends WP_UnitTestCase
             ->paged(0, 10)
             ->searching(array('name'))
             ->returning(array('name', 'title'))
+            ->with_fuzziness(1)
             ->to_array();
 
         $this->assertEquals($query['query']['bool']['must']['multi_match']['query'], 'Ace');

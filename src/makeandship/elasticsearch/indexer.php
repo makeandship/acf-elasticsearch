@@ -239,7 +239,7 @@ class Indexer
         $posts = $posts_manager->get_posts(null, $page, $per);
 
         $after = microtime(true);
-        $search_time = ($after-$before) . " sec/search";
+        $search_time = ($after-$before) . " sec";
         error_log("Gathering posts: ".$search_time);
 
         // index documents and time
@@ -253,11 +253,10 @@ class Indexer
         }
 
         $after = microtime(true);
-        $search_time = ($after-$before) . " sec/search";
+        $search_time = ($after-$before) . " sec";
         error_log("Indexing: ".$search_time);
 
-        // update status
-        $status['page'] = $page + 1;
+        // update count
         $status['count'] = $status['count'] + $count;
 
         if ($status['count'] >= $status['total']) {
@@ -272,12 +271,14 @@ class Indexer
                     'index' => 'secondary',
                     'completed' => false
                 );
-            }
-            else {
+            } else {
                 $status['completed'] = true;
             }
         }
-
+        else {
+            // only update page if we're not complete
+            $status['page'] = $page + 1;
+        }
         
         SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
 
@@ -343,42 +344,37 @@ class Indexer
         $status = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
         $builder = $this->document_builder_factory->create($o);
 
-        $private = $builder->is_private($o);
-        if (is_multisite()) {
-            $blog_id = get_current_blog_id();
-            $primary = $status[$blog_id]['index'] == "primary";
-        } else {
-            $primary = $status['index'] == "primary";
-        }
-        
-        $private_fields = $builder->has_private_fields();
-        
-        $document = $builder->build($o, false);
-        
-        if ($private_fields) {
-            $private_document = $builder->build($o, true);
-        } else {
-            $private_document = $document;
-        }
+        $indexable = $builder->is_indexable($o);
 
-        $id = $builder->get_id($o);
-        $doc_type = $builder->get_type($o);
+        if ($indexable) {
+            $private = $builder->is_private($o);
+            
+            if (is_multisite()) {
+                $blog_id = get_current_blog_id();
+                $primary = $status[$blog_id]['index'] == "primary";
+            } else {
+                $primary = $status['index'] == "primary";
+            }
+            
+            $private_fields = $builder->has_private_fields();
+            
+            $document = $builder->build($o, false);
+            
+            if ($private_fields) {
+                $private_document = $builder->build($o, true);
+            } else {
+                $private_document = $document;
+            }
 
-        // ensure the document and id are valid before indexing
-        if (isset($document) && !empty($document) &&
-            isset($id) && !empty($id)) {
-            if (!$private) {
-                // index public documents in the public repository
-                $public_type = $this->type_factory->create($doc_type, false, false, $primary);
-                if ($public_type) {
-                    if ($this->bulk) {
-                        $this->queue($public_type, new \Elastica\Document($id, $document));
-                    } else {
-                        $public_type->addDocument(new \Elastica\Document($id, $document));
-                    }
-                }
-                if ($new) {
-                    $public_type = $this->type_factory->create($doc_type, false, false, !$primary);
+            $id = $builder->get_id($o);
+            $doc_type = $builder->get_type($o);
+
+            // ensure the document and id are valid before indexing
+            if (isset($document) && !empty($document) &&
+                isset($id) && !empty($id)) {
+                if (!$private) {
+                    // index public documents in the public repository
+                    $public_type = $this->type_factory->create($doc_type, false, false, $primary);
                     if ($public_type) {
                         if ($this->bulk) {
                             $this->queue($public_type, new \Elastica\Document($id, $document));
@@ -386,24 +382,34 @@ class Indexer
                             $public_type->addDocument(new \Elastica\Document($id, $document));
                         }
                     }
+                    if ($new) {
+                        $public_type = $this->type_factory->create($doc_type, false, false, !$primary);
+                        if ($public_type) {
+                            if ($this->bulk) {
+                                $this->queue($public_type, new \Elastica\Document($id, $document));
+                            } else {
+                                $public_type->addDocument(new \Elastica\Document($id, $document));
+                            }
+                        }
+                    }
                 }
-            }
-            // index everything to private index
-            $private_type = $this->type_factory->create($doc_type, false, true, $primary);
-            if ($private_type) {
-                if ($this->bulk) {
-                    $this->queue($private_type, new \Elastica\Document($id, $private_document));
-                } else {
-                    $private_type->addDocument(new \Elastica\Document($id, $private_document));
-                }
-            }
-            if ($new) {
-                $private_type = $this->type_factory->create($doc_type, false, true, !$primary);
+                // index everything to private index
+                $private_type = $this->type_factory->create($doc_type, false, true, $primary);
                 if ($private_type) {
                     if ($this->bulk) {
                         $this->queue($private_type, new \Elastica\Document($id, $private_document));
                     } else {
                         $private_type->addDocument(new \Elastica\Document($id, $private_document));
+                    }
+                }
+                if ($new) {
+                    $private_type = $this->type_factory->create($doc_type, false, true, !$primary);
+                    if ($private_type) {
+                        if ($this->bulk) {
+                            $this->queue($private_type, new \Elastica\Document($id, $private_document));
+                        } else {
+                            $private_type->addDocument(new \Elastica\Document($id, $private_document));
+                        }
                     }
                 }
             }
@@ -483,10 +489,10 @@ class Indexer
 
         // ensure the document and id are valid before indexing
         if (isset($o) && !empty($o) &&
-            isset($id) && !empty($id)) {
+                isset($id) && !empty($id)) {
             if (!$private) {
                 $primary_public_type = $this->type_factory->create($doc_type, false, false, true);
-                
+                    
                 if ($primary_public_type) {
                     try {
                         $primary_public_type->deleteById($id);
@@ -507,7 +513,7 @@ class Indexer
             }
 
             $primary_private_type = $this->type_factory->create($doc_type, false, true, true);
-                
+                    
             if ($primary_private_type) {
                 try {
                     $primary_private_type->deleteById($id);
@@ -517,7 +523,7 @@ class Indexer
             }
 
             $secondary_private_type = $this->type_factory->create($doc_type, false, true, false);
-                
+                    
             if ($secondary_private_type) {
                 try {
                     $secondary_private_type->deleteById($id);

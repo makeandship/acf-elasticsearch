@@ -21,6 +21,14 @@ class TermDocumentBuilder extends DocumentBuilder
     }
 
     /**
+     * Include this term in the index
+     */
+    public function is_indexable($post)
+    {
+        return true;
+    }
+
+    /**
      *
      */
     public function build($term, $include_private=false)
