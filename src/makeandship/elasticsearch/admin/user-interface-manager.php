@@ -49,7 +49,7 @@ class UserInterfaceManager
             add_site_option(Constants::OPTION_SEARCH_FIELDS, array());
             add_site_option(Constants::OPTION_WEIGHTINGS, array());
             add_site_option(Constants::OPTION_SLUGS_TO_EXCLUDE, array());
-
+            add_site_option(Constants::OPTION_EXCLUSION_FIELD, '');
         } else {
             add_option(Constants::VERSION, $this->version);
             add_option(Constants::DB_VERSION, $this->db_version);
@@ -69,6 +69,7 @@ class UserInterfaceManager
             add_option(Constants::OPTION_SEARCH_FIELDS, array());
             add_option(Constants::OPTION_WEIGHTINGS, array());
             add_option(Constants::OPTION_SLUGS_TO_EXCLUDE, array());
+            add_option(Constants::OPTION_EXCLUSION_FIELD, '');
         }
     }
 

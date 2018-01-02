@@ -30,6 +30,45 @@ class PostDocumentBuilder extends DocumentBuilder
     }
 
     /**
+     * Check whether this document should be stored in an index
+     * using the configuration field <code>Constants::OPTION_EXCLUSION_FIELD</code>
+     *
+     * Index a post if
+     * - the slug / id is not in an exclusion list
+     * - the exclusion field is not true for this post
+     *
+     * @param post the post the confirm for indexing
+     * @return boolean true if the document should be indexed
+     */
+    public function is_indexable($post)
+    {
+        if ($post) {
+            $post_id = $post->ID;
+            
+            // check if the exclusion field is set
+            $exclusion_field_name = SettingsManager::get_instance()->get(Constants::OPTION_EXCLUSION_FIELD);
+            if ($exclusion_field_name && $post_id) {
+                $exclude = get_field($exclusion_field_name, $post_id);
+                if ($exclude) {
+                    return false;
+                }
+            }
+            // check if the path is part of the exclusion slugs
+            $slug = $post->post_name;
+            $exclude_slugs = SettingsManager::get_instance()->get(Constants::OPTION_SLUGS_TO_EXCLUDE);
+            if (
+                $exclude_slugs &&
+                is_array($exclude_slugs) &&
+                count($exclude_slugs) > 0 &&
+                in_array($slug, $exclude_slugs)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      *
      */
     public function build($post, $include_private=false)

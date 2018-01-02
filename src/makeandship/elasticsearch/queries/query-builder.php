@@ -191,8 +191,6 @@ class QueryBuilder
         $highlights = $this->build_highlights();
         $query = array_merge($query, $highlights);
 
-        error_log(print_r(json_encode($query), true));
-
         return $query;
     }
 
