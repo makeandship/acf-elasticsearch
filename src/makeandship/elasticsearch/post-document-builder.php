@@ -44,16 +44,15 @@ class PostDocumentBuilder extends DocumentBuilder
     {
         if ($post) {
             $post_id = $post->ID;
-
+            
             // check if the exclusion field is set
             $exclusion_field_name = SettingsManager::get_instance()->get(Constants::OPTION_EXCLUSION_FIELD);
             if ($exclusion_field_name && $post_id) {
                 $exclude = get_field($exclusion_field_name, $post_id);
-                if (!$exclude) {
+                if ($exclude) {
                     return false;
                 }
             }
-
             // check if the path is part of the exclusion slugs
             $slug = $post->post_name;
             $exclude_slugs = SettingsManager::get_instance()->get(Constants::OPTION_SLUGS_TO_EXCLUDE);
