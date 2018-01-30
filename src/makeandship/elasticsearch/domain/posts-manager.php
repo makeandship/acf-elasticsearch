@@ -136,7 +136,11 @@ class PostsManager
             'post_status' => $post_status,
             'exclude' => $ids_to_exclude,
             'posts_per_page' => $per,
-            'paged' => $page
+            'paged' => $page,
+            'orderby' => array(
+                'post_type' => 'ASC',
+                'post_title' => 'ASC'
+            )
         );
 
         return $args;
