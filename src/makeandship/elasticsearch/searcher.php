@@ -2,7 +2,6 @@
 namespace makeandship\elasticsearch;
 
 use makeandship\elasticsearch\settings\SettingsManager;
-use makeandship\elasticsearch\queries\ElasticsearchQueryBuilder;
 use makeandship\elasticsearch\transformer\SearchTransformer;
 
 use \Elastica\Client;

@@ -24,6 +24,7 @@ if (!empty($_POST)) {
     $weightings = HtmlUtils::create_weightings();
     $fuzziness = intval(trim($_POST['acf_elasticsearch_fuzziness']));
     $slugs_to_exclude = HtmlUtils::create_slugs_to_exclude();
+    $exclusion_field = trim($_POST['acf_elasticsearch_exclusion_field']);
     $ids_to_exclude = HtmlUtils::create_ids_from_slugs($slugs_to_exclude);
 
     SettingsManager::get_instance()->set(Constants::OPTION_SERVER, $server);
@@ -41,15 +42,16 @@ if (!empty($_POST)) {
     SettingsManager::get_instance()->set(Constants::OPTION_WEIGHTINGS, $weightings);
     SettingsManager::get_instance()->set(Constants::OPTION_FUZZINESS, $fuzziness);
     SettingsManager::get_instance()->set(Constants::OPTION_SLUGS_TO_EXCLUDE, $slugs_to_exclude);
+    SettingsManager::get_instance()->set(Constants::OPTION_EXCLUSION_FIELD, $exclusion_field);
     SettingsManager::get_instance()->set(Constants::OPTION_IDS_TO_EXCLUDE, $ids_to_exclude);
 }
 ?>
 <h1>ACF Elasticsearch</h1>
-	<div id="poststuff">
-		<form method="post" action="">
-			<div id="config-container" class="postbox">
-				<h2 class="handle"><span>1. Configure your Elastic search server</span></h2>
-				<div class="inside acf-fields -left">
+    <div id="poststuff">
+        <form method="post" action="">
+            <div id="config-container" class="postbox">
+                <h2 class="handle"><span>1. Configure your Elastic search server</span></h2>
+                <div class="inside acf-fields -left">
                     <div class="acf-elasticsearch-container">
                         <?php 
                         echo HtmlUtils::render_field(
@@ -168,6 +170,14 @@ if (!empty($_POST)) {
                             )
                         );
                         echo HtmlUtils::render_field(
+                            'Exclusion field name',
+                            'acf_elasticsearch_exclusion_field',
+                            array(
+                                'class' => '',
+                                'placeholder' => 'ACF field which when true will exclude posts from the index'
+                            )
+                        );
+                        echo HtmlUtils::render_field(
                             'Fuzziness',
                             'acf_elasticsearch_fuzziness',
                             array(
@@ -188,11 +198,11 @@ if (!empty($_POST)) {
                         <span id="config-spinner" class="acf-spinner"></span>
                         <span id="config-messages"></span>
                     </div>
-				</div>
-			</div>
-			<div id="mapping-container" class="postbox">
-				<h2 class="handle"><span>2. Setup server mappings</span></h2>
-				<div class="inside acf-fields -left">
+                </div>
+            </div>
+            <div id="mapping-container" class="postbox">
+                <h2 class="handle"><span>2. Setup server mappings</span></h2>
+                <div class="inside acf-fields -left">
                     <div class="acf-elasticsearch-container">
                     <?php
                         echo HtmlUtils::render_buttons([
@@ -208,10 +218,10 @@ if (!empty($_POST)) {
                         <span id="mapping-messages"></span>
                     </div>
                 </div>
-			</div>
-			<div id="indexing-container" class="postbox">
-				<h2 class="handle"><span>3. Index the data</span></h2>
-				<div class="inside acf-fields -left">
+            </div>
+            <div id="indexing-container" class="postbox">
+                <h2 class="handle"><span>3. Index the data</span></h2>
+                <div class="inside acf-fields -left">
                     <div class="acf-elasticsearch-container">
                     <?php
                         echo HtmlUtils::render_buttons([
@@ -244,8 +254,8 @@ if (!empty($_POST)) {
                         <span id="indexing-spinner" class="acf-spinner"></span>
                         <span id="indexing-messages"></span>
                     </div>
-				</div>
-			</div>
-	 	</form>
-	</div>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
