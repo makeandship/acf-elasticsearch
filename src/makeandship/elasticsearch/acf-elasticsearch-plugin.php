@@ -111,12 +111,26 @@ class AcfElasticsearchPlugin
     {
         error_log('index_taxonomies()');
 
-        $indexes = SettingsManager::get_instance()->get_indexes();
+        // instantiate the index and current status
         $indexer = new Indexer(true);
-        $index = 0;
-        foreach ($indexes as $index) {
-            $name = $index['name'];
-            $count = $indexer->index_taxonomies($name);
+        $status = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
+        
+        // index to primary
+        $primary = SettingsManager::get_instance()->get(Constants::OPTION_PRIMARY_INDEX);
+        
+        if ($primary) {
+            $status['index'] = 'primary';
+            SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
+            $count = $indexer->index_taxonomies();
+        }
+
+        // index to secondary
+        $secondary = SettingsManager::get_instance()->get(Constants::OPTION_SECONDARY_INDEX);
+        
+        if ($secondary) {
+            $status['index'] = 'secondary';
+            SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
+            $count = $indexer->index_taxonomies();
         }
 
         $json = json_encode(array(

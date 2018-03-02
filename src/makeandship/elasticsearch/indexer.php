@@ -285,7 +285,7 @@ class Indexer
         return $status;
     }
 
-    public function index_taxonomies($name)
+    public function index_taxonomies()
     {
         $taxonomies_manager = new TaxonomiesManager();
         $terms = $taxonomies_manager->get_taxonomies();
