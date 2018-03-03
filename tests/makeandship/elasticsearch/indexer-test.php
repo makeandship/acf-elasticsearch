@@ -69,7 +69,7 @@ class IndexerTest extends WP_UnitTestCase
             ) 
         ); 
         $indexer = new Indexer();
-        $count = $indexer->index_taxonomies("tax");
+        $count = $indexer->index_taxonomies();
 
         $this->assertEquals($count, 1);
     }
