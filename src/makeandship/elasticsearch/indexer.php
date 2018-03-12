@@ -490,45 +490,44 @@ class Indexer
         // ensure the document and id are valid before indexing
         if (isset($o) && !empty($o) &&
                 isset($id) && !empty($id)) {
-            if (!$private) {
-                $primary_public_type = $this->type_factory->create($doc_type, false, false, true);
-                    
-                if ($primary_public_type) {
-                    try {
-                        $primary_public_type->deleteById($id);
-                    } catch (\Elastica\Exception\NotFoundException $ex) {
-                        // ignore
-                    }
+            // attempt to clear from all types - post_status = private won't be available
+            $primary_public_type = $this->type_factory->create($doc_type, false, false, true);
+            if ($primary_public_type) {
+                try {
+                    $primary_public_type->deleteById($id);
+                } catch (\Elastica\Exception\NotFoundException $ex) {
+                    // ignore
+                    error_log('Unable to delete from primary public index');
                 }
+            }
 
-                $secondary_public_type = $this->type_factory->create($doc_type, false, false, false);
-
-                if ($secondary_public_type) {
-                    try {
-                        $secondary_public_type->deleteById($id);
-                    } catch (\Elastica\Exception\NotFoundException $ex) {
-                        // ignore
-                    }
+            $secondary_public_type = $this->type_factory->create($doc_type, false, false, false);
+            if ($secondary_public_type) {
+                try {
+                    $secondary_public_type->deleteById($id);
+                } catch (\Elastica\Exception\NotFoundException $ex) {
+                    // ignore
+                    error_log('Unable to delete from secondary public index');
                 }
             }
 
             $primary_private_type = $this->type_factory->create($doc_type, false, true, true);
-                    
             if ($primary_private_type) {
                 try {
                     $primary_private_type->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
+                    error_log('Unable to delete from primary private index');
                 }
             }
 
             $secondary_private_type = $this->type_factory->create($doc_type, false, true, false);
-                    
             if ($secondary_private_type) {
                 try {
                     $secondary_private_type->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
+                    error_log('Unable to delete from secondary private index');
                 }
             }
         }
