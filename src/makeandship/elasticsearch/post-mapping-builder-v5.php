@@ -2,7 +2,7 @@
 
 namespace makeandship\elasticsearch;
 
-class PostMappingBuilder extends MappingBuilder
+class PostMappingBuilderV5 extends MappingBuilder
 {
     const EXCLUDE_POST_TYPES = array(
         'revision',
@@ -60,7 +60,7 @@ class PostMappingBuilder extends MappingBuilder
         $properties = array();
 
         // base post fields
-        foreach (PostMappingBuilder::CORE_FIELDS as $field => $options) {
+        foreach (PostMappingBuilderV5::CORE_FIELDS as $field => $options) {
             if (isset($field) && isset($options)) {
                 $properties = array_merge(
                     $properties,

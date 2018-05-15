@@ -36,7 +36,8 @@ class TermDocumentBuilder extends DocumentBuilder
         $document = null;
 
         if (isset($term)) {
-            foreach (TermMappingBuilder::CORE_FIELDS as $name => $definition) {
+            $term->type = $term->taxonomy;
+            foreach ($this->get_core_fields('WP_Term') as $name => $definition) {
                 $value = $term->{$name};
 
                 // transform if required
@@ -74,6 +75,6 @@ class TermDocumentBuilder extends DocumentBuilder
      */
     public function get_type($term)
     {
-        return $term->taxonomy;
+        return Constants::DEFAULT_MAPPING_TYPE;
     }
 }

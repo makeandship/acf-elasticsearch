@@ -50,6 +50,7 @@ class Constants
     const DEFAULT_POSTS_PER_PAGE = 100;
     const DEFAULT_TERMS_PER_PAGE = 50;
     const DEFAULT_SITES_PER_PAGE = 50;
+    const DEFAULT_MAPPING_TYPE = 'document';
 
     // no instantiation
     protected function __construct()
