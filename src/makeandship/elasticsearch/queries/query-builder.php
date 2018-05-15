@@ -304,8 +304,8 @@ class QueryBuilder
                 // post type is used for the index type and therefore uses a type query
                 // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-query.html
                 $query_taxonomy_filters['filter']['bool']['should'][] = array(
-                    'type' => array(
-                        'value' => $post_type
+                    'term' => array(
+                        'type' => $post_type
                     )
                 );
             }
@@ -328,8 +328,8 @@ class QueryBuilder
                 // post type is used for the index type and therefore uses a type query
                 // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-query.html
                 $query_taxonomy_filters['filter']['bool']['should'][] = array(
-                    'type' => array(
-                        'value' => $taxonomy
+                    'term' => array(
+                        'type' => $taxonomy
                     )
                 );
             }
