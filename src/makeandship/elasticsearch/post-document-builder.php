@@ -76,9 +76,10 @@ class PostDocumentBuilder extends DocumentBuilder
         $document = null;
 
         if (isset($post)) {
+            $post->type = $post->post_type;
             $document = array();
 
-            foreach (PostMappingBuilder::CORE_FIELDS as $name => $definition) {
+            foreach ($this->get_core_fields('WP_Post') as $name => $definition) {
                 if ($name === 'link') {
                     $link = get_permalink($post->ID);
                     $document['link'] = $link;
@@ -137,7 +138,7 @@ class PostDocumentBuilder extends DocumentBuilder
             // taxonomies
             $taxonomies = get_object_taxonomies($post_type, 'objects');
             foreach ($taxonomies as $name => $taxonomy) {
-                if (!in_array($name, PostMappingBuilder::EXCLUDE_TAXONOMIES)) {
+                if (!in_array($name, MappingBuilder::EXCLUDE_TAXONOMIES)) {
                     $document = array_merge(
                         $document,
                         $this->build_taxonomy($post, $name, $taxonomy)
@@ -310,6 +311,6 @@ class PostDocumentBuilder extends DocumentBuilder
      */
     public function get_type($post)
     {
-        return $post->post_type;
+        return Constants::DEFAULT_MAPPING_TYPE;
     }
 }

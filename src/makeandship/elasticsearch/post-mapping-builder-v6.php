@@ -4,23 +4,6 @@ namespace makeandship\elasticsearch;
 
 class PostMappingBuilderV6 extends MappingBuilder
 {
-    const EXCLUDE_POST_TYPES = array(
-        'revision',
-        'attachment',
-        'json_consumer',
-        'nav_menu',
-        'nav_menu_item',
-        'post_format',
-        'link_category',
-        'acf-field-group',
-        'acf-field'
-    );
-
-    const EXCLUDE_TAXONOMIES = array(
-        'post_tag',
-        'post_format'
-    );
-
     const CORE_FIELDS = array(
         'type' => array(
             'type' => 'keyword',
@@ -102,7 +85,7 @@ class PostMappingBuilderV6 extends MappingBuilder
         // post taxonomies
         $taxonomies = get_object_taxonomies($post_type, 'objects');
         foreach ($taxonomies as $name => $taxonomy) {
-            if (!in_array($name, self::EXCLUDE_TAXONOMIES)) {
+            if (!in_array($name, MappingBuilder::EXCLUDE_TAXONOMIES)) {
                 $properties = array_merge(
                     $properties,
                     $this->build_taxonomy($name, $taxonomy)
@@ -115,7 +98,7 @@ class PostMappingBuilderV6 extends MappingBuilder
 
     public function valid($post_type)
     {
-        if (in_array($post_type, self::EXCLUDE_POST_TYPES)) {
+        if (in_array($post_type, MappingBuilder::EXCLUDE_POST_TYPES)) {
             return false;
         }
         return true;

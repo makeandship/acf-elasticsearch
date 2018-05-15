@@ -11,6 +11,10 @@ class TermMappingBuilderV5 extends MappingBuilder {
 	);
 
 	const CORE_FIELDS = array(
+		'type' => array(
+            'type' => 'string',
+            'index' => 'not_analyzed'
+        ),
 		'name' => array(
 			'type' => 'string', 
 			'suggest' => true
