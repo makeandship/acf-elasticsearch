@@ -2,7 +2,7 @@
 
 namespace makeandship\elasticsearch;
 
-class PostMappingBuilderV6 extends MappingBuilder
+class PostMappingBuilderV6 extends PostMappingBuilder
 {
     const CORE_FIELDS = array(
         'type' => array(
@@ -30,9 +30,6 @@ class PostMappingBuilderV6 extends MappingBuilder
             'type' => 'keyword',
             'index' => true
         )
-    );
-
-    const CORE_DATE_FIELDS = array(
     );
 
     /**
@@ -85,7 +82,7 @@ class PostMappingBuilderV6 extends MappingBuilder
         // post taxonomies
         $taxonomies = get_object_taxonomies($post_type, 'objects');
         foreach ($taxonomies as $name => $taxonomy) {
-            if (!in_array($name, MappingBuilder::EXCLUDE_TAXONOMIES)) {
+            if (!in_array($name, PostMappingBuilder::EXCLUDE_TAXONOMIES)) {
                 $properties = array_merge(
                     $properties,
                     $this->build_taxonomy($name, $taxonomy)
@@ -94,31 +91,6 @@ class PostMappingBuilderV6 extends MappingBuilder
         }
 
         return $properties;
-    }
-
-    public function valid($post_type)
-    {
-        if (in_array($post_type, MappingBuilder::EXCLUDE_POST_TYPES)) {
-            return false;
-        }
-        return true;
-    }
-
-    // TODO right place?
-    public function get_valid_post_types()
-    {
-        $post_types = get_post_types(array(
-            'public' => true
-        ));
-        
-        $valid_post_types = array();
-        foreach ($post_types as $post_type) {
-            if ($this->valid($post_type)) {
-                $valid_post_types[] = $post_type;
-            }
-        }
-
-        return $valid_post_types;
     }
 
     private function build_field($field, $options)

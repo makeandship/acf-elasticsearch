@@ -2,13 +2,7 @@
 
 namespace makeandship\elasticsearch;
 
-class TermMappingBuilderV5 extends MappingBuilder {
-
-	const EXCLUDE_TAXONOMIES = array(
-		'nav_menu',
-		'post_format',
-		'link_category',
-	);
+class TermMappingBuilderV5 extends TermMappingBuilder {
 
 	const CORE_FIELDS = array(
 		'type' => array(
@@ -48,13 +42,6 @@ class TermMappingBuilderV5 extends MappingBuilder {
 		}
 
 		return $properties;
-	}
-
-	public function valid( $taxonomy ) {
-		if (in_array( $taxonomy, self::EXCLUDE_TAXONOMIES)) {
-			return false;
-		}
-		return true;
 	}
 
 	function build_field( $field, $options) {

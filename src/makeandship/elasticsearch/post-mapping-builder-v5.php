@@ -2,7 +2,7 @@
 
 namespace makeandship\elasticsearch;
 
-class PostMappingBuilderV5 extends MappingBuilder
+class PostMappingBuilderV5 extends PostMappingBuilder
 {
     const CORE_FIELDS = array(
         'type' => array(
@@ -30,9 +30,6 @@ class PostMappingBuilderV5 extends MappingBuilder
             'type' => 'string',
             'index' => 'not_analyzed'
         )
-    );
-
-    const CORE_DATE_FIELDS = array(
     );
 
     /**
@@ -94,31 +91,6 @@ class PostMappingBuilderV5 extends MappingBuilder
         }
 
         return $properties;
-    }
-
-    public function valid($post_type)
-    {
-        if (in_array($post_type, MappingBuilder::EXCLUDE_POST_TYPES)) {
-            return false;
-        }
-        return true;
-    }
-
-    // TODO right place?
-    public function get_valid_post_types()
-    {
-        $post_types = get_post_types(array(
-            'public' => true
-        ));
-        
-        $valid_post_types = array();
-        foreach ($post_types as $post_type) {
-            if ($this->valid($post_type)) {
-                $valid_post_types[] = $post_type;
-            }
-        }
-
-        return $valid_post_types;
     }
 
     private function build_field($field, $options)
