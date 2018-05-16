@@ -37,8 +37,8 @@ class PostMappingBuilderV5 extends PostMappingBuilder
      */
     public function build($post_type)
     {
-        if (!$this->valid($post_type)) {
-            return null;
+        if (!PostMappingBuilder::valid($post_type)) {
+            return array();
         }
 
         $properties = array();

@@ -26,7 +26,7 @@ class TermMappingBuilderV5 extends TermMappingBuilder {
 		$properties = array();
 		
 		if (!$this->valid( $taxonomy )) {
-			return null;
+			return array();
 		}
 
 		// TODO implement (this is post)

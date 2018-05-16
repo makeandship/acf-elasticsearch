@@ -25,7 +25,7 @@ const EXCLUDE_POST_TYPES = array(
 const CORE_DATE_FIELDS = array(
 );
 
-private static function valid($post_type)
+public static function valid($post_type)
 {
     if (in_array($post_type, PostMappingBuilder::EXCLUDE_POST_TYPES)) {
         return false;
