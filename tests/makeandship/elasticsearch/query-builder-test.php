@@ -66,11 +66,11 @@ class QueryBuilderTest extends WP_UnitTestCase
             ->returning(array('name', 'title'))
             ->with_fuzziness(1)
             ->to_array();
-
+        
         $this->assertEquals($query['query']['bool']['must']['multi_match']['query'], 'Ace');
         $this->assertEquals($query['query']['bool']['must']['multi_match']['fuzziness'], 1);
         $this->assertEquals($query['query']['bool']['must']['multi_match']['fields'][0], 'name');
-        $this->assertEquals($query['query']['bool']['filter']['bool']['should'][0]['type']['value'], 'article');
+        $this->assertEquals($query['query']['bool']['filter']['bool']['should'][0]['term']['type'], 'article');
         $this->assertEquals($query['aggs']['post_type']['aggs']['facet']['terms']['field'], 'post_type');
         $this->assertEquals($query['aggs']['post_type']['aggs']['facet']['terms']['size'], 1);
         $this->assertEquals($query['from'], 0);
