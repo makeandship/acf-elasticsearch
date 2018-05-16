@@ -40,6 +40,7 @@ class Constants
     const OPTION_SLUGS_TO_EXCLUDE = 'acf_elasticsearch_slugs_to_exclude';
     const OPTION_EXCLUSION_FIELD = 'acf_elasticsearch_exclusion_field';
     const OPTION_IDS_TO_EXCLUDE = 'acf_elasticsearch_ids_to_exclude';
+    const OPTION_ELASTICSEARCH_VERSION = 'acf_elasticsearch_cluster_version';
 
     // indexer
     const STATUS_PUBLISH = 'publish';

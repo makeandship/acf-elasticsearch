@@ -2,7 +2,6 @@
 
 namespace makeandship\elasticsearch;
 
-use \Elastica\Client;
 use makeandship\elasticsearch\settings\SettingsManager;
 
 abstract class DocumentBuilder
@@ -15,18 +14,18 @@ abstract class DocumentBuilder
     public function get_core_fields($type) {
         // read elasticsearch version
 		$version = $this->get_elasticseach_version();
-		$use_v6 = version_compare($version,  "6.0");
+		$use_v6 = version_compare($version,  "6.0") >= 0 ;
 		
-		if ($type == 'WP_Post' && $use_v6 >= 0) {
+		if ($type == 'WP_Post' && $use_v6) {
 			return PostMappingBuilderV6::CORE_FIELDS;
 		}
-		else if ($type == 'WP_Post' && $use_v6 < 0) {
+		else if ($type == 'WP_Post') {
 			return PostMappingBuilderV5::CORE_FIELDS;
 		}
-		else if ($type == 'WP_Term' && $use_v6 >= 0) {
+		else if ($type == 'WP_Term' && $use_v6) {
 			return TermMappingBuilderV6::CORE_FIELDS;
 		}
-		else if ($type == 'WP_Term' && $use_v6 < 0) {
+		else if ($type == 'WP_Term') {
 			return TermMappingBuilderV5::CORE_FIELDS;
 		}
 		else if ($type == 'WP_Site') {
@@ -38,8 +37,6 @@ abstract class DocumentBuilder
 
     private function get_elasticseach_version()
     {
-        $client_settings = SettingsManager::get_instance()->get_client_settings();
-        $client = new Client($client_settings);
-        return $client->getVersion();
+        return SettingsManager::get_instance()->get(Constants::OPTION_ELASTICSEARCH_VERSION);
     }
 }

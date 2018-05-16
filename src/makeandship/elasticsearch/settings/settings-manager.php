@@ -4,6 +4,7 @@ namespace makeandship\elasticsearch\settings;
 
 use makeandship\elasticsearch\Constants;
 use makeandship\elasticsearch\Util;
+use \Elastica\Client;
 
 class SettingsManager
 {
@@ -62,6 +63,7 @@ class SettingsManager
             $this->settings[Constants::OPTION_SLUGS_TO_EXCLUDE] = $this->get_option(Constants::OPTION_SLUGS_TO_EXCLUDE);
             $this->settings[Constants::OPTION_EXCLUSION_FIELD] = $this->get_option(Constants::OPTION_EXCLUSION_FIELD);
             $this->settings[Constants::OPTION_IDS_TO_EXCLUDE] = $this->get_option(Constants::OPTION_IDS_TO_EXCLUDE);
+            $this->settings[Constants::OPTION_ELASTICSEARCH_VERSION] = $this->get_elasticseach_version();
         }
         
         return $this->settings;
@@ -106,7 +108,8 @@ class SettingsManager
                 Constants::OPTION_FUZZINESS,
                 Constants::OPTION_SLUGS_TO_EXCLUDE,
                 Constants::OPTION_EXCLUSION_FIELD,
-                Constants::OPTION_IDS_TO_EXCLUDE
+                Constants::OPTION_IDS_TO_EXCLUDE,
+                Constants::OPTION_ELASTICSEARCH_VERSION
             ])) {
                 return true;
             }
@@ -261,5 +264,12 @@ class SettingsManager
         }
 
         return $types;
+    }
+
+    private function get_elasticseach_version()
+    {
+        $client_settings = $this->get_client_settings();
+        $client = new Client($client_settings);
+        return $client->getVersion();
     }
 }
