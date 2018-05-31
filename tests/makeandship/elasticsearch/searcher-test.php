@@ -4,6 +4,7 @@ require_once(__DIR__ . '/../../../acf-elasticsearch-autoloader.php');
 
 use makeandship\elasticsearch\Searcher;
 use makeandship\elasticsearch\Constants;
+use makeandship\elasticsearch\queries\QueryBuilder;
 use makeandship\elasticsearch\AcfElasticsearchPlugin;
 
 class SearcherTest extends WP_UnitTestCase
@@ -17,7 +18,12 @@ class SearcherTest extends WP_UnitTestCase
             ) 
         );
         $searcher = new Searcher();
-        $result = $searcher->search('for');
+        $query = new QueryBuilder();
+        $query = $query->freetext("Just")
+            ->with_fuzziness()
+            ->weighted();
+
+        $result = $searcher->search($query->to_array());
 
         $this->assertNotNull($result);
     }

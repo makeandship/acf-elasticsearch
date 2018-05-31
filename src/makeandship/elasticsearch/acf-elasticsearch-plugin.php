@@ -49,7 +49,7 @@ class AcfElasticsearchPlugin
         add_action('wp_ajax_clear_index', array(&$this, 'clear_index'));
 
         // posts
-        add_action('save_post', array(&$this, 'save_post'));
+        add_action('save_post', array(&$this, 'save_post'), 20, 1); // after acf fields save - 15
         add_action('delete_post', array(&$this, 'delete_post'));
         add_action('trash_post', array(&$this, 'delete_post'));
         add_action('transition_post_status', array(&$this, 'transition_post_status'), 10, 3);

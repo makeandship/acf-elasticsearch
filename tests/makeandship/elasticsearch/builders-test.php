@@ -3,10 +3,12 @@
 require_once(__DIR__ . '/../../../acf-elasticsearch-autoloader.php');
 
 use makeandship\elasticsearch\PostDocumentBuilder;
-use makeandship\elasticsearch\PostMappingBuilder;
+use makeandship\elasticsearch\PostMappingBuilderV5;
+use makeandship\elasticsearch\PostMappingBuilderV6;
 use makeandship\elasticsearch\SiteMappingBuilder;
 use makeandship\elasticsearch\TermDocumentBuilder;
-use makeandship\elasticsearch\TermMappingBuilder;
+use makeandship\elasticsearch\TermMappingBuilderV5;
+use makeandship\elasticsearch\TermMappingBuilderV6;
 use makeandship\elasticsearch\Constants;
 use makeandship\elasticsearch\settings\SettingsManager;
 
@@ -72,10 +74,10 @@ class BuildersTest extends WP_UnitTestCase
         $this->assertEquals($is_private, false);
     }
 
-    public function testPostMappingBuilder()
+    public function testPostMappingBuilderV5()
     {
         $id = $this->factory->post->create( array( 'post_title' => 'Test Post' ) );        
-        $builder = new PostMappingBuilder();
+        $builder = new PostMappingBuilderV5();
         $post = get_post($id);
         $mapping = $builder->build($post->post_type);
         
@@ -83,7 +85,45 @@ class BuildersTest extends WP_UnitTestCase
         $this->assertEquals($mapping['post_content']['index'], 'analyzed');
         $this->assertEquals($mapping['post_content_suggest']['analyzer'], 'ngram_analyzer');
         $this->assertEquals($mapping['post_content_suggest']['search_analyzer'], 'whitespace_analyzer');
+        $this->assertEquals($mapping['post_type']['type'], 'string');
         $this->assertEquals($mapping['post_type']['index'], 'not_analyzed');
+    }
+
+    public function testTypeAddedInV5()
+    {
+        $id = $this->factory->post->create( array( 'post_title' => 'Test Post' ) );        
+        $builder = new PostMappingBuilderV5();
+        $post = get_post($id);
+        $mapping = $builder->build($post->post_type);
+        
+        $this->assertEquals($mapping['type']['type'], 'string');
+        $this->assertEquals($mapping['type']['index'], 'not_analyzed');
+    }
+
+    public function testTypeAddedInV6()
+    {
+        $id = $this->factory->post->create( array( 'post_title' => 'Test Post' ) );        
+        $builder = new PostMappingBuilderV6();
+        $post = get_post($id);
+        $mapping = $builder->build($post->post_type);
+        
+        $this->assertEquals($mapping['type']['type'], 'keyword');
+        $this->assertEquals($mapping['type']['index'], true);
+    }
+
+    public function testPostMappingBuilderV6()
+    {
+        $id = $this->factory->post->create( array( 'post_title' => 'Test Post' ) );        
+        $builder = new PostMappingBuilderV6();
+        $post = get_post($id);
+        $mapping = $builder->build($post->post_type);
+        
+        $this->assertEquals($mapping['post_content']['type'], 'text');
+        $this->assertEquals($mapping['post_content']['index'], true);
+        $this->assertEquals($mapping['post_content_suggest']['analyzer'], 'ngram_analyzer');
+        $this->assertEquals($mapping['post_content_suggest']['search_analyzer'], 'whitespace_analyzer');
+        $this->assertEquals($mapping['post_type']['type'], 'keyword');
+        $this->assertEquals($mapping['post_type']['index'], true);
     }
 
     public function testSiteMappingBuilder()
@@ -110,14 +150,27 @@ class BuildersTest extends WP_UnitTestCase
         $this->assertEquals($document['name'], 'Term 1');
     }
 
-    public function testTermMappingBuilder()
+    public function testTermMappingBuilderV5()
     {
         $id = $this->factory->term->create( array( 'taxonomy' => 'category' ) );         
-        $builder = new TermMappingBuilder();
+        $builder = new TermMappingBuilderV5();
         $mapping = $builder->build($id);
 
         $this->assertEquals($mapping['name_suggest']['analyzer'], 'ngram_analyzer');
         $this->assertEquals($mapping['name_suggest']['search_analyzer'], 'whitespace_analyzer');
+        $this->assertEquals($mapping['slug']['type'], 'string');
         $this->assertEquals($mapping['slug']['index'], 'not_analyzed');
+    }
+
+    public function testTermMappingBuilderV6()
+    {
+        $id = $this->factory->term->create( array( 'taxonomy' => 'category' ) );         
+        $builder = new TermMappingBuilderV6();
+        $mapping = $builder->build($id);
+
+        $this->assertEquals($mapping['name_suggest']['analyzer'], 'ngram_analyzer');
+        $this->assertEquals($mapping['name_suggest']['search_analyzer'], 'whitespace_analyzer');
+        $this->assertEquals($mapping['slug']['type'], 'keyword');
+        $this->assertEquals($mapping['slug']['index'], true);
     }
 }

@@ -13,7 +13,7 @@ class SiteMappingBuilder extends MappingBuilder {
 	/**
 	 *
 	 */
-	public function build ( $name ) {
+	public function build ( $name = null ) {
 		$properties = array();
 
 		// base post fields

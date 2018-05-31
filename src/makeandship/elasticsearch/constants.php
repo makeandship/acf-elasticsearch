@@ -40,6 +40,7 @@ class Constants
     const OPTION_SLUGS_TO_EXCLUDE = 'acf_elasticsearch_slugs_to_exclude';
     const OPTION_EXCLUSION_FIELD = 'acf_elasticsearch_exclusion_field';
     const OPTION_IDS_TO_EXCLUDE = 'acf_elasticsearch_ids_to_exclude';
+    const OPTION_ELASTICSEARCH_VERSION = 'acf_elasticsearch_cluster_version';
 
     // indexer
     const STATUS_PUBLISH = 'publish';
@@ -50,6 +51,7 @@ class Constants
     const DEFAULT_POSTS_PER_PAGE = 100;
     const DEFAULT_TERMS_PER_PAGE = 50;
     const DEFAULT_SITES_PER_PAGE = 50;
+    const DEFAULT_MAPPING_TYPE = 'document';
 
     // no instantiation
     protected function __construct()
