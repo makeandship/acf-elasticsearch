@@ -56,6 +56,16 @@ class Util
         return null;
     }
 
+    public static function is_array_associative($array)
+    {
+        return count(array_filter(array_keys($array), 'is_string')) > 0;
+    }
+      
+    public static function is_array_sequential($array)
+    {
+        return !Util::is_array_associative($array);
+    }
+
     public static function get_facet_size()
     {
         return Config::apply_filters('searcher_query_facet_size', 100);

@@ -4,7 +4,9 @@ namespace makeandship\elasticsearch;
 
 use makeandship\elasticsearch\transformer\HtmlFieldTransformer;
 use makeandship\elasticsearch\transformer\DateFieldTransformer;
+use makeandship\elasticsearch\transformer\FileFieldTransformer;
 use makeandship\elasticsearch\settings\SettingsManager;
+use makeandship\elasticsearch\Util;
 
 class PostDocumentBuilder extends DocumentBuilder
 {
@@ -74,7 +76,7 @@ class PostDocumentBuilder extends DocumentBuilder
     public function build($post, $include_private=false)
     {
         $document = null;
-
+        
         if (isset($post)) {
             $post->type = $post->post_type;
             $document = array();
@@ -153,22 +155,31 @@ class PostDocumentBuilder extends DocumentBuilder
     private function build_acf_field($field, $post, $include_private)
     {
         $document = null;
+        
         $post_type = $this->get_type($post);
+
         $excluded_fields = SettingsManager::get_instance()->get_exclude_fields($post_type);
         $private_fields = SettingsManager::get_instance()->get_private_fields($post_type);
 
         if (isset($field) && isset($post)) {
-            if (array_key_exists('name', $field)) {
-                $name = $field['name'];
-                $type = $field['type'];
-                $value = get_field($name, $post->ID);
-                
-                if (isset($value) && !empty($value) && !in_array($name, $excluded_fields) && (!in_array($name, $private_fields) || $include_private)) {
-                    $value = $this->transform_acf_value($value, $type);
+            $name = Util::safely_get_attribute($field, 'name');
+            $type = Util::safely_get_attribute($field, 'type');
 
-                    if ($value) {
-                        $document = array();
-                        $document[$name] = $value;
+            if ($name && $type) {
+                // safe to index if the field isn't excluded or private
+                if (
+                    !in_array($name, $excluded_fields) &&
+                    (!in_array($name, $private_fields) || $include_private)) {
+                    $key = Util::safely_get_attribute($field, 'key');
+                    $value = get_field($key, $post->ID);
+
+                    if (isset($value) && !empty($value)) {
+                        $value = $this->transform_acf_value($field, $value, $type);
+
+                        if ($value) {
+                            $document = array();
+                            $document[$name] = $value;
+                        }
                     }
                 }
             }
@@ -177,12 +188,11 @@ class PostDocumentBuilder extends DocumentBuilder
         return $document;
     }
 
-    private function transform_acf_value($value, $type)
+    private function transform_acf_value($field, $value, $type)
     {
         $transformer = null;
-
+        
         switch ($type) {
-            
             case 'checkbox':
                 break;
             case 'color_picker':
@@ -195,7 +205,7 @@ class PostDocumentBuilder extends DocumentBuilder
                 $transformer = new DateFieldTransformer();
                 break;
             case 'file':
-                $value = null;
+                $transformer = new FileFieldTransformer();
                 break;
             case 'google_map':
                 $value = null;
@@ -227,8 +237,40 @@ class PostDocumentBuilder extends DocumentBuilder
             case 'relationship':
                 $value = null;
                 break;
+            case 'group':
             case 'repeater':
-                $value = null;
+                if ($value && is_array($value) && count($value) > 0) {
+                    // create an index to lookup from
+                    // name => subfield
+                    $sub_fields_by_name = array();
+                    foreach ($field['sub_fields'] as $sub_field) {
+                        $sub_field_name = Util::safely_get_attribute($sub_field, 'name');
+                        $sub_fields_by_name[$sub_field_name] = $sub_field;
+                    }
+
+                    if (Util::is_array_associative($value)) {
+                        foreach ($value as $sub_field_name => &$sub_field_value) {
+                            $sub_field = $sub_fields_by_name[$sub_field_name];
+                            $sub_field_type = Util::safely_get_attribute($sub_field, 'type');
+                            $sub_field_value = $this->transform_acf_value($sub_field, $sub_field_value, $sub_field_type);
+                            if (!isset($sub_field_value) || empty($sub_field_value)) {
+                                unset($item[$sub_field_name]);
+                            }
+                        }
+                    } else {
+                        // sequential
+                        foreach ($value as $index => &$item) {
+                            foreach ($item as $sub_field_name => &$sub_field_value) {
+                                $sub_field = $sub_fields_by_name[$sub_field_name];
+                                $sub_field_type = Util::safely_get_attribute($sub_field, 'type');
+                                $sub_field_value = $this->transform_acf_value($sub_field, $sub_field_value, $sub_field_type);
+                                if (!isset($sub_field_value) || empty($sub_field_value)) {
+                                    unset($item[$sub_field_name]);
+                                }
+                            }
+                        }
+                    }
+                }
                 break;
             case 'taxonomy':
                 $value = null;
@@ -246,11 +288,11 @@ class PostDocumentBuilder extends DocumentBuilder
                 $transformer = new HtmlFieldTransformer();
                 break;
         }
-
+    
         if ($transformer) {
             $value = $transformer->transform($value);
         }
-
+        
         return $value;
     }
     
@@ -307,9 +349,17 @@ class PostDocumentBuilder extends DocumentBuilder
     }
 
     /**
-     *
+     * Get the document post type - used for validating fields
      */
     public function get_type($post)
+    {
+        return $post->post_type;
+    }
+
+    /**
+     * Get the document mapping type - used for indexing into elastic search
+     */
+    public function get_mapping_type($post)
     {
         return Constants::DEFAULT_MAPPING_TYPE;
     }

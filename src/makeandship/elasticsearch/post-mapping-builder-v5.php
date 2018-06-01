@@ -175,6 +175,24 @@ class PostMappingBuilderV5 extends PostMappingBuilder
                         $props['index'] = 'not_analyzed';
                         break;
 
+                    case 'group':
+                        $props['type'] = 'nested';
+                        $props['properties'] = array();
+                        unset($props['index']);
+
+                        foreach ($field['sub_fields'] as $sub_field) {
+                            $sub_field_name = $sub_field['name'];
+                            $sub_field_props = $this->build_acf_field($sub_field);
+
+                            if (isset($sub_field_props) && !empty($sub_field_props)) {
+                                $props['properties'] = array_merge(
+                                    $props['properties'],
+                                    $sub_field_props
+                                );
+                            }
+                        }
+                        break;
+
                     case 'image':
                         // nested
                         break;
