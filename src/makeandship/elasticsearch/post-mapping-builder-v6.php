@@ -139,7 +139,10 @@ class PostMappingBuilderV6 extends PostMappingBuilder
         $properties = array();
 
         if (isset($field)) {
-            if (array_key_exists('type', $field) && array_key_exists('name', $field) && $field['type'] != 'tab') {
+            if (
+                array_key_exists('type', $field) &&
+                array_key_exists('name', $field) &&
+                $field['type'] != 'tab') {
                 $acf_type = $field['type'];
                 $name = $field['name'];
 
@@ -173,6 +176,24 @@ class PostMappingBuilderV6 extends PostMappingBuilder
                     case 'google_map':
                         $props['type'] = 'geo_point';
                         $props['index'] = true;
+                        break;
+
+                    case 'group':
+                        $props['type'] = 'nested';
+                        $props['properties'] = array();
+                        unset($props['index']);
+
+                        foreach ($field['sub_fields'] as $sub_field) {
+                            $sub_field_name = $sub_field['name'];
+                            $sub_field_props = $this->build_acf_field($sub_field);
+
+                            if (isset($sub_field_props) && !empty($sub_field_props)) {
+                                $props['properties'] = array_merge(
+                                    $props['properties'],
+                                    $sub_field_props
+                                );
+                            }
+                        }
                         break;
 
                     case 'image':

@@ -274,8 +274,7 @@ class Indexer
             } else {
                 $status['completed'] = true;
             }
-        }
-        else {
+        } else {
             // only update page if we're not complete
             $status['page'] = $page + 1;
         }
@@ -368,13 +367,14 @@ class Indexer
 
             $id = $builder->get_id($o);
             $doc_type = $builder->get_type($o);
+            $mapping_type = $builder->get_mapping_type($o);
 
             // ensure the document and id are valid before indexing
             if (isset($document) && !empty($document) &&
                 isset($id) && !empty($id)) {
                 if (!$private) {
                     // index public documents in the public repository
-                    $public_type = $this->type_factory->create($doc_type, false, false, $primary);
+                    $public_type = $this->type_factory->create($mapping_type, false, false, $primary);
                     if ($public_type) {
                         if ($this->bulk) {
                             $this->queue($public_type, new \Elastica\Document($id, $document));
@@ -383,7 +383,7 @@ class Indexer
                         }
                     }
                     if ($new) {
-                        $public_type = $this->type_factory->create($doc_type, false, false, !$primary);
+                        $public_type = $this->type_factory->create($mapping_type, false, false, !$primary);
                         if ($public_type) {
                             if ($this->bulk) {
                                 $this->queue($public_type, new \Elastica\Document($id, $document));
@@ -394,7 +394,7 @@ class Indexer
                     }
                 }
                 // index everything to private index
-                $private_type = $this->type_factory->create($doc_type, false, true, $primary);
+                $private_type = $this->type_factory->create($mapping_type, false, true, $primary);
                 if ($private_type) {
                     if ($this->bulk) {
                         $this->queue($private_type, new \Elastica\Document($id, $private_document));
@@ -403,7 +403,7 @@ class Indexer
                     }
                 }
                 if ($new) {
-                    $private_type = $this->type_factory->create($doc_type, false, true, !$primary);
+                    $private_type = $this->type_factory->create($mapping_type, false, true, !$primary);
                     if ($private_type) {
                         if ($this->bulk) {
                             $this->queue($private_type, new \Elastica\Document($id, $private_document));
