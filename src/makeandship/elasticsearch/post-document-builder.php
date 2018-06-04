@@ -254,7 +254,7 @@ class PostDocumentBuilder extends DocumentBuilder
                             $sub_field_type = Util::safely_get_attribute($sub_field, 'type');
                             $sub_field_value = $this->transform_acf_value($sub_field, $sub_field_value, $sub_field_type);
                             if (!isset($sub_field_value) || empty($sub_field_value)) {
-                                unset($item[$sub_field_name]);
+                                unset($value[$sub_field_name]);
                             }
                         }
                     } else {
