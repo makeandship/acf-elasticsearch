@@ -485,13 +485,15 @@ class Indexer
         $builder = $this->document_builder_factory->create($o);
         $private = $builder->is_private($o);
         $id = $builder->get_id($o);
+        
         $doc_type = $builder->get_type($o);
+        $mapping_type = $builder->get_mapping_type($o);
 
         // ensure the document and id are valid before indexing
         if (isset($o) && !empty($o) &&
                 isset($id) && !empty($id)) {
             // attempt to clear from all types - post_status = private won't be available
-            $primary_public_type = $this->type_factory->create($doc_type, false, false, true);
+            $primary_public_type = $this->type_factory->create($mapping_type, false, false, true);
             if ($primary_public_type) {
                 try {
                     $primary_public_type->deleteById($id);
@@ -501,7 +503,7 @@ class Indexer
                 }
             }
 
-            $secondary_public_type = $this->type_factory->create($doc_type, false, false, false);
+            $secondary_public_type = $this->type_factory->create($mapping_type, false, false, false);
             if ($secondary_public_type) {
                 try {
                     $secondary_public_type->deleteById($id);
@@ -511,7 +513,7 @@ class Indexer
                 }
             }
 
-            $primary_private_type = $this->type_factory->create($doc_type, false, true, true);
+            $primary_private_type = $this->type_factory->create($mapping_type, false, true, true);
             if ($primary_private_type) {
                 try {
                     $primary_private_type->deleteById($id);
@@ -521,7 +523,7 @@ class Indexer
                 }
             }
 
-            $secondary_private_type = $this->type_factory->create($doc_type, false, true, false);
+            $secondary_private_type = $this->type_factory->create($mapping_type, false, true, false);
             if ($secondary_private_type) {
                 try {
                     $secondary_private_type->deleteById($id);

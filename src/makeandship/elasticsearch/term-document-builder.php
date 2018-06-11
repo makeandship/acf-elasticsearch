@@ -77,4 +77,12 @@ class TermDocumentBuilder extends DocumentBuilder
     {
         return Constants::DEFAULT_MAPPING_TYPE;
     }
+
+    /**
+     * Get the term mapping type - used for indexing into elastic search
+     */
+    public function get_mapping_type($term)
+    {
+        return Constants::DEFAULT_MAPPING_TYPE;
+    }
 }
