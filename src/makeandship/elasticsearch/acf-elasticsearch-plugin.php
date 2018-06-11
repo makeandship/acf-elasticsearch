@@ -215,7 +215,9 @@ class AcfElasticsearchPlugin
         if (in_array($new_status, Constants::INDEX_POST_STATUSES) && $new_status != $old_status) {
             $this->indexer->add_or_update_document($post, true);
         } else {
-            $this->indexer->remove_document($post);
+            if ($new_status != "publish" && $old_status != "publish") {
+                $this->indexer->remove_document($post);
+            }
         }
     }
 
