@@ -31,7 +31,7 @@ class Mapper
         foreach ($post_types as $post_type) {
             $properties = array_merge(
                 $properties,
-                $post_mapping_builder->build($post_type)
+                $post_mapping_builder->build($post_type, true)
             );
         }
 
@@ -40,7 +40,7 @@ class Mapper
         // create mappings for each taxonomy
         $taxonomies = get_taxonomies();
         foreach ($taxonomies as $taxonomy) {
-          $properties = array_merge(
+            $properties = array_merge(
             $properties,
             $term_mapping_builder->build($taxonomy)
           );
@@ -48,7 +48,7 @@ class Mapper
 
         // create mappings for sites if this is a multisite
         if (is_multisite()) {
-          $properties = array_merge(
+            $properties = array_merge(
             $properties,
             $site_mapping_builder->build()
           );
@@ -123,7 +123,7 @@ class Mapper
             if ($private_secondary_type) {
                 $mapping_private_secondary = new Mapping($private_secondary_type, $properties);
                 $mapping_private_secondary->send();
-            }    
+            }
         }
     }
 }

@@ -35,7 +35,7 @@ class PostMappingBuilderV6 extends PostMappingBuilder
     /**
      *
      */
-    public function build($post_type)
+    public function build($post_type, $cascade=false)
     {
         if (!PostMappingBuilder::valid($post_type)) {
             return array();
@@ -48,7 +48,7 @@ class PostMappingBuilderV6 extends PostMappingBuilder
             if (isset($field) && isset($options)) {
                 $properties = array_merge(
                     $properties,
-                    $this->build_field($field, $options)
+                    $this->build_field($field, $options, $cascade)
                 );
             }
         }
@@ -68,7 +68,7 @@ class PostMappingBuilderV6 extends PostMappingBuilder
                         $fields = acf_get_fields($field_group_id);
 
                         foreach ($fields as $field) {
-                            $field_properties = $this->build_acf_field($field);
+                            $field_properties = $this->build_acf_field($field, $cascade);
                             $properties = array_merge(
                                 $properties,
                                 $field_properties
@@ -93,7 +93,7 @@ class PostMappingBuilderV6 extends PostMappingBuilder
         return $properties;
     }
 
-    private function build_field($field, $options)
+    private function build_field($field, $options, $cascade=false)
     {
         $properties = array();
 
@@ -134,7 +134,7 @@ class PostMappingBuilderV6 extends PostMappingBuilder
         return $properties;
     }
 
-    private function build_acf_field($field)
+    private function build_acf_field($field, $cascade=false)
     {
         $properties = array();
 
@@ -185,7 +185,7 @@ class PostMappingBuilderV6 extends PostMappingBuilder
 
                         foreach ($field['sub_fields'] as $sub_field) {
                             $sub_field_name = $sub_field['name'];
-                            $sub_field_props = $this->build_acf_field($sub_field);
+                            $sub_field_props = $this->build_acf_field($sub_field, $cascade);
 
                             if (isset($sub_field_props) && !empty($sub_field_props)) {
                                 $props['properties'] = array_merge(
@@ -264,10 +264,19 @@ class PostMappingBuilderV6 extends PostMappingBuilder
                         break;
 
                     case 'relationship':
-                        // alter name to identify where further processing is required on lookup
-                        $name = $name.'_relationship';
-                        $props['type'] = 'long';
-                        $props['index'] = true;
+                        $post_type = Util::safely_get_attribute($field, 'post_type');
+                        if ($cascade && $post_type && is_array($post_type) && count($post_type) === 1) {
+                            $post_type = $post_type[0];
+
+                            $props['type'] = 'nested';
+                            $props['properties'] = $this->build($post_type, false);
+                            unset($props['index']);
+                        } else {
+                            // alter name to identify where further processing is required on lookup
+                            $name = $name.'_relationship';
+                            $props['type'] = 'long';
+                            $props['index'] = true;
+                        }
                         break;
 
                     case 'repeater':
@@ -277,7 +286,7 @@ class PostMappingBuilderV6 extends PostMappingBuilder
 
                         foreach ($field['sub_fields'] as $sub_field) {
                             $sub_field_name = $sub_field['name'];
-                            $sub_field_props = $this->build_acf_field($sub_field);
+                            $sub_field_props = $this->build_acf_field($sub_field, $cascade);
 
                             if (isset($sub_field_props) && !empty($sub_field_props)) {
                                 $props['properties'] = array_merge(

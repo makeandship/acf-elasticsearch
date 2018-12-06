@@ -2,13 +2,14 @@
 
 namespace makeandship\elasticsearch;
 
-abstract class MappingBuilder {
-	const EXCLUDE_TAXONOMIES = array(
+abstract class MappingBuilder
+{
+    const EXCLUDE_TAXONOMIES = array(
         'post_tag',
         'post_format'
-	);
+    );
 
-	const EXCLUDE_POST_TYPES = array(
+    const EXCLUDE_POST_TYPES = array(
         'revision',
         'attachment',
         'json_consumer',
@@ -19,6 +20,6 @@ abstract class MappingBuilder {
         'acf-field-group',
         'acf-field'
     );
-	
-	abstract function build( $o );
+
+    abstract public function build($o, $cascade=false);
 }
