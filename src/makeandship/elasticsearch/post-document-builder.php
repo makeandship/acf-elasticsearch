@@ -5,6 +5,7 @@ namespace makeandship\elasticsearch;
 use makeandship\elasticsearch\transformer\HtmlFieldTransformer;
 use makeandship\elasticsearch\transformer\DateFieldTransformer;
 use makeandship\elasticsearch\transformer\FileFieldTransformer;
+use makeandship\elasticsearch\transformer\ImageFieldTransformer;
 use makeandship\elasticsearch\settings\SettingsManager;
 use makeandship\elasticsearch\Util;
 
@@ -211,7 +212,7 @@ class PostDocumentBuilder extends DocumentBuilder
                 $value = null;
                 break;
             case 'image':
-                $value = null;
+                $transformer = new ImageFieldTransformer();
                 // nested
                 break;
             case 'message':
