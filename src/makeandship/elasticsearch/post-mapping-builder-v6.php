@@ -151,7 +151,7 @@ class PostMappingBuilderV6 extends PostMappingBuilder
                     'type' => 'text',
                     'index' => true
                 );
-                
+
                 // default to text
                 // color_picker, email, page_link, radio, select, text, textarea, url, wysiwyg
 
@@ -197,7 +197,50 @@ class PostMappingBuilderV6 extends PostMappingBuilder
                         break;
 
                     case 'image':
-                        // nested
+                        $props['type'] = 'nested';
+                        $props['properties'] = array(
+                          'filename'  => array(
+                            'type' => 'text',
+                            'index' => false
+                          ),
+                          'filesize'  => array(
+                            'type' => 'long',
+                            'index' => false
+                          ),
+                          'alt'  => array(
+                            'type' => 'text'
+                          ),
+                          'url'  => array(
+                            'type' => 'text'
+                          ),
+                          'description'  => array(
+                            'type' => 'text'
+                          ),
+                          'caption'  => array(
+                            'type' => 'text'
+                          ),
+                          'mime'  => array(
+                            'type' => 'keyword',
+                            'index' => false
+                          ),
+                          'type'  => array(
+                            'type' => 'keyword',
+                            'index' => false
+                          ),
+                          'subtype'  => array(
+                            'type' => 'keyword',
+                            'index' => false
+                          ),
+                          'width'  => array(
+                            'type' => 'long',
+                            'index' => false
+                          ),
+                          'height'  => array(
+                            'type' => 'long',
+                            'index' => false
+                          ),
+                        );
+                        unset($props['index']);
                         break;
 
                     case 'message':
@@ -245,6 +288,11 @@ class PostMappingBuilderV6 extends PostMappingBuilder
                         }
                         break;
 
+                    case 'select':
+                        $props['type'] = 'keyword';
+                        $props['index'] = true;
+                        break;
+
                     case 'taxonomy':
                         break;
 
@@ -262,7 +310,7 @@ class PostMappingBuilderV6 extends PostMappingBuilder
                     case 'user':
                         // custom
                         break;
-  
+
                 }
 
                 if (isset($props) && isset($name)) {
@@ -273,7 +321,7 @@ class PostMappingBuilderV6 extends PostMappingBuilder
 
         return $properties;
     }
-    
+
     private function build_taxonomy($name, $taxonomy)
     {
         $properties = array();
@@ -283,7 +331,7 @@ class PostMappingBuilderV6 extends PostMappingBuilder
                 "index" => true,
                 "type" => "keyword"
             );
-            
+
             $properties[$name.'_name'] = array(
                 "type" => "text"
             );
@@ -294,7 +342,7 @@ class PostMappingBuilderV6 extends PostMappingBuilder
                 "type" => "text"
             );
         }
-    
+
         return $properties;
     }
 }
