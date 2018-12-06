@@ -46,7 +46,7 @@ class PostDocumentBuilder extends DocumentBuilder
     {
         if ($post) {
             $post_id = $post->ID;
-            
+
             // check if the exclusion field is set
             $exclusion_field_name = SettingsManager::get_instance()->get(Constants::OPTION_EXCLUSION_FIELD);
             if ($exclusion_field_name && $post_id) {
@@ -73,10 +73,10 @@ class PostDocumentBuilder extends DocumentBuilder
     /**
      *
      */
-    public function build($post, $include_private=false)
+    public function build($post, $include_private=false, $relationships=false)
     {
         $document = null;
-        
+
         if (isset($post)) {
             $post->type = $post->post_type;
             $document = array();
@@ -124,7 +124,7 @@ class PostDocumentBuilder extends DocumentBuilder
                             $fields = acf_get_fields($field_group_id);
 
                             foreach ($fields as $field) {
-                                $field_document = $this->build_acf_field($field, $post, $include_private);
+                                $field_document = $this->build_acf_field($field, $post, $include_private, $relationships);
                                 if (isset($field_document)) {
                                     $document = array_merge(
                                         $document,
@@ -136,7 +136,7 @@ class PostDocumentBuilder extends DocumentBuilder
                     }
                 }
             }
-            
+
             // taxonomies
             $taxonomies = get_object_taxonomies($post_type, 'objects');
             foreach ($taxonomies as $name => $taxonomy) {
@@ -152,10 +152,10 @@ class PostDocumentBuilder extends DocumentBuilder
         return $document;
     }
 
-    private function build_acf_field($field, $post, $include_private)
+    private function build_acf_field($field, $post, $include_private, $relationships)
     {
         $document = null;
-        
+
         $post_type = $this->get_type($post);
 
         $excluded_fields = SettingsManager::get_instance()->get_exclude_fields($post_type);
@@ -174,7 +174,7 @@ class PostDocumentBuilder extends DocumentBuilder
                     $value = get_field($key, $post->ID);
 
                     if (isset($value) && !empty($value)) {
-                        $value = $this->transform_acf_value($field, $value, $type);
+                        $value = $this->transform_acf_value($field, $value, $type, $relationships);
 
                         if ($value) {
                             $document = array();
@@ -188,10 +188,10 @@ class PostDocumentBuilder extends DocumentBuilder
         return $document;
     }
 
-    private function transform_acf_value($field, $value, $type)
+    private function transform_acf_value($field, $value, $type, $relationships)
     {
         $transformer = null;
-        
+
         switch ($type) {
             case 'checkbox':
                 break;
@@ -235,7 +235,24 @@ class PostDocumentBuilder extends DocumentBuilder
                 // id?
                 break;
             case 'relationship':
-                $value = null;
+                $built = null;
+                if ($relationships) {
+                    if (is_array($value) && count($value) > 0) {
+                        $built = array();
+                        foreach ($value as $post_id) {
+                            $post = get_post($post_id);
+                            if ($post) {
+                                $built[]= $this->build($post, false, false);
+                            }
+                        }
+                    } else {
+                        $post = get_post($value);
+                        if ($post) {
+                            $built = $this->build($post, false, false);
+                        }
+                    }
+                }
+                $value = $built;
                 break;
             case 'group':
             case 'repeater':
@@ -252,7 +269,7 @@ class PostDocumentBuilder extends DocumentBuilder
                         foreach ($value as $sub_field_name => &$sub_field_value) {
                             $sub_field = $sub_fields_by_name[$sub_field_name];
                             $sub_field_type = Util::safely_get_attribute($sub_field, 'type');
-                            $sub_field_value = $this->transform_acf_value($sub_field, $sub_field_value, $sub_field_type);
+                            $sub_field_value = $this->transform_acf_value($sub_field, $sub_field_value, $sub_field_type, $relationships);
                             if (!isset($sub_field_value) || empty($sub_field_value)) {
                                 unset($value[$sub_field_name]);
                             }
@@ -263,7 +280,7 @@ class PostDocumentBuilder extends DocumentBuilder
                             foreach ($item as $sub_field_name => &$sub_field_value) {
                                 $sub_field = $sub_fields_by_name[$sub_field_name];
                                 $sub_field_type = Util::safely_get_attribute($sub_field, 'type');
-                                $sub_field_value = $this->transform_acf_value($sub_field, $sub_field_value, $sub_field_type);
+                                $sub_field_value = $this->transform_acf_value($sub_field, $sub_field_value, $sub_field_type, $relationships);
                                 if (!isset($sub_field_value) || empty($sub_field_value)) {
                                     unset($item[$sub_field_name]);
                                 }
@@ -288,21 +305,21 @@ class PostDocumentBuilder extends DocumentBuilder
                 $transformer = new HtmlFieldTransformer();
                 break;
         }
-    
+
         if ($transformer) {
             $value = $transformer->transform($value);
         }
-        
+
         return $value;
     }
-    
+
     private function build_taxonomy($post, $name, $taxonomy)
     {
         $document = array();
 
         if ($post && $name && $taxonomy) {
             $post_id = $post->ID;
-            
+
             $terms = wp_get_object_terms($post_id, $name);
             foreach ($terms as $term) {
                 // set up taxonomy arrays in the document to index
@@ -311,12 +328,12 @@ class PostDocumentBuilder extends DocumentBuilder
                     $document[$name.'_name'] = array();
                     $document[$name.'_suggest'] = array();
                 }
-                
+
                 // index the current term
                 $document[$name][] = $term->slug;
                 $document[$name.'_name'][] = $term->name;
                 $document[$name.'_suggest'][] = $term->name;
-                
+
                 // index parent terms if they exist
                 $parent_id = Util::safely_get_attribute($term, 'parent');
                 if ($parent_id && $parent_id !== 0) {
@@ -336,7 +353,7 @@ class PostDocumentBuilder extends DocumentBuilder
                 }
             }
         }
-        
+
         return $document;
     }
 

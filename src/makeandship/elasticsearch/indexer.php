@@ -24,7 +24,7 @@ class Indexer
         $this->document_builder_factory = new DocumentBuilderFactory();
         $this->type_factory = new TypeFactory();
         $this->bulk = $bulk;
-        
+
         // bulk indexing
         $this->queues = array();
         $this->types = array();
@@ -52,7 +52,7 @@ class Indexer
             } catch (ResponseException $ex) {
                 $response = $ex->getResponse();
                 $error = $response->getFullError();
-                
+
                 $errors[]= $error;
             }
         }
@@ -109,7 +109,7 @@ class Indexer
             // likely index doesn't exist
             $errors[] = $ex;
         }
-        
+
         if (isset($errors) && !empty($errors)) {
             return $errors;
         } else {
@@ -160,7 +160,7 @@ class Indexer
         $status = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
 
         $posts_manager = new PostsManager();
-        
+
         if ($fresh || (!isset($status) || empty($status))) {
             $status = $posts_manager->initialise_status();
 
@@ -221,7 +221,7 @@ class Indexer
         $status = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
 
         $posts_manager = new PostsManager();
-        
+
         if ($fresh || (!isset($status) || empty($status))) {
             $status = $posts_manager->initialise_status();
 
@@ -278,7 +278,7 @@ class Indexer
             // only update page if we're not complete
             $status['page'] = $page + 1;
         }
-        
+
         SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
 
         return $status;
@@ -347,20 +347,20 @@ class Indexer
 
         if ($indexable) {
             $private = $builder->is_private($o);
-            
+
             if (is_multisite()) {
                 $blog_id = get_current_blog_id();
                 $primary = $status[$blog_id]['index'] == "primary";
             } else {
                 $primary = $status['index'] == "primary";
             }
-            
+
             $private_fields = $builder->has_private_fields();
-            
-            $document = $builder->build($o, false);
-            
+
+            $document = $builder->build($o, false, true);
+
             if ($private_fields) {
-                $private_document = $builder->build($o, true);
+                $private_document = $builder->build($o, true, true);
             } else {
                 $private_document = $document;
             }
@@ -485,7 +485,7 @@ class Indexer
         $builder = $this->document_builder_factory->create($o);
         $private = $builder->is_private($o);
         $id = $builder->get_id($o);
-        
+
         $doc_type = $builder->get_type($o);
         $mapping_type = $builder->get_mapping_type($o);
 
