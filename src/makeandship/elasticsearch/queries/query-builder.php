@@ -26,6 +26,7 @@ class QueryBuilder
         $this->sorts = null;
         $this->search_fields = null;
         $this->return_fields = null;
+        $this->aggregate_fields = null;
 
         $this->set_plugin_defaults();
     }
@@ -148,6 +149,13 @@ class QueryBuilder
     public function returning($fields)
     {
         $this->return_fields = $fields;
+
+        return $this;
+    }
+
+    public function aggregate_by($fields)
+    {
+        $this->aggregate_fields = $fields;
 
         return $this;
     }
@@ -429,6 +437,46 @@ class QueryBuilder
             )
         );
 
+        // custom aggregations
+        if ($this->aggregate_fields && is_array($this->aggregate_fields) && count($this->aggregate_fields)) {
+            if (Util::is_array_sequential($this->aggregate_fields)) {
+                foreach ($this->aggregate_fields as $aggregate_field) {
+                    $aggregations[$aggregate_field] = array(
+                        'aggs' => array(
+                            'facet' => array(
+                                'terms' => array(
+                                    'field' => $aggregate_field,
+                                )
+                            )
+                        ),
+                        'filter' => array(
+                            'bool' => array(
+                                'must' => array()
+                            )
+                        )
+                    );
+                }
+            } else {
+                foreach ($this->aggregate_fields as $aggregate_field => $aggregate_field_count) {
+                    $aggregations[$aggregate_field] = array(
+                        'aggs' => array(
+                            'facet' => array(
+                                'terms' => array(
+                                    'field' => $aggregate_field,
+                                    'size' => $aggregate_field_count
+                                )
+                            )
+                        ),
+                        'filter' => array(
+                            'bool' => array(
+                                'must' => array()
+                            )
+                        )
+                    );
+                }
+            }
+        }
+
         return $aggregations;
     }
 
@@ -474,8 +522,7 @@ class QueryBuilder
                 $sorts['sort'] = array(
                     'post_date' => 'desc'
                 );
-            }
-            else {
+            } else {
                 $sorts['sort'] = array(
                     '_score'
                 );
