@@ -27,6 +27,7 @@ class QueryBuilder
         $this->search_fields = null;
         $this->return_fields = null;
         $this->aggregate_fields = null;
+        $this->zero_aggregates = false;
 
         $this->set_plugin_defaults();
     }
@@ -158,6 +159,11 @@ class QueryBuilder
         $this->aggregate_fields = $fields;
 
         return $this;
+    }
+
+    public function including_zero_aggregations()
+    {
+        $this->zero_aggregates = true;
     }
 
     public function to_array()
@@ -377,18 +383,9 @@ class QueryBuilder
      * The final result will look similar to
      * "aggs": {
      *     "post_type": {
-     *         "aggs": {
-     *             "facet": {
-     *                 "terms": {
-     *                     "field": "post_type",
-     *                     "size": 100
-     *                 }
-     *             }
-     *         },
-     *         "filter": {
-     *             "bool": {
-     *                 "must": []
-     *             }
+     *         "terms": {
+     *             "field": "post_type",
+     *             "size": 100
      *         }
      *     }
      * }
@@ -401,83 +398,103 @@ class QueryBuilder
         if ($this->counts && count($this->counts) > 0) {
             foreach ($this->counts as $taxonomy => $count) {
                 $count = is_string($count) ? intval($count) : $count;
-                $aggregations[$taxonomy] = array(
-                    'aggs' => array(
-                        'facet' => array(
-                            'terms' => array(
-                                'field' => $taxonomy,
-                                'size' => $count
-                            )
-                        )
-                    ),
-                    'filter' => array(
-                        'bool' => array(
-                            'must' => array()
-                        )
-                    )
-                );
+
+                $agg = $this->build_aggregation($taxonomy, $count, $this->zero_aggregates);
+                $aggregations = array_merge($aggregations, $agg);
             }
         }
 
         // post type aggregation
         $post_type_count = $this->post_types ? count($this->post_types) : 100;
-        $aggregations['post_type'] = array(
-            'aggs' => array(
-                'facet' => array(
-                    'terms' => array(
-                        'field' => 'post_type',
-                        'size' => $post_type_count
-                    )
-                )
-            ),
-            'filter' => array(
-                'bool' => array(
-                    'must' => array()
-                )
-            )
-        );
+        $agg = $this->build_aggregation('post_type', $post_type_count, $this->zero_aggregates);
+        $aggregations = array_merge($aggregations, $agg);
 
         // custom aggregations
         if ($this->aggregate_fields && is_array($this->aggregate_fields) && count($this->aggregate_fields)) {
             if (Util::is_array_sequential($this->aggregate_fields)) {
                 foreach ($this->aggregate_fields as $aggregate_field) {
-                    $aggregations[$aggregate_field] = array(
-                        'aggs' => array(
-                            'facet' => array(
-                                'terms' => array(
-                                    'field' => $aggregate_field,
-                                )
-                            )
-                        ),
-                        'filter' => array(
-                            'bool' => array(
-                                'must' => array()
-                            )
-                        )
-                    );
+                    $agg = $this->build_aggregation($aggregate_field, null, $this->zero_aggregates);
+                    $aggregations = array_merge($aggregations, $agg);
                 }
             } else {
                 foreach ($this->aggregate_fields as $aggregate_field => $aggregate_field_count) {
-                    $aggregations[$aggregate_field] = array(
-                        'aggs' => array(
-                            'facet' => array(
-                                'terms' => array(
-                                    'field' => $aggregate_field,
-                                    'size' => $aggregate_field_count
-                                )
-                            )
-                        ),
-                        'filter' => array(
-                            'bool' => array(
-                                'must' => array()
-                            )
-                        )
-                    );
+                    $agg = $this->build_aggregation($aggregate_field, $aggregate_field_count, $this->zero_aggregates);
+                    $aggregations = array_merge($aggregations, $agg);
                 }
             }
         }
 
         return $aggregations;
+    }
+
+    /**
+     * Build a single aggregation
+     *
+     * @param $key is the field name
+     * @param $count the maximum terms to return
+     * @param $min_count boolean whether to use a 0 min count
+     */
+    private function build_aggregation($key, $count, $min_count)
+    {
+        if ($key) {
+            $aggregations = array();
+
+            // detect dot notation and convert into nested aggregation format
+            // https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-nested-aggregation.html
+            if (strpos($key, ".") !== false) {
+                $parts = explode(".", $key);
+
+                $paths = array();
+                foreach ($parts as $part) {
+                    // work through earlier layers
+                    $target = &$aggregations;
+                    foreach ($paths as $path) {
+                        $target = &$aggregations[$path]['aggs'];
+                    }
+
+                    $target[$part] = array(
+                        'aggs' => array()
+                    );
+
+                    // detect last and add aggregation
+                    if (array($part) === array_slice($parts, -1)) {
+                        $target[$part] = array(
+                            'terms' => array(
+                                'field' => $key
+                            )
+                        );
+                        if ($count) {
+                            $target[$part]['terms']['size'] = $count;
+                        }
+
+                        if ($min_count) {
+                            $target[$part]['terms']['min_doc_count'] = 0;
+                        }
+                    } else {
+                        $target[$part]['nested'] = array('path' => $part);
+                    }
+
+                    $paths[]= $part;
+                }
+            } else {
+                $aggregations[$key] = array(
+                    'terms' => array(
+                        'field' => $key
+                    )
+                );
+
+                if ($count) {
+                    $aggregations[$key]['terms']['size'] = $count;
+                }
+
+                if ($min_count) {
+                    $aggregations[$key]['terms']['min_doc_count'] = 0;
+                }
+            }
+
+            return $aggregations;
+        }
+        return array();
     }
 
     private function build_pagination()
