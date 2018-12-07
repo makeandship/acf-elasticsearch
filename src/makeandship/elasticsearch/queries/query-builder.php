@@ -383,9 +383,18 @@ class QueryBuilder
      * The final result will look similar to
      * "aggs": {
      *     "post_type": {
-     *         "terms": {
-     *             "field": "post_type",
-     *             "size": 100
+     *         "aggs": {
+     *             "facet": {
+     *                 "terms": {
+     *                     "field": "post_type",
+     *                     "size": 100
+     *                 }
+     *             }
+     *         },
+     *         "filter": {
+     *             "bool": {
+     *                 "must": []
+     *             }
      *         }
      *     }
      * }

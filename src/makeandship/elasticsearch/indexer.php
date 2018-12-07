@@ -373,6 +373,7 @@ class Indexer
             if (isset($document) && !empty($document) &&
                 isset($id) && !empty($id)) {
                 if (!$private) {
+                    $document = apply_filters('acf_elasticsearch_pre_add_document', $document);
                     // index public documents in the public repository
                     $public_type = $this->type_factory->create($mapping_type, false, false, $primary);
                     if ($public_type) {
@@ -396,6 +397,7 @@ class Indexer
                 // index everything to private index
                 $private_type = $this->type_factory->create($mapping_type, false, true, $primary);
                 if ($private_type) {
+                    $private_document = apply_filters('acf_elasticsearch_pre_add_private_document', $private_document);
                     if ($this->bulk) {
                         $this->queue($private_type, new \Elastica\Document($id, $private_document));
                     } else {
@@ -405,6 +407,7 @@ class Indexer
                 if ($new) {
                     $private_type = $this->type_factory->create($mapping_type, false, true, !$primary);
                     if ($private_type) {
+                        $private_document = apply_filters('acf_elasticsearch_pre_add_private_document', $private_document);
                         if ($this->bulk) {
                             $this->queue($private_type, new \Elastica\Document($id, $private_document));
                         } else {
