@@ -266,35 +266,60 @@ class QueryBuilder
 
     private function build_filters()
     {
-        $query_taxonomy_filters = array();
+        $query_field_filters = array();
 
         // filter by taxonomy entries
         if ($this->categories) {
             $categories = $this->ensure_categories($this->categories);
 
-            $query_taxonomy_filters['filter'] = array();
+            $query_field_filters['filter'] = array();
 
             if ($categories && count($categories) > 0) {
-                $query_taxonomy_filters['filter']['bool'] = array();
+                $query_field_filters['filter']['bool'] = array();
 
                 // e.g. 'category' => ['and' => ...]
-                foreach ($categories as $taxonomy => $operations) {
+                foreach ($categories as $field => $operations) {
                     // e.g. 'and' => ['acute-care']
                     foreach ($operations as $operation => $filters) {
                         $bool_operator = $operation === 'or' ? 'should' : 'must';
 
-                        if (!array_key_exists($bool_operator, $query_taxonomy_filters['filter']['bool'])) {
-                            $query_taxonomy_filters['filter']['bool'][$bool_operator] = array();
+                        if (!array_key_exists($bool_operator, $query_field_filters['filter']['bool'])) {
+                            $query_field_filters['filter']['bool'][$bool_operator] = array();
                         }
 
                         foreach ($filters as $filter) {
-                            // category is held as a simple term so uses a term query
-                            // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html
-                            $query_taxonomy_filters['filter']['bool'][$bool_operator][] = array(
-                                'term' => array(
-                                    $taxonomy => $filter
-                                )
-                            );
+                            if (strpos($field, ".") !== false) {
+                                $nested_filter = array();
+                                $paths = explode(".", $field);
+
+                                $keys = array_keys($paths);
+                                $last_index = end($keys);
+                                $current_filter = &$nested_filter;
+                                foreach ($paths as $index => $path) {
+                                    if ($index === $last_index) {
+                                        $current_filter['term'] = array(
+                                            $field => $filter
+                                        );
+                                    } else {
+                                        $current_filter = array(
+                                          "nested" => array(
+                                            "path" => $path,
+                                            "query" => array()
+                                          )
+                                        );
+                                        $current_filter = &$current_filter['nested']['query'];
+                                    }
+                                }
+                                $query_field_filters['filter']['bool'][$bool_operator][] = $nested_filter;
+                            } else {
+                                // category is held as a simple term so uses a term query
+                                // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html
+                                $query_field_filters['filter']['bool'][$bool_operator][] = array(
+                                    'term' => array(
+                                        $field => $filter
+                                    )
+                                );
+                            }
                         }
                     }
                 }
@@ -304,20 +329,20 @@ class QueryBuilder
         // filter by post types (which are elastic search types)
         // use "should" as it can match any post_type (not all)
         if ($this->post_types && count($this->post_types) > 0) {
-            if (!array_key_exists('filter', $query_taxonomy_filters)) {
-                $query_taxonomy_filters['filter'] = array();
+            if (!array_key_exists('filter', $query_field_filters)) {
+                $query_field_filters['filter'] = array();
             }
-            if (!array_key_exists('bool', $query_taxonomy_filters['filter'])) {
-                $query_taxonomy_filters['filter']['bool'] = array();
+            if (!array_key_exists('bool', $query_field_filters['filter'])) {
+                $query_field_filters['filter']['bool'] = array();
             }
-            if (!array_key_exists('must', $query_taxonomy_filters['filter']['bool'])) {
-                $query_taxonomy_filters['filter']['bool']['must'] = array();
+            if (!array_key_exists('must', $query_field_filters['filter']['bool'])) {
+                $query_field_filters['filter']['bool']['must'] = array();
             }
 
             foreach ($this->post_types as $post_type) {
                 // post type is used for the index type and therefore uses a type query
                 // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-query.html
-                $query_taxonomy_filters['filter']['bool']['must'][] = array(
+                $query_field_filters['filter']['bool']['must'][] = array(
                     'term' => array(
                         'type' => $post_type
                     )
@@ -328,20 +353,31 @@ class QueryBuilder
         // filter by taxonomies (which are elastic search types)
         // use "should" as it can match any post_type (not all)
         if ($this->taxonomies && count($this->taxonomies) > 0) {
-            if (!array_key_exists('filter', $query_taxonomy_filters)) {
-                $query_taxonomy_filters['filter'] = array();
+            if (!array_key_exists('filter', $query_field_filters)) {
+                $query_field_filters['filter'] = array();
             }
-            if (!array_key_exists('bool', $query_taxonomy_filters['filter'])) {
-                $query_taxonomy_filters['filter']['bool'] = array();
+            if (!array_key_exists('bool', $query_field_filters['filter'])) {
+                $query_field_filters['filter']['bool'] = array();
             }
-            if (!array_key_exists('must', $query_taxonomy_filters['filter']['bool'])) {
-                $query_taxonomy_filters['filter']['bool']['should'] = array();
+            if (!array_key_exists('must', $query_field_filters['filter']['bool'])) {
+                $query_field_filters['filter']['bool']['must'] = array();
+            }
+            if (!array_key_exists('must', $query_field_filters['filter']['bool'])) {
+                $query_field_filters['filter']['bool']['must'] = array();
+            }
+            if (!array_key_exists('bool', $query_field_filters['filter']['bool']['must'])) {
+                $query_field_filters['filter']['bool']['must']['bool'] = array();
+            }
+            if (!array_key_exists('should', $query_field_filters['filter']['bool'])) {
+                $query_field_filters['filter']['bool']['must']['bool']['should'] = array(
+                  'minimum_should_match' => 1
+                );
             }
 
             foreach ($this->taxonomies as $taxonomy) {
                 // post type is used for the index type and therefore uses a type query
                 // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-query.html
-                $query_taxonomy_filters['filter']['bool']['should'][] = array(
+                $query_field_filters['filter']['bool']['must']['bool']['should'][] = array(
                     'term' => array(
                         'type' => $taxonomy
                     )
@@ -349,7 +385,7 @@ class QueryBuilder
             }
         }
 
-        return $query_taxonomy_filters;
+        return $query_field_filters;
     }
 
     /**
