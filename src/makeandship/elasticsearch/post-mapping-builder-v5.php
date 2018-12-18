@@ -154,7 +154,7 @@ class PostMappingBuilderV5 extends PostMappingBuilder
 
                 switch ($acf_type) {
                     case 'checkbox':
-                        $props['type'] = 'boolean';
+                        $props['type'] = 'string';
                         $props['index'] = 'not_analyzed';
                         break;
                     case 'date_picker':
