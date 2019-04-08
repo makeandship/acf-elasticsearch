@@ -259,13 +259,15 @@ class HtmlUtils
     public static function create_weightings()
     {
         $weights = array();
-        $input = $_POST['acf_elasticsearch_weightings'];        
-        $weightings = explode("\n", str_replace("\r", "", $input));
+        $input = $_POST['acf_elasticsearch_weightings'];   
+        if ($input) {     
+            $weightings = explode("\n", str_replace("\r", "", $input));
             foreach($weightings as $weighting) {
                 $field = explode("^", $weighting)[0];
                 $weight = explode("^", $weighting)[1];
                 $weights[$field] = $weight;
             }
+        }
         return $weights;
     }
 
