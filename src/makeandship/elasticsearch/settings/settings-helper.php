@@ -87,9 +87,7 @@ class SettingsHelper
             }
         }
         $value = implode("\n", $weightings);
-        if (!$value) {
-            $value = "post_title^3\npost_content^3";
-        }
+        
         return $value;
     }
 

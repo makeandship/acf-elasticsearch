@@ -234,9 +234,6 @@ class QueryBuilder
                 // search all fields
                 $query_text = array(
                     'multi_match' => array(
-                        'fields' => array(
-                            '_all'
-                        ),
                         'query' => $this->freetext
                     )
                 );
@@ -245,6 +242,9 @@ class QueryBuilder
                 if ($this->weights) {
                     foreach ($this->weights as $field => $weight) {
                         if (ctype_digit(strval($weight))) { // check numeric - see http://php.net/manual/en/function.is-int.php
+                            if (!array_key_exists('fields', $query_text['multi_match'])) {
+                                $query_text['multi_match']['fields'] = array();    
+                            }
                             $query_text['multi_match']['fields'][] = $field.'^'.$weight;
                         }
                     }
