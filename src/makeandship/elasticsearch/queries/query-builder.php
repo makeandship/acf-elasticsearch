@@ -336,15 +336,15 @@ class QueryBuilder
                 $query_field_filters['filter']['bool'] = array();
             }
             if (!array_key_exists('must', $query_field_filters['filter']['bool'])) {
-                $query_field_filters['filter']['bool']['must'] = array();
+                $query_field_filters['filter']['bool']['should'] = array();
             }
 
             foreach ($this->post_types as $post_type) {
                 // post type is used for the index type and therefore uses a type query
                 // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-query.html
-                $query_field_filters['filter']['bool']['must'][] = array(
+                $query_field_filters['filter']['bool']['should'][] = array(
                     'term' => array(
-                        'type' => $post_type
+                        'post_type' => $post_type
                     )
                 );
             }
