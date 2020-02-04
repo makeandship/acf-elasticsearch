@@ -22,12 +22,12 @@ class Indexer
     {
         // factories
         $this->document_builder_factory = new DocumentBuilderFactory();
-        $this->type_factory = new TypeFactory();
+        $this->index_factory = new IndexFactory();
         $this->bulk = $bulk;
 
         // bulk indexing
         $this->queues = array();
-        $this->types = array();
+        $this->indexes = array();
     }
 
     /**
@@ -97,9 +97,13 @@ class Indexer
         );
 
         $settings = array(
-            'number_of_shards' => $shards,
-            'number_of_replicas' => $replicas,
-            'analysis' => $analysis
+            'settings' => array (
+                'index' => array(
+                    'number_of_shards' => $shards,
+                    'number_of_replicas' => $replicas,
+                ),
+                'analysis' => $analysis
+            )
         );
 
         // create the index
@@ -113,7 +117,7 @@ class Indexer
         if (isset($errors) && !empty($errors)) {
             return $errors;
         } else {
-            return $response;
+            return $client->getIndex($name);
         }
     }
 
@@ -347,6 +351,9 @@ class Indexer
 
         if ($indexable) {
             $private = $builder->is_private($o);
+            if ($private) {
+                error_log("Document is private");
+            }
 
             if (is_multisite()) {
                 $blog_id = get_current_blog_id();
@@ -375,43 +382,47 @@ class Indexer
                 if (!$private) {
                     $document = apply_filters('acf_elasticsearch_pre_add_document', $document);
                     // index public documents in the public repository
-                    $public_type = $this->type_factory->create($mapping_type, false, false, $primary);
-                    if ($public_type) {
+                    $index = $this->index_factory->create($primary, false);
+                    if ($index) {
                         if ($this->bulk) {
-                            $this->queue($public_type, new \Elastica\Document($id, $document));
+                            $this->queue($index, new \Elastica\Document($id, $document));
                         } else {
-                            $public_type->addDocument(new \Elastica\Document($id, $document));
+                            $index->addDocument(new \Elastica\Document($id, $document));
                         }
                     }
+
                     if ($new) {
-                        $public_type = $this->type_factory->create($mapping_type, false, false, !$primary);
-                        if ($public_type) {
+                        // new documents add to the alternate index as well otherwise they are missed
+                        $index = $this->index_factory->create(!$primary, false);
+                        if ($index) {
+                            $private_document = apply_filters('acf_elasticsearch_pre_add_private_document', $private_document);
                             if ($this->bulk) {
-                                $this->queue($public_type, new \Elastica\Document($id, $document));
+                                $this->queue($index, new \Elastica\Document($id, $private_document));
                             } else {
-                                $public_type->addDocument(new \Elastica\Document($id, $document));
+                                $index->addDocument(new \Elastica\Document($id, $private_document));
                             }
                         }
                     }
                 }
                 // index everything to private index
-                $private_type = $this->type_factory->create($mapping_type, false, true, $primary);
-                if ($private_type) {
+                $index = $this->index_factory->create($primary, true);
+                if ($index) {
                     $private_document = apply_filters('acf_elasticsearch_pre_add_private_document', $private_document);
                     if ($this->bulk) {
-                        $this->queue($private_type, new \Elastica\Document($id, $private_document));
+                        $this->queue($index, new \Elastica\Document($id, $private_document));
                     } else {
-                        $private_type->addDocument(new \Elastica\Document($id, $private_document));
+                        $index->addDocument(new \Elastica\Document($id, $private_document));
                     }
                 }
                 if ($new) {
-                    $private_type = $this->type_factory->create($mapping_type, false, true, !$primary);
-                    if ($private_type) {
+                    // new documents add to the alternate index as well otherwise they are missed
+                    $index = $this->index_factory->create(!$primary, true);
+                    if ($index) {
                         $private_document = apply_filters('acf_elasticsearch_pre_add_private_document', $private_document);
                         if ($this->bulk) {
-                            $this->queue($private_type, new \Elastica\Document($id, $private_document));
+                            $this->queue($index, new \Elastica\Document($id, $private_document));
                         } else {
-                            $private_type->addDocument(new \Elastica\Document($id, $private_document));
+                            $index->addDocument(new \Elastica\Document($id, $private_document));
                         }
                     }
                 }
@@ -422,32 +433,28 @@ class Indexer
     /**
      * For bulk indexing add a document to a queue
      */
-    private function queue($type, $document)
+    private function queue($index, $document)
     {
-        if ($type) {
-            $type_name = $type->getName();
-            $index = $type->getIndex();
-            if ($index) {
-                $index_name = $index->getName();
+        if ($index) {
+            $index_name = $index->getName();
+            $key = $index_name;
 
-                $key = $index_name . $type_name;
+            if ($key) {
+                if (!$this->queues) {
+                    $this->queues = array();
+                }
+                if (!array_key_exists($key, $this->queues)) {
+                    $this->queues[$key] = array();
+                }
+                $this->queues[$key][] = $document;
+                error_log('Add '. $document->getId() .' to ' . $key);
 
-                if ($key) {
-                    if (!$this->queues) {
-                        $this->queues = array();
-                    }
-                    if (!array_key_exists($key, $this->queues)) {
-                        $this->queues[$key] = array();
-                    }
-                    $this->queues[$key][] = $document;
+                if (!$this->indexes) {
+                    $this->indexes = array();
+                }
 
-                    if (!$this->types) {
-                        $this->types = array();
-                    }
-
-                    if (!array_key_exists($key, $this->types)) {
-                        $this->types[$key] = $type;
-                    }
+                if (!array_key_exists($key, $this->indexes)) {
+                    $this->indexes[$key] = $index;
                 }
             }
         }
@@ -459,14 +466,15 @@ class Indexer
      */
     public function flush()
     {
-        if ($this->types && $this->queues) {
+        if ($this->indexes && $this->queues) {
             foreach ($this->queues as $key => $documents) {
-                $type = $this->types[$key];
+                $index = $this->indexes[$key];
 
-                if ($type && $documents && count($documents) > 0) {
+                if ($index && $documents && count($documents) > 0) {
                     // add the documents
-                    $type->addDocuments($documents);
-                    $type->getIndex()->refresh();
+                    $index->addDocuments($documents);
+                    $index->refresh();
+                    error_log('Added '. count($documents) .' to ' . $key);
 
                     unset($this->queues[$key]);
                 }

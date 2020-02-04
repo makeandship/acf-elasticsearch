@@ -4,6 +4,7 @@ namespace makeandship\elasticsearch;
 
 class TermMappingBuilderV6 extends TermMappingBuilder
 {
+    
     const CORE_FIELDS = array(
         'type' => array(
             'type' => 'keyword',

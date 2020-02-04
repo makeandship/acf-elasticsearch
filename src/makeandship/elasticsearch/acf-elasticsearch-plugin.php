@@ -73,11 +73,11 @@ class AcfElasticsearchPlugin
 
         foreach ($indexes as $index) {
             $name = $index['name'];
-            $indexer->create($name);
-        }
+            $elastic_index = $indexer->create($name);
 
-        $mapper = new Mapper();
-        $result = $mapper->map();
+            $mapper = new Mapper();
+            $result = $mapper->map($elastic_index);
+        }
         
         // extract message from result
         $message = 'Mappings were created successfully';

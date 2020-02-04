@@ -2,22 +2,34 @@
 
 namespace makeandship\elasticsearch;
 
-use \Elastica\Type\Mapping;
 use makeandship\elasticsearch\settings\SettingsManager;
+use \Elastica\Mapping;
 
 class Mapper
 {
     public function __construct()
     {
+        $this->propeties = null;
+
         // factory to manage individual mappers
         $this->mapping_builder_factory = new MappingBuilderFactory();
-
-        // factory to manage types
-        $this->type_factory = new TypeFactory();
     }
 
-    public function map()
+    public function map($index)
     {
+        if ($index) {
+            $properties = $this->create_properties();
+
+            $this->create_mapping($index, $properties);
+        }
+    }
+
+    private function create_properties()
+    {
+        if ($this->properties) {
+            return $this->properties;
+        }
+
         // create mappings for each post type
         $post_types = $this->post_types = SettingsManager::get_instance()->get_post_types();
 
@@ -41,90 +53,32 @@ class Mapper
         $taxonomies = get_taxonomies();
         foreach ($taxonomies as $taxonomy) {
             $properties = array_merge(
-            $properties,
-            $term_mapping_builder->build($taxonomy)
-          );
+                $properties,
+                $term_mapping_builder->build($taxonomy)
+            );
         }
 
         // create mappings for sites if this is a multisite
         if (is_multisite()) {
             $properties = array_merge(
-            $properties,
-            $site_mapping_builder->build()
-          );
+                $properties,
+                $site_mapping_builder->build()
+            );
         }
 
         $properties = apply_filters('acf_elasticsearch_pre_create_mappings', $properties);
-        $this->create_mapping($properties);
+
+        $this->properties = $properties;
+
+        return $properties;
     }
 
-    private function map_type($builder, $type_name=null)
-    {
-        if (isset($builder)) {
-            $properties = $builder->build($type_name);
-
-            if (isset($properties)) {
-                // create mappings for the public primary index if required
-                $primary_type = $this->type_factory->create($type_name, false, false, true);
-                if ($primary_type) {
-                    $mapping_primary = new Mapping($primary_type, $properties);
-                    $mapping_primary->send();
-                }
-
-                // create mappings for the private primary index if required
-                $private_primary_type = $this->type_factory->create($type_name, false, true, true);
-                if ($private_primary_type) {
-                    $mapping_private_primary = new Mapping($private_primary_type, $properties);
-                    $mapping_private_primary->send();
-                }
-
-                // create mappings for the public secondary index if required
-                $secondary_type = $this->type_factory->create($type_name, false, false, false);
-                if ($secondary_type) {
-                    $mapping_secondary = new Mapping($secondary_type, $properties);
-                    $mapping_secondary->send();
-                }
-
-                // create mappings for the private secondary index if required
-                $private_secondary_type = $this->type_factory->create($type_name, false, true, false);
-                if ($private_secondary_type) {
-                    $mapping_private_secondary = new Mapping($private_secondary_type, $properties);
-                    $mapping_private_secondary->send();
-                }
-            }
-        }
-    }
-
-    private function create_mapping($properties, $type_name=Constants::DEFAULT_MAPPING_TYPE)
+    private function create_mapping($index, $properties)
     {
         if (isset($properties)) {
             // create mappings for the public primary index if required
-            $primary_type = $this->type_factory->create($type_name, false, false, true);
-            if ($primary_type) {
-                $mapping_primary = new Mapping($primary_type, $properties);
-                $mapping_primary->send();
-            }
-
-            // create mappings for the private primary index if required
-            $private_primary_type = $this->type_factory->create($type_name, false, true, true);
-            if ($private_primary_type) {
-                $mapping_private_primary = new Mapping($private_primary_type, $properties);
-                $mapping_private_primary->send();
-            }
-
-            // create mappings for the public secondary index if required
-            $secondary_type = $this->type_factory->create($type_name, false, false, false);
-            if ($secondary_type) {
-                $mapping_secondary = new Mapping($secondary_type, $properties);
-                $mapping_secondary->send();
-            }
-
-            // create mappings for the private secondary index if required
-            $private_secondary_type = $this->type_factory->create($type_name, false, true, false);
-            if ($private_secondary_type) {
-                $mapping_private_secondary = new Mapping($private_secondary_type, $properties);
-                $mapping_private_secondary->send();
-            }
+            $mapping = new Mapping($properties);
+            $mapping->send($index);
         }
     }
 }
