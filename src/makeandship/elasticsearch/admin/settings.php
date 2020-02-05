@@ -53,6 +53,14 @@ if (!empty($_POST)) {
                 <h2 class="handle"><span>1. Configure your Elastic search server</span></h2>
                 <div class="inside acf-fields -left">
                     <div class="acf-elasticsearch-container">
+                        <div class="acf-elasticsearch-row">
+                            <div class="twocol">
+                                <label for="">Version</label>
+                            </div>
+                            <div class="tencol last">
+                                <?php echo Constants::VERSION; ?>
+                            </div>
+                        </div>
                         <?php 
                         echo HtmlUtils::render_field(
                             'Server',
