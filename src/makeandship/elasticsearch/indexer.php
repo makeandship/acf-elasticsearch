@@ -504,40 +504,41 @@ class Indexer
         if (isset($o) && !empty($o) &&
                 isset($id) && !empty($id)) {
             // attempt to clear from all types - post_status = private won't be available
-            $primary_public_type = $this->type_factory->create($mapping_type, false, false, true);
-            if ($primary_public_type) {
+            
+            $primary_public = $this->index_factory->create(true, false);
+            if ($primary_public) {
                 try {
-                    $primary_public_type->deleteById($id);
+                    $primary_public->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
                     error_log('Unable to delete from primary public index');
                 }
             }
 
-            $secondary_public_type = $this->type_factory->create($mapping_type, false, false, false);
-            if ($secondary_public_type) {
+            $secondary_public = $this->index_factory->create(false, false);
+            if ($secondary_public) {
                 try {
-                    $secondary_public_type->deleteById($id);
+                    $secondary_public->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
                     error_log('Unable to delete from secondary public index');
                 }
             }
 
-            $primary_private_type = $this->type_factory->create($mapping_type, false, true, true);
-            if ($primary_private_type) {
+            $primary_private = $this->index_factory->create(true, true);
+            if ($primary_private) {
                 try {
-                    $primary_private_type->deleteById($id);
+                    $primary_private->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
                     error_log('Unable to delete from primary private index');
                 }
             }
 
-            $secondary_private_type = $this->type_factory->create($mapping_type, false, true, false);
-            if ($secondary_private_type) {
+            $secondary_private = $this->index_factory->create(true, true);
+            if ($secondary_private) {
                 try {
-                    $secondary_private_type->deleteById($id);
+                    $secondary_private->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
                     error_log('Unable to delete from secondary private index');
