@@ -4,6 +4,7 @@ namespace makeandship\elasticsearch\admin;
 
 use makeandship\elasticsearch\Constants;
 use makeandship\elasticsearch\settings\SettingsHelper;
+use makeandship\elasticsearch\settings\SettingsManager;
 
 class HtmlUtils
 {
@@ -32,12 +33,12 @@ class HtmlUtils
             $html = [
                 '<div class="acf-elasticsearch-row">',
                 '	<div class="twocol">',
-                '		<label for="">'.$label.'</label>',
+                '		<label for="">' . $label . '</label>',
                 '	</div>',
                 '	<div class="tencol last">',
-                '		'.$field,
+                '		' . $field,
                 '	</div>',
-                '</div>'
+                '</div>',
             ];
         }
 
@@ -66,20 +67,19 @@ class HtmlUtils
 
         $html = [
             '<input type="text" ',
-            '	class="'.$clazz.'"',
-            '	name="'.$name.'"',
-            '	value="'.$value.'"'
+            '	class="' . $clazz . '"',
+            '	name="' . $name . '"',
+            '	value="' . $value . '"',
         ];
-        
+
         unset($args['value']);
         unset($args['class']);
 
         foreach ($args as $key => $value) {
-            $html[] = '	'.$key.'="'.$value.'"';
+            $html[] = '	' . $key . '="' . $value . '"';
         }
 
         $html[] = '/>';
-        
 
         return implode($html, PHP_EOL);
     }
@@ -104,15 +104,14 @@ class HtmlUtils
     public static function render_button($args)
     {
         $html = [
-            '<input type="submit" '
+            '<input type="submit" ',
         ];
 
         foreach ($args as $key => $value) {
-            $html[] = '	'.$key.'="'.$value.'"';
+            $html[] = '	' . $key . '="' . $value . '"';
         }
-            
+
         $html[] = '/>';
-        
 
         return implode($html, PHP_EOL);
     }
@@ -128,18 +127,18 @@ class HtmlUtils
         foreach ($checkboxes as $checkbox) {
             $html[] = '<div class="acf-elasticsearch-row">';
             $html[] = '    <div class="twocol">';
-            $html[] = '	       <label for="">'.($first ? $label : "").'</label>';
+            $html[] = '	       <label for="">' . ($first ? $label : "") . '</label>';
             $html[] = '    </div>';
             $html[] = '    <div class="twocol">';
             $html[] = self::render_checkbox($checkbox);
             $html[] = '    </div>';
             $html[] = '    <div class="fourcol">';
             $html[] = '         <label class="textarea-label" for="">Exclude fields from indexing</label>';
-            $html[] = '         <textarea name="'.$checkbox['value'].'_exclude">'.$checkbox['exclude'].'</textarea>';
+            $html[] = '         <textarea name="' . $checkbox['value'] . '_exclude">' . $checkbox['exclude'] . '</textarea>';
             $html[] = '    </div>';
             $html[] = '    <div class="fourcol last">';
             $html[] = '         <label class="textarea-label" for="">Fields for private searches only</label>';
-            $html[] = '         <textarea name="'.$checkbox['value'].'_private">'.$checkbox['private'].'</textarea>';
+            $html[] = '         <textarea name="' . $checkbox['value'] . '_private">' . $checkbox['private'] . '</textarea>';
             $html[] = '    </div>';
             $html[] = '</div>';
 
@@ -151,24 +150,24 @@ class HtmlUtils
 
     public static function render_checkbox($args)
     {
-        $id = $args['id'];
-        $name = $args['name'];
-        $value = $args['value'];
+        $id      = $args['id'];
+        $name    = $args['name'];
+        $value   = $args['value'];
         $checked = $args['checked'];
 
-        $html[] = '<label for="'.$id.'">';
-        $html[] = '    <input type="checkbox" value="'.$value.'" name="'.$name.'" id="'.$id.'"';
-        
+        $html[] = '<label for="' . $id . '">';
+        $html[] = '    <input type="checkbox" value="' . $value . '" name="' . $name . '" id="' . $id . '"';
+
         if ($checked) {
             $html[] = 'checked="checked">';
         } else {
             $html[] = '>';
         }
-        
+
         $html[] = $value;
-        
+
         $html[] = '</label>';
-              
+
         return implode($html, PHP_EOL);
     }
 
@@ -177,8 +176,26 @@ class HtmlUtils
         $value = $args['value'];
         $clazz = $args['class'];
 
-        $html[] = '<textarea name="'.$name.'" class="'.$clazz.'">'.$value.'</textarea>';
-        
+        $html[] = '<textarea name="' . $name . '" class="' . $clazz . '">' . $value . '</textarea>';
+
+        return implode($html, PHP_EOL);
+    }
+
+    public static function render_readonly_setting($label, $config)
+    {
+
+        $value = $config ? SettingsManager::get_instance()->get_option_from_config($config) : null;
+
+        $html = [
+            '<div class="acf-elasticsearch-row">',
+            '	<div class="twocol">',
+            '		<label for="">' . $label . '</label>',
+            '	</div>',
+            '	<div class="tencol last">',
+            '		' . $value,
+            '	</div>',
+            '</div>',
+        ];
 
         return implode($html, PHP_EOL);
     }
@@ -186,15 +203,15 @@ class HtmlUtils
     public static function create_post_types()
     {
         $post_types = array();
-        $types = $_POST['acf_elasticsearch_post_types'];
-        foreach($types as $type){
-            $post_type = array();
-            $post_type['type'] = $type;
+        $types      = $_POST['acf_elasticsearch_post_types'];
+        foreach ($types as $type) {
+            $post_type            = array();
+            $post_type['type']    = $type;
             $post_type['exclude'] = self::get_array_data($type, 'exclude');
             $post_type['private'] = self::get_array_data($type, 'private');
-            $post_types[] = $post_type;
+            $post_types[]         = $post_type;
         }
-        
+
         return $post_types;
     }
 
@@ -211,7 +228,7 @@ class HtmlUtils
                 $search_fields = null;
             }
         }
-        
+
         return $search_fields;
     }
 
@@ -228,7 +245,7 @@ class HtmlUtils
                 $slugs_to_exclude = null;
             }
         }
-        
+
         return $slugs_to_exclude;
     }
 
@@ -236,20 +253,20 @@ class HtmlUtils
     {
         if (isset($slugs) && !empty($slugs)) {
             $args = array(
-                'post_type' => get_post_types(),
-                'post_status' => Constants::INDEX_POST_STATUSES,
+                'post_type'     => get_post_types(),
+                'post_status'   => Constants::INDEX_POST_STATUSES,
                 'post_name__in' => $slugs,
-                'fields' => 'ids'
+                'fields'        => 'ids',
             );
 
             $query = new \WP_Query($args);
-            $ids = array();
+            $ids   = array();
             if ($query->have_posts()) {
-                foreach( $query->posts as $id ) {
+                foreach ($query->posts as $id) {
                     $ids[] = $id;
                 }
             }
-            
+
             return $ids;
         }
 
@@ -259,12 +276,12 @@ class HtmlUtils
     public static function create_weightings()
     {
         $weights = array();
-        $input = $_POST['acf_elasticsearch_weightings'];   
-        if ($input) {     
+        $input   = $_POST['acf_elasticsearch_weightings'];
+        if ($input) {
             $weightings = explode("\n", str_replace("\r", "", $input));
-            foreach($weightings as $weighting) {
-                $field = explode("^", $weighting)[0];
-                $weight = explode("^", $weighting)[1];
+            foreach ($weightings as $weighting) {
+                $field           = explode("^", $weighting)[0];
+                $weight          = explode("^", $weighting)[1];
                 $weights[$field] = $weight;
             }
         }
@@ -273,11 +290,10 @@ class HtmlUtils
 
     private static function get_array_data($type, $category)
     {
-        if(isset($_POST[$type.'_'.$category])){
-            $input = $_POST[$type.'_'.$category];
+        if (isset($_POST[$type . '_' . $category])) {
+            $input = $_POST[$type . '_' . $category];
             return explode("\n", str_replace("\r", "", $input));
-        }
-        else {
+        } else {
             return array();
         }
     }
