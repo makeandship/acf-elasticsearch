@@ -5,6 +5,7 @@ namespace makeandship\elasticsearch\admin;
 use makeandship\elasticsearch\Constants;
 use makeandship\elasticsearch\settings\SettingsHelper;
 use makeandship\elasticsearch\settings\SettingsManager;
+use makeandship\elasticsearch\Util;
 
 class HtmlUtils
 {
@@ -181,10 +182,18 @@ class HtmlUtils
         return implode($html, PHP_EOL);
     }
 
-    public static function render_readonly_setting($label, $config)
+    public static function render_readonly_setting($label, $config, $missing = '', $options = array())
     {
+        $mask = Util::safely_get_attribute($options, 'mask');
 
         $value = $config ? SettingsManager::get_instance()->get_option_from_config($config) : null;
+        if ($value && $mask) {
+            $value = str_repeat("*", strlen($value));
+        }
+
+        if (!$value) {
+            $value = $missing ? 'Missing: ' . $missing : '';
+        }
 
         $html = [
             '<div class="acf-elasticsearch-row">',

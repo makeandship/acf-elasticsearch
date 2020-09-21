@@ -70,7 +70,8 @@ echo HtmlUtils::render_readonly_setting(
         'env'   => array(
             'ES_URL',
         ),
-    )
+    ),
+    'Define constant or environment variable "ES_URL" or point to a file with "ES_URL_FILE"'
 );
 echo HtmlUtils::render_readonly_setting(
     'Username',
@@ -81,7 +82,8 @@ echo HtmlUtils::render_readonly_setting(
         'env'   => array(
             'ES_USERNAME',
         ),
-    )
+    ),
+    'Define constant or environment variable "ES_USERNAME" or point to a file with "ES_USERNAME"'
 );
 echo HtmlUtils::render_readonly_setting(
     'Password',
@@ -92,6 +94,10 @@ echo HtmlUtils::render_readonly_setting(
         'env'   => array(
             'ES_PASSWORD',
         ),
+    ),
+    'Define constant or environment variable "ES_PASSWORD" or point to a file with "ES_PASSWORD_FILE"',
+    array(
+        'mask' => true,
     )
 );
 echo HtmlUtils::render_readonly_setting(
@@ -103,7 +109,8 @@ echo HtmlUtils::render_readonly_setting(
         'env'   => array(
             'ES_INDEX',
         ),
-    )
+    ),
+    'Define constant or environment variable "ES_INDEX" or point to a file with "ES_INDEX_FILE"'
 );
 echo HtmlUtils::render_readonly_setting(
     'Secondary Index',
@@ -114,18 +121,20 @@ echo HtmlUtils::render_readonly_setting(
         'env'   => array(
             'ES_SECONDARY_INDEX',
         ),
-    )
+    ),
+    'Define constant or environment variable "ES_SECONDARY_INDEX" or point to a file with "ES_SECONDARY_INDEX_FILE"'
 );
 echo HtmlUtils::render_readonly_setting(
     'Private Primary Index',
     array(
         'const' => array(
-            'ES_PRIVATE_SECONDARY_INDEX',
+            'ES_PRIVATE_INDEX',
         ),
         'env'   => array(
-            'ES_PRIVATE_SECONDARY_INDEX',
+            'ES_PRIVATE_INDEX',
         ),
-    )
+    ),
+    'Define constant or environment variable "ES_PRIVATE_INDEX" or point to a file with "ES_PRIVATE_INDEX_FILE"'
 );
 echo HtmlUtils::render_readonly_setting(
     'Private Secondary Index',
@@ -136,7 +145,8 @@ echo HtmlUtils::render_readonly_setting(
         'env'   => array(
             'ES_PRIVATE_SECONDARY_INDEX',
         ),
-    )
+    ),
+    'Define constant or environment variable "ES_PRIVATE_SECONDARY_INDEX" or point to a file with "ES_PRIVATE_SECONDARY_INDEX_FILE"'
 );
 echo HtmlUtils::render_field(
     'Read Timeout',

@@ -58,57 +58,53 @@ brew services start elasticsearch
 
 6. Configuration
 
+Elasticsearch settings can be configured in constants in your wp-config.php or 
+using environment variables.
+
+The following should be set
+
+* ES_URL - The URL to your elasticsearch e.g. https://elasticsearch.example.com:9200/
+* ES_USERNAME - Any username required to connect to elasticsearch
+* ES_PASSWORD - Any password required to connect to elasticsearch
+* ES_INDEX - An index name for the primary index
+* ES_SECONDARY_INDEX - An index name for the secondary index
+* ES_PRIVATE_INDEX - An index name for the private primary index
+* ES_PRIVATE_SECONDARY_INDEX - An index name for the private secondary index
+
+The variables can also be set as individual files which are pointed to by a variable 
+of the same name with suffix `_FILE` e.g. `ES_PASSWORD_FILE` to support secret
+injection via a vault.
+
 In the wordpress admin console, go to Settings->ACF Elasticsearch to configure
 the plugin:
 
-6.1. Enter the server address in Server field (address must be terminated by /)
-e.g. https://your-es-host:9200/
-
-6.2. Enter the primary index to be created by the plugin in the Primary Index
-field
-
-6.3. Enter the secondary index to be created by the plugin in the Secondary
-Index field (secondary index will be used when the primary is indexing)
-
-6.4. Enter the private primary index to be created by the plugin in the Private
-Primary Index field (private primary index will contain all the data including
-private objects and fields).
-
-6.5. Enter the private secondary index to be created by the plugin in the
-Private Secondary Index field (private secondary index will be used when the
-private primary is indexing).
-
-6.6. Read/Write timeouts are configured in the Read Timeout and Write Timeout
+Read/Write timeouts are configured in the Read Timeout and Write Timeout
 fields respectively.
 
-6.7. If you are using searchguard or any other security plugin in your
-elasticsearch cluster, enter the username and password in the Username and
-Password fields.
-
-6.8. Check the list of post types to be indexed and mapped, by default all post
+Check the list of post types to be indexed and mapped, by default all post
 types are checked.
 
-6.9. For each selected post type you can exclude fields from indexing by
+For each selected post type you can exclude fields from indexing by
 entering them in the "Exclude fields from indexing" textarea, fields are
 separated by new line.
 
-6.10. For each selected post type you can indicate private fields to be added to
+For each selected post type you can indicate private fields to be added to
 the private index only in the "Fields for private searches only" textarea,
 fields are separated by new line.
 
-6.11. Enter the capability name which grants access to the private indexes in
+Enter the capability name which grants access to the private indexes in
 the capability field, if the user role has this capability the search will be
 against private indexes only. Make sure the capability is added to your
 wordpress config and granted to the right roles.
 
-6.12. Enter the list of searched fields in the Search Fields textarea, fields
+Enter the list of searched fields in the Search Fields textarea, fields
 are separated by new line.
 
-6.13. Enter the list of weightings in the Weightings textarea, fields are
+Enter the list of weightings in the Weightings textarea, fields are
 separated by new line and each line has a format of field^weight e.g.
 post_content^3.
 
-6.14. Enter the fuzziness value in the Fuzziness field e.g 1.
+Enter the fuzziness value in the Fuzziness field e.g 1.
 
 ## Implementation in the theme
 
