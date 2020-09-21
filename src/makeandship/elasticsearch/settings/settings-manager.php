@@ -31,7 +31,7 @@ class SettingsManager
     {
         $this->get_settings(true);
     }
-    
+
     /**
      * Get the current configuration.  Configuration values
      * are cached.  Use the $fresh parameter to get an updated
@@ -40,32 +40,32 @@ class SettingsManager
      * @param $fresh - true to get updated values
      * @return array of settings
      */
-    public function get_settings($fresh=false)
+    public function get_settings($fresh = false)
     {
         if (!isset($this->settings) || $fresh) {
             $this->settings = array();
 
-            $this->settings[Constants::OPTION_SERVER] = $this->get_option(Constants::OPTION_SERVER);
-            $this->settings[Constants::OPTION_PRIMARY_INDEX] = $this->get_option(Constants::OPTION_PRIMARY_INDEX);
-            $this->settings[Constants::OPTION_SECONDARY_INDEX] = $this->get_option(Constants::OPTION_SECONDARY_INDEX);
-            $this->settings[Constants::OPTION_PRIVATE_PRIMARY_INDEX] = $this->get_option(Constants::OPTION_PRIVATE_PRIMARY_INDEX);
+            $this->settings[Constants::OPTION_SERVER]                  = $this->get_option(Constants::OPTION_SERVER);
+            $this->settings[Constants::OPTION_PRIMARY_INDEX]           = $this->get_option(Constants::OPTION_PRIMARY_INDEX);
+            $this->settings[Constants::OPTION_SECONDARY_INDEX]         = $this->get_option(Constants::OPTION_SECONDARY_INDEX);
+            $this->settings[Constants::OPTION_PRIVATE_PRIMARY_INDEX]   = $this->get_option(Constants::OPTION_PRIVATE_PRIMARY_INDEX);
             $this->settings[Constants::OPTION_PRIVATE_SECONDARY_INDEX] = $this->get_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
-            $this->settings[Constants::OPTION_READ_TIMEOUT] = $this->get_option(Constants::OPTION_READ_TIMEOUT);
-            $this->settings[Constants::OPTION_WRITE_TIMEOUT] = $this->get_option(Constants::OPTION_WRITE_TIMEOUT);
-            $this->settings[Constants::OPTION_INDEX_STATUS] = $this->get_option(Constants::OPTION_INDEX_STATUS);
-            $this->settings[Constants::OPTION_USERNAME] = $this->get_option(Constants::OPTION_USERNAME);
-            $this->settings[Constants::OPTION_PASSWORD] = $this->get_option(Constants::OPTION_PASSWORD);
-            $this->settings[Constants::OPTION_POST_TYPES] = $this->get_option(Constants::OPTION_POST_TYPES);
-            $this->settings[Constants::OPTION_CAPABILITY] = $this->get_option(Constants::OPTION_CAPABILITY);
-            $this->settings[Constants::OPTION_SEARCH_FIELDS] = $this->get_option(Constants::OPTION_SEARCH_FIELDS);
-            $this->settings[Constants::OPTION_WEIGHTINGS] = $this->get_option(Constants::OPTION_WEIGHTINGS);
-            $this->settings[Constants::OPTION_FUZZINESS] = $this->get_option(Constants::OPTION_FUZZINESS);
-            $this->settings[Constants::OPTION_SLUGS_TO_EXCLUDE] = $this->get_option(Constants::OPTION_SLUGS_TO_EXCLUDE);
-            $this->settings[Constants::OPTION_EXCLUSION_FIELD] = $this->get_option(Constants::OPTION_EXCLUSION_FIELD);
-            $this->settings[Constants::OPTION_IDS_TO_EXCLUDE] = $this->get_option(Constants::OPTION_IDS_TO_EXCLUDE);
-            $this->settings[Constants::OPTION_ELASTICSEARCH_VERSION] = $this->get_elasticseach_version();
+            $this->settings[Constants::OPTION_READ_TIMEOUT]            = $this->get_option(Constants::OPTION_READ_TIMEOUT);
+            $this->settings[Constants::OPTION_WRITE_TIMEOUT]           = $this->get_option(Constants::OPTION_WRITE_TIMEOUT);
+            $this->settings[Constants::OPTION_INDEX_STATUS]            = $this->get_option(Constants::OPTION_INDEX_STATUS);
+            $this->settings[Constants::OPTION_USERNAME]                = $this->get_option(Constants::OPTION_USERNAME);
+            $this->settings[Constants::OPTION_PASSWORD]                = $this->get_option(Constants::OPTION_PASSWORD);
+            $this->settings[Constants::OPTION_POST_TYPES]              = $this->get_option(Constants::OPTION_POST_TYPES);
+            $this->settings[Constants::OPTION_CAPABILITY]              = $this->get_option(Constants::OPTION_CAPABILITY);
+            $this->settings[Constants::OPTION_SEARCH_FIELDS]           = $this->get_option(Constants::OPTION_SEARCH_FIELDS);
+            $this->settings[Constants::OPTION_WEIGHTINGS]              = $this->get_option(Constants::OPTION_WEIGHTINGS);
+            $this->settings[Constants::OPTION_FUZZINESS]               = $this->get_option(Constants::OPTION_FUZZINESS);
+            $this->settings[Constants::OPTION_SLUGS_TO_EXCLUDE]        = $this->get_option(Constants::OPTION_SLUGS_TO_EXCLUDE);
+            $this->settings[Constants::OPTION_EXCLUSION_FIELD]         = $this->get_option(Constants::OPTION_EXCLUSION_FIELD);
+            $this->settings[Constants::OPTION_IDS_TO_EXCLUDE]          = $this->get_option(Constants::OPTION_IDS_TO_EXCLUDE);
+            $this->settings[Constants::OPTION_ELASTICSEARCH_VERSION]   = $this->get_elasticseach_version();
         }
-        
+
         return $this->settings;
     }
 
@@ -109,7 +109,7 @@ class SettingsManager
                 Constants::OPTION_SLUGS_TO_EXCLUDE,
                 Constants::OPTION_EXCLUSION_FIELD,
                 Constants::OPTION_IDS_TO_EXCLUDE,
-                Constants::OPTION_ELASTICSEARCH_VERSION
+                Constants::OPTION_ELASTICSEARCH_VERSION,
             ])) {
                 return true;
             }
@@ -177,9 +177,53 @@ class SettingsManager
         }
     }
 
+    /**
+     * Get a value from a config where that config contains optional
+     * constants, environment variables (or environment variable files)
+     */
+    public function get_option_from_config($config)
+    {
+        if ($config) {
+            $const_settings = Util::safely_get_attribute($config, 'const');
+            if ($const_settings && is_array($const_settings) && count($const_settings) > 0) {
+                foreach ($const_settings as $const_setting) {
+                    if (defined($const_setting)) {
+                        $value = constant($const_setting);
+                        if ($value) {
+                            return $value;
+                        }
+                    }
+                }
+            }
+
+            $env_settings = Util::safely_get_attribute($config, 'env');
+            if ($env_settings && is_array($env_settings) && count($env_settings) > 0) {
+                foreach ($env_settings as $env_setting) {
+                    // get the value
+                    $value = getenv($env_setting);
+                    if ($value) {
+                        return $value;
+                    }
+
+                    // get the value from a file in the value
+                    $filename_env = $env_setting . '_FILE';
+                    $filename     = getenv($filename_env);
+                    if (file_exists($filename)) {
+                        $value = file_get_contents($filename);
+                        if ($value) {
+                            return $value;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     public function get_private_fields($type)
     {
-        $private = array();
+        $private           = array();
         $option_post_types = $this->get_option(Constants::OPTION_POST_TYPES);
 
         foreach ($option_post_types as $item) {
@@ -193,7 +237,7 @@ class SettingsManager
 
     public function get_exclude_fields($type)
     {
-        $exclude = array();
+        $exclude           = array();
         $option_post_types = $this->get_option(Constants::OPTION_POST_TYPES);
 
         foreach ($option_post_types as $item) {
@@ -212,9 +256,9 @@ class SettingsManager
         $primary = $this->get(Constants::OPTION_PRIMARY_INDEX);
         if ($primary) {
             $indexes[] = array(
-                'name' => $primary,
-                'type' => 'primary',
-                'public' => true
+                'name'   => $primary,
+                'type'   => 'primary',
+                'public' => true,
             );
         }
 
@@ -222,9 +266,9 @@ class SettingsManager
         $secondary = $this->get(Constants::OPTION_SECONDARY_INDEX);
         if ($secondary) {
             $indexes[] = array(
-                'name' => $secondary,
-                'type' => 'secondary',
-                'public' => true
+                'name'   => $secondary,
+                'type'   => 'secondary',
+                'public' => true,
             );
         }
 
@@ -232,9 +276,9 @@ class SettingsManager
         $private_primary = $this->get(Constants::OPTION_PRIVATE_PRIMARY_INDEX);
         if ($private_primary) {
             $indexes[] = array(
-                'name' => $private_primary,
-                'type' => 'primary',
-                'public' => false
+                'name'   => $private_primary,
+                'type'   => 'primary',
+                'public' => false,
             );
         }
 
@@ -242,9 +286,9 @@ class SettingsManager
         $private_secondary = $this->get(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
         if ($private_secondary) {
             $indexes[] = array(
-                'name' => $private_secondary,
-                'type' => 'secondary',
-                'public' => false
+                'name'   => $private_secondary,
+                'type'   => 'secondary',
+                'public' => false,
             );
         }
 
@@ -269,7 +313,7 @@ class SettingsManager
     private function get_elasticseach_version()
     {
         $client_settings = $this->get_client_settings();
-        $client = new Client($client_settings);
+        $client          = new Client($client_settings);
         return $client->getVersion();
     }
 }
