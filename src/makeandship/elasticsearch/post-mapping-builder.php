@@ -7,31 +7,32 @@ class PostMappingBuilder extends MappingBuilder
 
     const CORE_FIELDS = array(
         'post_content' => array(
-            'type' => 'text',
-            'suggest' => true,
-            'transformer' => 'makeandship\elasticsearch\transformer\HtmlFieldTransformer'
+            'type'        => 'text',
+            'suggest'     => true,
+            'transformer' => 'makeandship\elasticsearch\transformer\HtmlFieldTransformer',
         ),
-        'post_title' => array(
-            'type' => 'text',
-            'suggest' => true
+        'post_title'   => array(
+            'type'     => 'text',
+            'suggest'  => true,
+            'sortable' => true,
         ),
-        'post_type' => array(
-            'type' => 'keyword',
-            'index' => true
+        'post_type'    => array(
+            'type'  => 'keyword',
+            'index' => true,
         ),
-        'post_date' => array(
-            'type' => 'date',
-            'transformer' => 'makeandship\elasticsearch\transformer\DateFieldTransformer'
+        'post_date'    => array(
+            'type'        => 'date',
+            'transformer' => 'makeandship\elasticsearch\transformer\DateFieldTransformer',
         ),
-        'link' => array(
-            'type' => 'keyword',
-            'index' => true
-        )
+        'link'         => array(
+            'type'  => 'keyword',
+            'index' => true,
+        ),
     );
 
     const EXCLUDE_TAXONOMIES = array(
         'post_tag',
-        'post_format'
+        'post_format',
     );
 
     const EXCLUDE_POST_TYPES = array(
@@ -43,13 +44,13 @@ class PostMappingBuilder extends MappingBuilder
         'post_format',
         'link_category',
         'acf-field-group',
-        'acf-field'
+        'acf-field',
     );
 
     const CORE_DATE_FIELDS = array(
     );
 
-    public static function valid($post_type)
+    function valid($post_type)
     {
         if (in_array($post_type, PostMappingBuilder::EXCLUDE_POST_TYPES)) {
             return false;
@@ -58,12 +59,12 @@ class PostMappingBuilder extends MappingBuilder
     }
 
     // TODO right place?
-    public static function get_valid_post_types()
+    function get_valid_post_types()
     {
         $post_types = get_post_types(array(
-            'public' => true
+            'public' => true,
         ));
-        
+
         $valid_post_types = array();
         foreach ($post_types as $post_type) {
             if (self::valid($post_type)) {
@@ -77,7 +78,7 @@ class PostMappingBuilder extends MappingBuilder
     /**
      *
      */
-    public function build($post_type, $cascade=false)
+    function build($post_type, $cascade = false)
     {
         if (!PostMappingBuilder::valid($post_type)) {
             return array();
@@ -99,7 +100,9 @@ class PostMappingBuilder extends MappingBuilder
         if (class_exists('acf')) {
             // field groups for this post type
             $args = array(
-                'post_type' => $post_type
+                'post_type'     => $post_type,
+                'post_template' => 'default',
+                'page_template' => 'default',
             );
             $field_groups = acf_get_field_groups($args);
 
@@ -111,7 +114,7 @@ class PostMappingBuilder extends MappingBuilder
 
                         foreach ($fields as $field) {
                             $field_properties = $this->build_acf_field($field, $cascade);
-                            $properties = array_merge(
+                            $properties       = array_merge(
                                 $properties,
                                 $field_properties
                             );
@@ -135,15 +138,15 @@ class PostMappingBuilder extends MappingBuilder
         return $properties;
     }
 
-    private function build_field($field, $options, $cascade=false)
+    function build_field($field, $options, $cascade = false)
     {
         $properties = array();
 
         if (isset($field) && isset($options)) {
             // settings
             if (is_string($options)) {
-                $type = $options;
-                $index = true;
+                $type    = $options;
+                $index   = true;
                 $suggest = null;
             } else {
                 if (array_key_exists('type', $options)) {
@@ -157,18 +160,27 @@ class PostMappingBuilder extends MappingBuilder
                 if (array_key_exists('suggest', $options)) {
                     $suggest = $options['suggest'];
                 }
+                if (array_key_exists('sortable', $options)) {
+                    $sortable = $options['sortable'];
+                }
             }
 
             $properties[$field] = array(
-                'type' => $type,
-                'index' => $index
+                'type'  => $type,
+                'index' => $index,
             );
 
             if (isset($suggest)) {
-                $properties[$field.'_suggest'] = array(
-                    'type' => 'text',
-                    'analyzer' => 'ngram_analyzer',
+                $properties[$field . '_suggest'] = array(
+                    'type'            => 'text',
+                    'analyzer'        => 'ngram_analyzer',
                     'search_analyzer' => 'whitespace_analyzer',
+                );
+            }
+
+            if (isset($sortable)) {
+                $properties[$field . '_sortable'] = array(
+                    'type' => 'keyword',
                 );
             }
         }
@@ -176,7 +188,7 @@ class PostMappingBuilder extends MappingBuilder
         return $properties;
     }
 
-    private function build_acf_field($field, $cascade=false)
+    function build_acf_field($field, $cascade = false)
     {
         $properties = array();
 
@@ -186,12 +198,12 @@ class PostMappingBuilder extends MappingBuilder
                 array_key_exists('name', $field) &&
                 $field['type'] != 'tab') {
                 $acf_type = $field['type'];
-                $name = $field['name'];
+                $name     = $field['name'];
 
                 // default to index each field
                 $props = array(
-                    'type' => 'text',
-                    'index' => true
+                    'type'  => 'text',
+                    'index' => true,
                 );
 
                 // default to text
@@ -199,16 +211,16 @@ class PostMappingBuilder extends MappingBuilder
 
                 switch ($acf_type) {
                     case 'checkbox':
-                        $props['type'] = 'keyword';
+                        $props['type']  = 'keyword';
                         $props['index'] = false;
                         break;
                     case 'date_picker':
-                        $props['type'] = 'date';
+                        $props['type']  = 'date';
                         $props['index'] = true;
                         break;
 
                     case 'date_time_picker':
-                        $props['type'] = 'date';
+                        $props['type']  = 'date';
                         $props['index'] = true;
                         break;
 
@@ -216,17 +228,17 @@ class PostMappingBuilder extends MappingBuilder
                         break;
 
                     case 'google_map':
-                        $props['type'] = 'geo_point';
+                        $props['type']  = 'geo_point';
                         $props['index'] = true;
                         break;
 
                     case 'group':
-                        $props['type'] = 'nested';
+                        $props['type']       = 'nested';
                         $props['properties'] = array();
                         unset($props['index']);
 
                         foreach ($field['sub_fields'] as $sub_field) {
-                            $sub_field_name = $sub_field['name'];
+                            $sub_field_name  = $sub_field['name'];
                             $sub_field_props = $this->build_acf_field($sub_field, $cascade);
 
                             if (isset($sub_field_props) && !empty($sub_field_props)) {
@@ -239,48 +251,48 @@ class PostMappingBuilder extends MappingBuilder
                         break;
 
                     case 'image':
-                        $props['type'] = 'nested';
+                        $props['type']       = 'nested';
                         $props['properties'] = array(
-                          'filename'  => array(
-                            'type' => 'text',
-                            'index' => false
-                          ),
-                          'filesize'  => array(
-                            'type' => 'long',
-                            'index' => false
-                          ),
-                          'alt'  => array(
-                            'type' => 'text'
-                          ),
-                          'url'  => array(
-                            'type' => 'text'
-                          ),
-                          'description'  => array(
-                            'type' => 'text'
-                          ),
-                          'caption'  => array(
-                            'type' => 'text'
-                          ),
-                          'mime'  => array(
-                            'type' => 'keyword',
-                            'index' => false
-                          ),
-                          'type'  => array(
-                            'type' => 'keyword',
-                            'index' => false
-                          ),
-                          'subtype'  => array(
-                            'type' => 'keyword',
-                            'index' => false
-                          ),
-                          'width'  => array(
-                            'type' => 'long',
-                            'index' => false
-                          ),
-                          'height'  => array(
-                            'type' => 'long',
-                            'index' => false
-                          ),
+                            'filename'    => array(
+                                'type'  => 'text',
+                                'index' => false,
+                            ),
+                            'filesize'    => array(
+                                'type'  => 'long',
+                                'index' => false,
+                            ),
+                            'alt'         => array(
+                                'type' => 'text',
+                            ),
+                            'url'         => array(
+                                'type' => 'text',
+                            ),
+                            'description' => array(
+                                'type' => 'text',
+                            ),
+                            'caption'     => array(
+                                'type' => 'text',
+                            ),
+                            'mime'        => array(
+                                'type'  => 'keyword',
+                                'index' => false,
+                            ),
+                            'type'        => array(
+                                'type'  => 'keyword',
+                                'index' => false,
+                            ),
+                            'subtype'     => array(
+                                'type'  => 'keyword',
+                                'index' => false,
+                            ),
+                            'width'       => array(
+                                'type'  => 'long',
+                                'index' => false,
+                            ),
+                            'height'      => array(
+                                'type'  => 'long',
+                                'index' => false,
+                            ),
                         );
                         unset($props['index']);
                         break;
@@ -289,7 +301,7 @@ class PostMappingBuilder extends MappingBuilder
                         break;
 
                     case 'number':
-                        $props['type'] = 'long';
+                        $props['type']  = 'long';
                         $props['index'] = true;
                         break;
 
@@ -310,24 +322,24 @@ class PostMappingBuilder extends MappingBuilder
                         if ($cascade && $post_type && is_array($post_type) && count($post_type) === 1) {
                             $post_type = $post_type[0];
 
-                            $props['type'] = 'nested';
+                            $props['type']       = 'nested';
                             $props['properties'] = $this->build($post_type, false);
                             unset($props['index']);
                         } else {
                             // alter name to identify where further processing is required on lookup
-                            $name = $name.'_relationship';
-                            $props['type'] = 'long';
+                            $name           = $name . '_relationship';
+                            $props['type']  = 'long';
                             $props['index'] = true;
                         }
                         break;
 
                     case 'repeater':
-                        $props['type'] = 'nested';
+                        $props['type']       = 'nested';
                         $props['properties'] = array();
                         unset($props['index']);
 
                         foreach ($field['sub_fields'] as $sub_field) {
-                            $sub_field_name = $sub_field['name'];
+                            $sub_field_name  = $sub_field['name'];
                             $sub_field_props = $this->build_acf_field($sub_field, $cascade);
 
                             if (isset($sub_field_props) && !empty($sub_field_props)) {
@@ -340,7 +352,7 @@ class PostMappingBuilder extends MappingBuilder
                         break;
 
                     case 'select':
-                        $props['type'] = 'keyword';
+                        $props['type']  = 'keyword';
                         $props['index'] = true;
                         break;
 
@@ -348,13 +360,13 @@ class PostMappingBuilder extends MappingBuilder
                         break;
 
                     case 'time_picker':
-                        $props['type'] = 'date';
-                        $props['index'] = true;
+                        $props['type']   = 'date';
+                        $props['index']  = true;
                         $props['format'] = 'HH:mm:ss';
                         break;
 
                     case 'true_false':
-                        $props['type'] = 'boolean';
+                        $props['type']  = 'boolean';
                         $props['index'] = true;
                         break;
 
@@ -373,24 +385,24 @@ class PostMappingBuilder extends MappingBuilder
         return $properties;
     }
 
-    private function build_taxonomy($name, $taxonomy)
+    function build_taxonomy($name, $taxonomy)
     {
         $properties = array();
 
         if (isset($name)) {
             $properties[$name] = array(
                 "index" => true,
-                "type" => "keyword"
+                "type"  => "keyword",
             );
 
-            $properties[$name.'_name'] = array(
-                "type" => "text"
+            $properties[$name . '_name'] = array(
+                "type" => "text",
             );
 
-            $properties[$name.'_suggest'] = array(
-                "analyzer" => "ngram_analyzer",
+            $properties[$name . '_suggest'] = array(
+                "analyzer"        => "ngram_analyzer",
                 "search_analyzer" => "whitespace_analyzer",
-                "type" => "text"
+                "type"            => "text",
             );
         }
 
