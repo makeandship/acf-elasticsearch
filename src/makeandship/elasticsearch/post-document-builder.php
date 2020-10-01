@@ -2,11 +2,11 @@
 
 namespace makeandship\elasticsearch;
 
-use makeandship\elasticsearch\transformer\HtmlFieldTransformer;
+use makeandship\elasticsearch\settings\SettingsManager;
 use makeandship\elasticsearch\transformer\DateFieldTransformer;
 use makeandship\elasticsearch\transformer\FileFieldTransformer;
+use makeandship\elasticsearch\transformer\HtmlFieldTransformer;
 use makeandship\elasticsearch\transformer\ImageFieldTransformer;
-use makeandship\elasticsearch\settings\SettingsManager;
 use makeandship\elasticsearch\Util;
 
 class PostDocumentBuilder extends DocumentBuilder
@@ -57,7 +57,7 @@ class PostDocumentBuilder extends DocumentBuilder
                 }
             }
             // check if the path is part of the exclusion slugs
-            $slug = $post->post_name;
+            $slug          = $post->post_name;
             $exclude_slugs = SettingsManager::get_instance()->get(Constants::OPTION_SLUGS_TO_EXCLUDE);
             if (
                 $exclude_slugs &&
@@ -74,17 +74,17 @@ class PostDocumentBuilder extends DocumentBuilder
     /**
      *
      */
-    public function build($post, $include_private=false, $relationships=false)
+    public function build($post, $include_private = false, $relationships = false)
     {
         $document = null;
 
         if (isset($post)) {
             $post->type = $post->post_type;
-            $document = array();
+            $document   = array();
 
             foreach ($this->get_core_fields('WP_Post') as $name => $definition) {
                 if ($name === 'link') {
-                    $link = get_permalink($post->ID);
+                    $link             = get_permalink($post->ID);
                     $document['link'] = $link;
                 } else {
                     $value = $post->{$name};
@@ -102,7 +102,13 @@ class PostDocumentBuilder extends DocumentBuilder
 
                     if (is_array($definition) && array_key_exists('suggest', $definition)) {
                         if ($definition['suggest']) {
-                            $document[$name.'_suggest'] = $value;
+                            $document[$name . '_suggest'] = $value;
+                        }
+                    }
+
+                    if (is_array($definition) && array_key_exists('sortable', $definition)) {
+                        if ($definition['sortable']) {
+                            $document[$name . '_sortable'] = $value;
                         }
                     }
                 }
@@ -114,7 +120,9 @@ class PostDocumentBuilder extends DocumentBuilder
             if (class_exists('acf')) {
                 // field groups for this post type
                 $args = array(
-                    'post_type' => $post_type
+                    'post_type'     => $post_type,
+                    'post_template' => 'default',
+                    'page_template' => 'default',
                 );
                 $field_groups = acf_get_field_groups($args);
 
@@ -160,7 +168,7 @@ class PostDocumentBuilder extends DocumentBuilder
         $post_type = $this->get_type($post);
 
         $excluded_fields = SettingsManager::get_instance()->get_exclude_fields($post_type);
-        $private_fields = SettingsManager::get_instance()->get_private_fields($post_type);
+        $private_fields  = SettingsManager::get_instance()->get_private_fields($post_type);
 
         if (isset($field) && isset($post)) {
             $name = Util::safely_get_attribute($field, 'name');
@@ -171,14 +179,14 @@ class PostDocumentBuilder extends DocumentBuilder
                 if (
                     !in_array($name, $excluded_fields) &&
                     (!in_array($name, $private_fields) || $include_private)) {
-                    $key = Util::safely_get_attribute($field, 'key');
+                    $key   = Util::safely_get_attribute($field, 'key');
                     $value = get_field($key, $post->ID);
 
                     if (isset($value) && !empty($value)) {
                         $value = $this->transform_acf_value($field, $value, $type, $relationships);
 
                         if ($value) {
-                            $document = array();
+                            $document        = array();
                             $document[$name] = $value;
                         }
                     }
@@ -243,7 +251,7 @@ class PostDocumentBuilder extends DocumentBuilder
                         foreach ($value as $post_id) {
                             $post = get_post($post_id);
                             if ($post) {
-                                $built[]= $this->build($post, false, false);
+                                $built[] = $this->build($post, false, false);
                             }
                         }
                     } else {
@@ -262,14 +270,14 @@ class PostDocumentBuilder extends DocumentBuilder
                     // name => subfield
                     $sub_fields_by_name = array();
                     foreach ($field['sub_fields'] as $sub_field) {
-                        $sub_field_name = Util::safely_get_attribute($sub_field, 'name');
+                        $sub_field_name                      = Util::safely_get_attribute($sub_field, 'name');
                         $sub_fields_by_name[$sub_field_name] = $sub_field;
                     }
 
                     if (Util::is_array_associative($value)) {
                         foreach ($value as $sub_field_name => &$sub_field_value) {
-                            $sub_field = $sub_fields_by_name[$sub_field_name];
-                            $sub_field_type = Util::safely_get_attribute($sub_field, 'type');
+                            $sub_field       = $sub_fields_by_name[$sub_field_name];
+                            $sub_field_type  = Util::safely_get_attribute($sub_field, 'type');
                             $sub_field_value = $this->transform_acf_value($sub_field, $sub_field_value, $sub_field_type, $relationships);
                             if (!isset($sub_field_value) || empty($sub_field_value)) {
                                 unset($value[$sub_field_name]);
@@ -279,8 +287,8 @@ class PostDocumentBuilder extends DocumentBuilder
                         // sequential
                         foreach ($value as $index => &$item) {
                             foreach ($item as $sub_field_name => &$sub_field_value) {
-                                $sub_field = $sub_fields_by_name[$sub_field_name];
-                                $sub_field_type = Util::safely_get_attribute($sub_field, 'type');
+                                $sub_field       = $sub_fields_by_name[$sub_field_name];
+                                $sub_field_type  = Util::safely_get_attribute($sub_field, 'type');
                                 $sub_field_value = $this->transform_acf_value($sub_field, $sub_field_value, $sub_field_type, $relationships);
                                 if (!isset($sub_field_value) || empty($sub_field_value)) {
                                     unset($item[$sub_field_name]);
@@ -325,24 +333,24 @@ class PostDocumentBuilder extends DocumentBuilder
             foreach ($terms as $term) {
                 // set up taxonomy arrays in the document to index
                 if (Util::safely_get_attribute($document, $name) === null) {
-                    $document[$name] = array();
-                    $document[$name.'_name'] = array();
-                    $document[$name.'_suggest'] = array();
+                    $document[$name]              = array();
+                    $document[$name . '_name']    = array();
+                    $document[$name . '_suggest'] = array();
                 }
 
                 // index the current term
-                $document[$name][] = $term->slug;
-                $document[$name.'_name'][] = $term->name;
-                $document[$name.'_suggest'][] = $term->name;
+                $document[$name][]              = $term->slug;
+                $document[$name . '_name'][]    = $term->name;
+                $document[$name . '_suggest'][] = $term->name;
 
                 // index parent terms if they exist
                 $parent_id = Util::safely_get_attribute($term, 'parent');
                 if ($parent_id && $parent_id !== 0) {
                     $parent = get_term($term->parent, $name);
                     while ($parent !== null) {
-                        $document[$name][] = $parent->slug;
-                        $document[$name.'_name'][] = $parent->name;
-                        $document[$name.'_suggest'][] = $parent->name;
+                        $document[$name][]              = $parent->slug;
+                        $document[$name . '_name'][]    = $parent->name;
+                        $document[$name . '_suggest'][] = $parent->name;
 
                         $parent_id = Util::safely_get_attribute($parent, 'parent');
                         if ($parent_id && $parent_id !== 0) {

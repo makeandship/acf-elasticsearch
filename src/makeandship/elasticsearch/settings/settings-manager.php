@@ -45,25 +45,74 @@ class SettingsManager
         if (!isset($this->settings) || $fresh) {
             $this->settings = array();
 
-            $this->settings[Constants::OPTION_SERVER]                  = $this->get_option(Constants::OPTION_SERVER);
-            $this->settings[Constants::OPTION_PRIMARY_INDEX]           = $this->get_option(Constants::OPTION_PRIMARY_INDEX);
-            $this->settings[Constants::OPTION_SECONDARY_INDEX]         = $this->get_option(Constants::OPTION_SECONDARY_INDEX);
-            $this->settings[Constants::OPTION_PRIVATE_PRIMARY_INDEX]   = $this->get_option(Constants::OPTION_PRIVATE_PRIMARY_INDEX);
-            $this->settings[Constants::OPTION_PRIVATE_SECONDARY_INDEX] = $this->get_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
-            $this->settings[Constants::OPTION_READ_TIMEOUT]            = $this->get_option(Constants::OPTION_READ_TIMEOUT);
-            $this->settings[Constants::OPTION_WRITE_TIMEOUT]           = $this->get_option(Constants::OPTION_WRITE_TIMEOUT);
-            $this->settings[Constants::OPTION_INDEX_STATUS]            = $this->get_option(Constants::OPTION_INDEX_STATUS);
-            $this->settings[Constants::OPTION_USERNAME]                = $this->get_option(Constants::OPTION_USERNAME);
-            $this->settings[Constants::OPTION_PASSWORD]                = $this->get_option(Constants::OPTION_PASSWORD);
-            $this->settings[Constants::OPTION_POST_TYPES]              = $this->get_option(Constants::OPTION_POST_TYPES);
-            $this->settings[Constants::OPTION_CAPABILITY]              = $this->get_option(Constants::OPTION_CAPABILITY);
-            $this->settings[Constants::OPTION_SEARCH_FIELDS]           = $this->get_option(Constants::OPTION_SEARCH_FIELDS);
-            $this->settings[Constants::OPTION_WEIGHTINGS]              = $this->get_option(Constants::OPTION_WEIGHTINGS);
-            $this->settings[Constants::OPTION_FUZZINESS]               = $this->get_option(Constants::OPTION_FUZZINESS);
-            $this->settings[Constants::OPTION_SLUGS_TO_EXCLUDE]        = $this->get_option(Constants::OPTION_SLUGS_TO_EXCLUDE);
-            $this->settings[Constants::OPTION_EXCLUSION_FIELD]         = $this->get_option(Constants::OPTION_EXCLUSION_FIELD);
-            $this->settings[Constants::OPTION_IDS_TO_EXCLUDE]          = $this->get_option(Constants::OPTION_IDS_TO_EXCLUDE);
-            $this->settings[Constants::OPTION_ELASTICSEARCH_VERSION]   = $this->get_elasticseach_version();
+            $this->settings[Constants::OPTION_SERVER] = $this->get_option_from_config(array(
+                'const' => array(
+                    'ES_URL',
+                ),
+                'env'   => array(
+                    'ES_URL',
+                ),
+            ));
+            $this->settings[Constants::OPTION_PRIMARY_INDEX] = $this->get_option_from_config(array(
+                'const' => array(
+                    'ES_INDEX',
+                ),
+                'env'   => array(
+                    'ES_INDEX',
+                ),
+            ));
+            $this->settings[Constants::OPTION_SECONDARY_INDEX] = $this->get_option_from_config(array(
+                'const' => array(
+                    'ES_SECONDARY_INDEX',
+                ),
+                'env'   => array(
+                    'ES_SECONDARY_INDEX',
+                ),
+            ));
+            $this->settings[Constants::OPTION_PRIVATE_PRIMARY_INDEX] = $this->get_option_from_config(array(
+                'const' => array(
+                    'ES_PRIVATE_INDEX',
+                ),
+                'env'   => array(
+                    'ES_PRIVATE_INDEX',
+                ),
+            ));
+            $this->settings[Constants::OPTION_PRIVATE_SECONDARY_INDEX] = $this->get_option_from_config(array(
+                'const' => array(
+                    'ES_PRIVATE_SECONDARY_INDEX',
+                ),
+                'env'   => array(
+                    'ES_PRIVATE_SECONDARY_INDEX',
+                ),
+            ));
+            $this->settings[Constants::OPTION_READ_TIMEOUT]  = $this->get_option(Constants::OPTION_READ_TIMEOUT);
+            $this->settings[Constants::OPTION_WRITE_TIMEOUT] = $this->get_option(Constants::OPTION_WRITE_TIMEOUT);
+            $this->settings[Constants::OPTION_INDEX_STATUS]  = $this->get_option(Constants::OPTION_INDEX_STATUS);
+            $this->settings[Constants::OPTION_USERNAME]      = $this->get_option_from_config(array(
+                'const' => array(
+                    'ES_USERNAME',
+                ),
+                'env'   => array(
+                    'ES_USERNAME',
+                ),
+            ));
+            $this->settings[Constants::OPTION_PASSWORD] = $this->get_option_from_config(array(
+                'const' => array(
+                    'ES_PASSWORD',
+                ),
+                'env'   => array(
+                    'ES_PASSWORD',
+                ),
+            ));
+            $this->settings[Constants::OPTION_POST_TYPES]            = $this->get_option(Constants::OPTION_POST_TYPES);
+            $this->settings[Constants::OPTION_CAPABILITY]            = $this->get_option(Constants::OPTION_CAPABILITY);
+            $this->settings[Constants::OPTION_SEARCH_FIELDS]         = $this->get_option(Constants::OPTION_SEARCH_FIELDS);
+            $this->settings[Constants::OPTION_WEIGHTINGS]            = $this->get_option(Constants::OPTION_WEIGHTINGS);
+            $this->settings[Constants::OPTION_FUZZINESS]             = $this->get_option(Constants::OPTION_FUZZINESS);
+            $this->settings[Constants::OPTION_SLUGS_TO_EXCLUDE]      = $this->get_option(Constants::OPTION_SLUGS_TO_EXCLUDE);
+            $this->settings[Constants::OPTION_EXCLUSION_FIELD]       = $this->get_option(Constants::OPTION_EXCLUSION_FIELD);
+            $this->settings[Constants::OPTION_IDS_TO_EXCLUDE]        = $this->get_option(Constants::OPTION_IDS_TO_EXCLUDE);
+            $this->settings[Constants::OPTION_ELASTICSEARCH_VERSION] = $this->get_elasticseach_version();
         }
 
         return $this->settings;
