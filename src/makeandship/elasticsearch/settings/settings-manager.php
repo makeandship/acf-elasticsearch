@@ -365,4 +365,29 @@ class SettingsManager
         $client          = new Client($client_settings);
         return $client->getVersion();
     }
+
+    public function is_valid_post_type($post_type)
+    {
+        if (in_array($post_type, Constants::EXCLUDE_POST_TYPES)) {
+            return false;
+        }
+        return true;
+    }
+
+    public function get_valid_post_types()
+    {
+        $post_types = get_post_types(array(
+            'public' => true,
+        ));
+
+        $valid_post_types = array();
+
+        foreach ($post_types as $post_type) {
+            if ($this->is_valid_post_type($post_type)) {
+                $valid_post_types[] = $post_type;
+            }
+        }
+
+        return $valid_post_types;
+    }
 }

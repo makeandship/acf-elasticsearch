@@ -50,11 +50,7 @@ class HtmlUtils
     {
         $value = null;
 
-        if (is_multisite()) {
-            $option = get_site_option($name);
-        } else {
-            $option = get_option($name);
-        }
+        $option = SettingsManager::get_instance()->get($name);
 
         if (isset($option) && !empty($option)) {
             $value = $option;

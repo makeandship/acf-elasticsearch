@@ -20,8 +20,10 @@ class Mapper
         if ($index) {
             $properties = $this->create_properties();
 
-            $this->create_mapping($index, $properties);
+            return $this->create_mapping($index, $properties);
         }
+
+        return null;
     }
 
     private function create_properties()

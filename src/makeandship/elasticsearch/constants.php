@@ -18,7 +18,7 @@ class Constants
     const DEFAULT_READ_TIMEOUT  = 30;
 
     // plugin
-    const VERSION    = '7.1.1';
+    const VERSION    = '7.1.2';
     const DB_VERSION = 1;
 
     const OPTION_SERVER                  = 'acf_elasticsearch_server';
@@ -46,14 +46,26 @@ class Constants
     const STATUS_PRIVATE      = 'private';
     const INDEX_POST_STATUSES = [Constants::STATUS_PUBLISH, Constants::STATUS_PRIVATE];
 
-    // TODO move to settings
     const DEFAULT_POSTS_PER_PAGE = 100;
     const DEFAULT_TERMS_PER_PAGE = 50;
     const DEFAULT_SITES_PER_PAGE = 50;
     const DEFAULT_MAPPING_TYPE   = 'document';
 
+    // always ignore these post types
+    const EXCLUDE_POST_TYPES = array(
+        'revision',
+        'attachment',
+        'json_consumer',
+        'nav_menu',
+        'nav_menu_item',
+        'post_format',
+        'link_category',
+        'acf-field-group',
+        'acf-field',
+    );
+
     // no instantiation
-    protected function __construct()
+    function __construct()
     {
     }
 }
