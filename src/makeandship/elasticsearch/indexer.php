@@ -3,30 +3,23 @@
 namespace makeandship\elasticsearch;
 
 use makeandship\elasticsearch\Constants;
-
-use makeandship\elasticsearch\settings\SettingsManager;
-
-use makeandship\elasticsearch\domain\SitesManager;
 use makeandship\elasticsearch\domain\PostsManager;
 use makeandship\elasticsearch\domain\TaxonomiesManager;
-
-use makeandship\elasticsearch\Util;
-
+use makeandship\elasticsearch\settings\SettingsManager;
 use \Elastica\Client;
 use \Elastica\Exception\ResponseException;
-use \Elastica\Response;
 
 class Indexer
 {
-    public function __construct($bulk=false)
+    public function __construct($bulk = false)
     {
         // factories
         $this->document_builder_factory = new DocumentBuilderFactory();
-        $this->index_factory = new IndexFactory();
-        $this->bulk = $bulk;
+        $this->index_factory            = new IndexFactory();
+        $this->bulk                     = $bulk;
 
         // bulk indexing
-        $this->queues = array();
+        $this->queues  = array();
         $this->indexes = array();
     }
 
@@ -37,12 +30,12 @@ class Indexer
     {
         $errors = array();
 
-        $shards = Constants::DEFAULT_SHARDS;
+        $shards   = Constants::DEFAULT_SHARDS;
         $replicas = Constants::DEFAULT_REPLICAS;
 
         // elastic client to the cluster/server
         $client_settings = SettingsManager::get_instance()->get_client_settings();
-        $client = new Client($client_settings);
+        $client          = new Client($client_settings);
 
         // remove the current index
         $index = $client->getIndex($name);
@@ -51,59 +44,59 @@ class Indexer
                 $index->delete();
             } catch (ResponseException $ex) {
                 $response = $ex->getResponse();
-                $error = $response->getFullError();
+                $error    = $response->getFullError();
 
-                $errors[]= $error;
+                $errors[] = $error;
             }
         }
 
         $analysis = array(
-            'filter' => array(
+            'filter'   => array(
                 'ngram_filter' => array(
-                    'type' => 'edge_ngram',
-                    'min_gram' => 1,
-                    'max_gram' => 20,
+                    'type'        => 'edge_ngram',
+                    'min_gram'    => 1,
+                    'max_gram'    => 20,
                     'token_chars' => array(
                         'letter',
                         'digit',
                         'punctuation',
-                        'symbol'
-                    )
-                )
+                        'symbol',
+                    ),
+                ),
             ),
             'analyzer' => array(
                 'analyzer_startswith' => array(
                     'tokenizer' => 'keyword',
-                    'filter'=> 'lowercase'
+                    'filter'    => 'lowercase',
                 ),
-                'ngram_analyzer' => array(
-                    'type' => 'custom',
+                'ngram_analyzer'      => array(
+                    'type'      => 'custom',
                     'tokenizer' => 'whitespace',
-                    'filter' => array(
+                    'filter'    => array(
                         'lowercase',
                         'asciifolding',
-                        'ngram_filter'
-                    )
+                        'ngram_filter',
+                    ),
                 ),
                 'whitespace_analyzer' => array(
-                    'type' => 'custom',
+                    'type'      => 'custom',
                     'tokenizer' => 'whitespace',
-                    'filter' => array(
+                    'filter'    => array(
                         'lowercase',
-                        'asciifolding'
-                    )
-                )
-            )
+                        'asciifolding',
+                    ),
+                ),
+            ),
         );
 
         $settings = array(
-            'settings' => array (
-                'index' => array(
-                    'number_of_shards' => $shards,
+            'settings' => array(
+                'index'    => array(
+                    'number_of_shards'   => $shards,
                     'number_of_replicas' => $replicas,
                 ),
-                'analysis' => $analysis
-            )
+                'analysis' => $analysis,
+            ),
         );
 
         // create the index
@@ -130,7 +123,7 @@ class Indexer
 
         // elastic client to the cluster/server
         $client_settings = SettingsManager::get_instance()->get_client_settings();
-        $client = new Client($client_settings);
+        $client          = new Client($client_settings);
 
         // remove the current index
         $index = $client->getIndex($name);
@@ -138,7 +131,7 @@ class Indexer
             $index->delete();
         } catch (ResponseException $ex) {
             $response = $ex->getResponse();
-            $error = $response->getFullError();
+            $error    = $response->getFullError();
 
             // ignore if there's no index as that's the state we want
             $is_index_error = strpos($error, 'IndexMissingException');
@@ -173,23 +166,23 @@ class Indexer
         }
 
         // find the next site to index (or next page in a site to index)
-        $target_site = null;
-        $completed = false;
-        $secondary = get_option(Constants::OPTION_SECONDARY_INDEX);
+        $target_site   = null;
+        $completed     = false;
+        $secondary     = SettingsManager::get_instance()->get(Constants::OPTION_SECONDARY_INDEX);
         $use_secondary = isset($secondary) && !empty($secondary);
         foreach ($status as $site_status) {
             $completed = true;
             if ($site_status['count'] < $site_status['total']) {
                 $target_site = $site_status;
-                $completed = false;
+                $completed   = false;
                 break;
             } elseif ($site_status['index'] == 'primary' && $use_secondary) {
                 $target_site = array(
-                    'page' => 1,
-                    'count' => 0,
-                    'total' => $site_status['total'],
+                    'page'    => 1,
+                    'count'   => 0,
+                    'total'   => $site_status['total'],
                     'blog_id' => $site_status['blog_id'],
-                    'index' => 'secondary'
+                    'index'   => 'secondary',
                 );
                 $completed = false;
                 break;
@@ -197,8 +190,8 @@ class Indexer
         }
 
         $blog_id = $target_site['blog_id'];
-        $page = $target_site['page'];
-        $per = Constants::DEFAULT_POSTS_PER_PAGE;
+        $page    = $target_site['page'];
+        $per     = Constants::DEFAULT_POSTS_PER_PAGE;
 
         // get and update posts
         $posts = $posts_manager->get_posts($blog_id, $page, $per);
@@ -211,10 +204,10 @@ class Indexer
 
         // update status
         $target_site['count'] = $target_site['count'] || 0;
-        $target_site['page'] = $page + 1;
+        $target_site['page']  = $page + 1;
         $target_site['count'] = $target_site['count'] + $count;
-        $status[$blog_id] = $target_site;
-        $status['completed'] = $completed;
+        $status[$blog_id]     = $target_site;
+        $status['completed']  = $completed;
         SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
 
         return $status;
@@ -235,16 +228,16 @@ class Indexer
 
         // find the next site to index (or next page in a site to index)
         $page = $status['page'];
-        $per = Constants::DEFAULT_POSTS_PER_PAGE;
+        $per  = Constants::DEFAULT_POSTS_PER_PAGE;
 
         // gather posts and time
         $before = microtime(true);
 
         $posts = $posts_manager->get_posts(null, $page, $per);
 
-        $after = microtime(true);
-        $search_time = ($after-$before) . " sec";
-        error_log("Gathering posts: ".$search_time);
+        $after       = microtime(true);
+        $search_time = ($after - $before) . " sec";
+        error_log("Gathering posts: " . $search_time);
 
         // index documents and time
         $before = microtime(true);
@@ -256,24 +249,24 @@ class Indexer
             $this->flush();
         }
 
-        $after = microtime(true);
-        $search_time = ($after-$before) . " sec";
-        error_log("Indexing: ".$search_time);
+        $after       = microtime(true);
+        $search_time = ($after - $before) . " sec";
+        error_log("Indexing: " . $search_time);
 
         // update count
         $status['count'] = $status['count'] + $count;
 
         if ($status['count'] >= $status['total']) {
-            $secondary = get_option(Constants::OPTION_SECONDARY_INDEX);
+            $secondary     = SettingsManager::get_instance()->get(Constants::OPTION_SECONDARY_INDEX);
             $use_secondary = isset($secondary) && !empty($secondary);
 
             if ($status['index'] == "primary" && $use_secondary) {
                 $status = array(
-                    'page' => 1,
-                    'count' => 0,
-                    'total' => $status['total'],
-                    'index' => 'secondary',
-                    'completed' => false
+                    'page'      => 1,
+                    'count'     => 0,
+                    'total'     => $status['total'],
+                    'index'     => 'secondary',
+                    'completed' => false,
                 );
             } else {
                 $status['completed'] = true;
@@ -291,15 +284,15 @@ class Indexer
     public function index_taxonomies()
     {
         $taxonomies_manager = new TaxonomiesManager();
-        $terms = $taxonomies_manager->get_taxonomies();
-        $count = $this->add_or_update_documents($terms);
+        $terms              = $taxonomies_manager->get_taxonomies();
+        $count              = $this->add_or_update_documents($terms);
 
         // flush bulk indexing
         if ($this->bulk) {
             $this->flush();
         }
 
-        error_log('Indexed '.strval($count).' terms');
+        error_log('Indexed ' . strval($count) . ' terms');
 
         return $count;
     }
@@ -342,9 +335,9 @@ class Indexer
      *
      * @param $o the wordpress object to add
      */
-    public function add_or_update_document($o, $new=false)
+    public function add_or_update_document($o, $new = false)
     {
-        $status = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
+        $status  = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
         $builder = $this->document_builder_factory->create($o);
 
         $indexable = $builder->is_indexable($o);
@@ -372,8 +365,8 @@ class Indexer
                 $private_document = $document;
             }
 
-            $id = $builder->get_id($o);
-            $doc_type = $builder->get_type($o);
+            $id           = $builder->get_id($o);
+            $doc_type     = $builder->get_type($o);
             $mapping_type = $builder->get_mapping_type($o);
 
             // ensure the document and id are valid before indexing
@@ -437,7 +430,7 @@ class Indexer
     {
         if ($index) {
             $index_name = $index->getName();
-            $key = $index_name;
+            $key        = $index_name;
 
             if ($key) {
                 if (!$this->queues) {
@@ -447,7 +440,7 @@ class Indexer
                     $this->queues[$key] = array();
                 }
                 $this->queues[$key][] = $document;
-                error_log('Add '. $document->getId() .' to ' . $key);
+                error_log('Add ' . $document->getId() . ' to ' . $key);
 
                 if (!$this->indexes) {
                     $this->indexes = array();
@@ -474,7 +467,7 @@ class Indexer
                     // add the documents
                     $index->addDocuments($documents);
                     $index->refresh();
-                    error_log('Added '. count($documents) .' to ' . $key);
+                    error_log('Added ' . count($documents) . ' to ' . $key);
 
                     unset($this->queues[$key]);
                 }
@@ -495,16 +488,16 @@ class Indexer
     {
         $builder = $this->document_builder_factory->create($o);
         $private = $builder->is_private($o);
-        $id = $builder->get_id($o);
+        $id      = $builder->get_id($o);
 
-        $doc_type = $builder->get_type($o);
+        $doc_type     = $builder->get_type($o);
         $mapping_type = $builder->get_mapping_type($o);
 
         // ensure the document and id are valid before indexing
         if (isset($o) && !empty($o) &&
-                isset($id) && !empty($id)) {
+            isset($id) && !empty($id)) {
             // attempt to clear from all types - post_status = private won't be available
-            
+
             $primary_public = $this->index_factory->create(true, false);
             if ($primary_public) {
                 try {
