@@ -3,7 +3,6 @@ namespace makeandship\elasticsearch;
 
 use makeandship\elasticsearch\settings\SettingsManager;
 use makeandship\elasticsearch\transformer\SearchTransformer;
-
 use \Elastica\Client;
 
 /**
@@ -15,8 +14,8 @@ class Searcher
 
     public function __construct()
     {
-        $settings_manager = SettingsManager::get_instance();
-        $client_settings = $settings_manager->get_client_settings();
+        $this->settings_manager = SettingsManager::get_instance();
+        $client_settings        = $this->settings_manager->get_client_settings();
 
         $this->client = new Client($client_settings);
     }
@@ -42,7 +41,7 @@ class Searcher
             $response = $search->search($query);
 
             $transformer = new SearchTransformer();
-            $results = $transformer->transform($response);
+            $results     = $transformer->transform($response);
 
             return $results;
         } catch (\Exception $ex) {
@@ -66,15 +65,15 @@ class Searcher
      **/
     /*public function search($query, $pageIndex = 0, $size = 10, $facets = array(), $sortByDate = false)
     {
-        if (empty($query) || (empty($query['query']) && empty($query['aggs']))) {
-            return array(
-                'total' => 0,
-                'ids' => array(),
-                'facets' => array()
-            );
-        }
+    if (empty($query) || (empty($query['query']) && empty($query['aggs']))) {
+    return array(
+    'total' => 0,
+    'ids' => array(),
+    'facets' => array()
+    );
+    }
 
-        return $this->query($query);
+    return $this->query($query);
     }*/
 
     /**
@@ -104,18 +103,17 @@ class Searcher
 
     private function get_index()
     {
-        $status = get_option(Constants::OPTION_INDEX_STATUS);
-        $capability = get_option(Constants::OPTION_CAPABILITY);
-        $secondary = get_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
+        $status        = $this->settings_manager->get(Constants::OPTION_INDEX_STATUS);
+        $capability    = $this->settings_manager->get(Constants::OPTION_CAPABILITY);
+        $secondary     = $this->settings_manager->get(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
         $use_secondary = isset($secondary) && !empty($secondary);
 
         if ($status['index'] == "primary" && $use_secondary) {
-            $private_index = get_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
-            $public_index = get_option(Constants::OPTION_SECONDARY_INDEX);
-        }
-        else {
-            $private_index = get_option(Constants::OPTION_PRIVATE_PRIMARY_INDEX);
-            $public_index = get_option(Constants::OPTION_PRIMARY_INDEX);
+            $private_index = $this->settings_manager->get(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
+            $public_index  = $this->settings_manager->get(Constants::OPTION_SECONDARY_INDEX);
+        } else {
+            $private_index = $this->settings_manager->get(Constants::OPTION_PRIVATE_PRIMARY_INDEX);
+            $public_index  = $this->settings_manager->get(Constants::OPTION_PRIMARY_INDEX);
         }
 
         if (isset($private_index) && !empty($private_index) && current_user_can($capability)) {

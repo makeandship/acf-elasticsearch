@@ -12,7 +12,8 @@ class QueryBuilder
     public function __construct()
     {
         // default include all valid post types
-        $this->post_types = PostMappingBuilder::get_valid_post_types();
+        $settings_manager = SettingsManager::get_instance();
+        $this->post_types = $settings_manager->get_valid_post_types();
 
         $this->freetext = null;
         $this->fuzziness = null;
