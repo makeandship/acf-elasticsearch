@@ -27,6 +27,10 @@ class PostMappingBuilderV5 extends PostMappingBuilder
             'type'        => 'date',
             'transformer' => 'makeandship\elasticsearch\transformer\DateFieldTransformer',
         ),
+        'post_modified'    => array(
+            'type'        => 'date',
+            'transformer' => 'makeandship\elasticsearch\transformer\DateFieldTransformer',
+        ),
         'link'         => array(
             'type'  => 'string',
             'index' => 'not_analyzed',

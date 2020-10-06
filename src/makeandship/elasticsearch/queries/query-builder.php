@@ -2,10 +2,9 @@
 
 namespace makeandship\elasticsearch\queries;
 
-use makeandship\elasticsearch\PostMappingBuilder;
 use makeandship\elasticsearch\Constants;
-use makeandship\elasticsearch\Util;
 use makeandship\elasticsearch\settings\SettingsManager;
+use makeandship\elasticsearch\Util;
 
 class QueryBuilder
 {
@@ -15,20 +14,20 @@ class QueryBuilder
         $settings_manager = SettingsManager::get_instance();
         $this->post_types = $settings_manager->get_valid_post_types();
 
-        $this->freetext = null;
-        $this->fuzziness = null;
-        $this->weights = null;
-        $this->post_types = null;
-        $this->categories = null;
-        $this->taxonomies = null;
-        $this->counts = null;
-        $this->from = null;
-        $this->size = null;
-        $this->sorts = null;
-        $this->search_fields = null;
-        $this->return_fields = null;
+        $this->freetext         = null;
+        $this->fuzziness        = null;
+        $this->weights          = null;
+        $this->post_types       = null;
+        $this->categories       = null;
+        $this->taxonomies       = null;
+        $this->counts           = null;
+        $this->from             = null;
+        $this->size             = null;
+        $this->sorts            = null;
+        $this->search_fields    = null;
+        $this->return_fields    = null;
         $this->aggregate_fields = null;
-        $this->zero_aggregates = false;
+        $this->zero_aggregates  = false;
 
         $this->set_plugin_defaults();
     }
@@ -36,9 +35,9 @@ class QueryBuilder
     private function set_plugin_defaults()
     {
         // set fuzziness, weights and post_types
-        $this->fuzziness = intval(SettingsManager::get_instance()->get(Constants::OPTION_FUZZINESS));
-        $this->post_types = SettingsManager::get_instance()->get_post_types();
-        $this->weights = SettingsManager::get_instance()->get(Constants::OPTION_WEIGHTINGS);
+        $this->fuzziness     = intval(SettingsManager::get_instance()->get(Constants::OPTION_FUZZINESS));
+        $this->post_types    = SettingsManager::get_instance()->get_post_types();
+        $this->weights       = SettingsManager::get_instance()->get(Constants::OPTION_WEIGHTINGS);
         $this->search_fields = SettingsManager::get_instance()->get(Constants::OPTION_SEARCH_FIELDS);
     }
 
@@ -59,7 +58,7 @@ class QueryBuilder
      *
      * @param fuzziness a level of fuzziness - letters allowed to swop
      */
-    public function with_fuzziness($fuzziness=null)
+    public function with_fuzziness($fuzziness = null)
     {
         if (isset($fuzziness)) {
             $this->fuzziness = $fuzziness;
@@ -75,7 +74,7 @@ class QueryBuilder
      *
      * @param weights array of weights
      */
-    public function weighted($weights=null)
+    public function weighted($weights = null)
     {
         if (isset($weights)) {
             $this->weights = $weights;
@@ -139,7 +138,7 @@ class QueryBuilder
         return $this;
     }
 
-    public function searching($fields=null)
+    public function searching($fields = null)
     {
         if (isset($fields)) {
             $this->search_fields = $fields;
@@ -172,26 +171,26 @@ class QueryBuilder
         $query = array(
             'query' => array(
                 'bool' => array(
-                    'must' => array()
-                )
-            )
+                    'must' => array(),
+                ),
+            ),
         );
 
         // freetext, fuzziness and weightings are used together for the built query
-        $query_text = $this->build_text_query();
+        $query_text                     = $this->build_text_query();
         $query['query']['bool']['must'] = array_merge($query['query']['bool']['must'], $query_text);
 
         // post types and taxonomies filter the query results
-        $query_filters = $this->build_filters();
+        $query_filters          = $this->build_filters();
         $query['query']['bool'] = array_merge($query['query']['bool'], $query_filters);
 
         // aggregations to count results by post types and taxonomy entries
-        $aggregations = $this->build_aggregations();
+        $aggregations  = $this->build_aggregations();
         $query['aggs'] = $aggregations;
 
         // pagination
         $pagination = $this->build_pagination();
-        $query = array_merge($query, $pagination);
+        $query      = array_merge($query, $pagination);
 
         // sorting
         $sorts = $this->build_sorts();
@@ -199,11 +198,11 @@ class QueryBuilder
 
         // fields
         $fields = $this->build_fields();
-        $query = array_merge($query, $fields);
+        $query  = array_merge($query, $fields);
 
         // highlights
         $highlights = $this->build_highlights();
-        $query = array_merge($query, $highlights);
+        $query      = array_merge($query, $highlights);
 
         return $query;
     }
@@ -219,7 +218,7 @@ class QueryBuilder
                 foreach ($this->search_fields as $search_field) {
                     $weight = Util::safely_get_attribute($this->weights, $search_field);
                     if ($weight) {
-                        $fields[] = $search_field.'^'.$weight;
+                        $fields[] = $search_field . '^' . $weight;
                     } else {
                         $fields[] = $search_field;
                     }
@@ -228,25 +227,26 @@ class QueryBuilder
                 $query_text = array(
                     'multi_match' => array(
                         'fields' => $fields,
-                        'query' => $this->freetext
-                    )
+                        'query'  => $this->freetext,
+                    ),
                 );
             } else {
                 // search all fields
                 $query_text = array(
                     'multi_match' => array(
-                        'query' => $this->freetext
-                    )
+                        'query' => $this->freetext,
+                    ),
                 );
 
                 // weight fields in the search result
                 if ($this->weights) {
                     foreach ($this->weights as $field => $weight) {
-                        if (ctype_digit(strval($weight))) { // check numeric - see http://php.net/manual/en/function.is-int.php
+                        if (ctype_digit(strval($weight))) {
+                            // check numeric - see http://php.net/manual/en/function.is-int.php
                             if (!array_key_exists('fields', $query_text['multi_match'])) {
-                                $query_text['multi_match']['fields'] = array();    
+                                $query_text['multi_match']['fields'] = array();
                             }
-                            $query_text['multi_match']['fields'][] = $field.'^'.$weight;
+                            $query_text['multi_match']['fields'][] = $field . '^' . $weight;
                         }
                     }
                 }
@@ -258,7 +258,7 @@ class QueryBuilder
             }
         } else {
             $query_text = array(
-                'match_all' => (object) array()
+                'match_all' => (object) array(),
             );
         }
 
@@ -291,22 +291,22 @@ class QueryBuilder
                         foreach ($filters as $filter) {
                             if (strpos($field, ".") !== false) {
                                 $nested_filter = array();
-                                $paths = explode(".", $field);
+                                $paths         = explode(".", $field);
 
-                                $keys = array_keys($paths);
-                                $last_index = end($keys);
+                                $keys           = array_keys($paths);
+                                $last_index     = end($keys);
                                 $current_filter = &$nested_filter;
                                 foreach ($paths as $index => $path) {
                                     if ($index === $last_index) {
                                         $current_filter['term'] = array(
-                                            $field => $filter
+                                            $field => $filter,
                                         );
                                     } else {
                                         $current_filter = array(
-                                          "nested" => array(
-                                            "path" => $path,
-                                            "query" => array()
-                                          )
+                                            "nested" => array(
+                                                "path"  => $path,
+                                                "query" => array(),
+                                            ),
                                         );
                                         $current_filter = &$current_filter['nested']['query'];
                                     }
@@ -317,8 +317,8 @@ class QueryBuilder
                                 // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html
                                 $query_field_filters['filter']['bool'][$bool_operator][] = array(
                                     'term' => array(
-                                        $field => $filter
-                                    )
+                                        $field => $filter,
+                                    ),
                                 );
                             }
                         }
@@ -345,8 +345,8 @@ class QueryBuilder
                 // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-query.html
                 $query_field_filters['filter']['bool']['should'][] = array(
                     'term' => array(
-                        'post_type' => $post_type
-                    )
+                        'post_type' => $post_type,
+                    ),
                 );
             }
         }
@@ -371,7 +371,7 @@ class QueryBuilder
             }
             if (!array_key_exists('should', $query_field_filters['filter']['bool'])) {
                 $query_field_filters['filter']['bool']['must']['bool']['should'] = array(
-                  'minimum_should_match' => 1
+                    'minimum_should_match' => 1,
                 );
             }
 
@@ -380,8 +380,8 @@ class QueryBuilder
                 // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-query.html
                 $query_field_filters['filter']['bool']['must']['bool']['should'][] = array(
                     'term' => array(
-                        'type' => $taxonomy
-                    )
+                        'type' => $taxonomy,
+                    ),
                 );
             }
         }
@@ -445,26 +445,26 @@ class QueryBuilder
             foreach ($this->counts as $taxonomy => $count) {
                 $count = is_string($count) ? intval($count) : $count;
 
-                $agg = $this->build_aggregation($taxonomy, $count, $this->zero_aggregates);
+                $agg          = $this->build_aggregation($taxonomy, $count, $this->zero_aggregates);
                 $aggregations = array_merge($aggregations, $agg);
             }
         }
 
         // post type aggregation
         $post_type_count = $this->post_types ? count($this->post_types) : 100;
-        $agg = $this->build_aggregation('post_type', $post_type_count, $this->zero_aggregates);
-        $aggregations = array_merge($aggregations, $agg);
+        $agg             = $this->build_aggregation('post_type', $post_type_count, $this->zero_aggregates);
+        $aggregations    = array_merge($aggregations, $agg);
 
         // custom aggregations
         if ($this->aggregate_fields && is_array($this->aggregate_fields) && count($this->aggregate_fields)) {
             if (Util::is_array_sequential($this->aggregate_fields)) {
                 foreach ($this->aggregate_fields as $aggregate_field) {
-                    $agg = $this->build_aggregation($aggregate_field, null, $this->zero_aggregates);
+                    $agg          = $this->build_aggregation($aggregate_field, null, $this->zero_aggregates);
                     $aggregations = array_merge($aggregations, $agg);
                 }
             } else {
                 foreach ($this->aggregate_fields as $aggregate_field => $aggregate_field_count) {
-                    $agg = $this->build_aggregation($aggregate_field, $aggregate_field_count, $this->zero_aggregates);
+                    $agg          = $this->build_aggregation($aggregate_field, $aggregate_field_count, $this->zero_aggregates);
                     $aggregations = array_merge($aggregations, $agg);
                 }
             }
@@ -499,15 +499,15 @@ class QueryBuilder
                     }
 
                     $target[$part] = array(
-                        'aggs' => array()
+                        'aggs' => array(),
                     );
 
                     // detect last and add aggregation
                     if (array($part) === array_slice($parts, -1)) {
                         $target[$part] = array(
                             'terms' => array(
-                                'field' => $key
-                            )
+                                'field' => $key,
+                            ),
                         );
                         if ($count) {
                             $target[$part]['terms']['size'] = $count;
@@ -520,13 +520,13 @@ class QueryBuilder
                         $target[$part]['nested'] = array('path' => $part);
                     }
 
-                    $paths[]= $part;
+                    $paths[] = $part;
                 }
             } else {
                 $aggregations[$key] = array(
                     'terms' => array(
-                        'field' => $key
-                    )
+                        'field' => $key,
+                    ),
                 );
 
                 if ($count) {
@@ -549,7 +549,7 @@ class QueryBuilder
 
         if ($this->from !== null && $this->size !== null) {
             // from is the record number hence page size * page number
-            $from = $this->from * $this->size;
+            $from               = $this->from * $this->size;
             $pagination['from'] = $from;
 
             $pagination['size'] = $this->size;
@@ -583,11 +583,11 @@ class QueryBuilder
         } else {
             if (!$this->freetext) {
                 $sorts['sort'] = array(
-                    'post_date' => 'desc'
+                    'post_modified' => 'desc',
                 );
             } else {
                 $sorts['sort'] = array(
-                    '_score'
+                    '_score',
                 );
             }
         }
@@ -622,7 +622,7 @@ class QueryBuilder
 
         if ($this->weights) {
             $highlights['highlight'] = array(
-                'fields' => array()
+                'fields' => array(),
             );
 
             foreach ($this->weights as $field => $weight) {
