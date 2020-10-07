@@ -373,7 +373,7 @@ class Indexer
             if (isset($document) && !empty($document) &&
                 isset($id) && !empty($id)) {
                 if (!$private) {
-                    $document = apply_filters('acf_elasticsearch_pre_add_document', $document);
+                    $document = apply_filters('acf_elasticsearch_pre_add_document', $document, $id);
                     // index public documents in the public repository
                     $index = $this->index_factory->create($primary, false);
                     if ($index) {
@@ -388,7 +388,7 @@ class Indexer
                         // new documents add to the alternate index as well otherwise they are missed
                         $index = $this->index_factory->create(!$primary, false);
                         if ($index) {
-                            $private_document = apply_filters('acf_elasticsearch_pre_add_private_document', $private_document);
+                            $private_document = apply_filters('acf_elasticsearch_pre_add_private_document', $private_document, $id);
                             if ($this->bulk) {
                                 $this->queue($index, new \Elastica\Document($id, $private_document));
                             } else {
@@ -400,7 +400,7 @@ class Indexer
                 // index everything to private index
                 $index = $this->index_factory->create($primary, true);
                 if ($index) {
-                    $private_document = apply_filters('acf_elasticsearch_pre_add_private_document', $private_document);
+                    $private_document = apply_filters('acf_elasticsearch_pre_add_private_document', $private_document, $id);
                     if ($this->bulk) {
                         $this->queue($index, new \Elastica\Document($id, $private_document));
                     } else {
@@ -411,7 +411,7 @@ class Indexer
                     // new documents add to the alternate index as well otherwise they are missed
                     $index = $this->index_factory->create(!$primary, true);
                     if ($index) {
-                        $private_document = apply_filters('acf_elasticsearch_pre_add_private_document', $private_document);
+                        $private_document = apply_filters('acf_elasticsearch_pre_add_private_document', $private_document, $id);
                         if ($this->bulk) {
                             $this->queue($index, new \Elastica\Document($id, $private_document));
                         } else {
