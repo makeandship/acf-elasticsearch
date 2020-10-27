@@ -9,7 +9,7 @@ class Mapper
 {
     public function __construct()
     {
-        $this->propeties = null;
+        $this->properties = null;
 
         // factory to manage individual mappers
         $this->mapping_builder_factory = new MappingBuilderFactory();
@@ -48,8 +48,6 @@ class Mapper
                 $post_mapping_builder->build($post_type, true)
             );
         }
-
-        //error_log(json_encode($mapping));
 
         // create mappings for each taxonomy
         $taxonomies = get_taxonomies();

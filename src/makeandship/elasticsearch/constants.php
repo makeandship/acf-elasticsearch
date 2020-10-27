@@ -18,7 +18,7 @@ class Constants
     const DEFAULT_READ_TIMEOUT  = 30;
 
     // plugin
-    const VERSION    = '7.1.4';
+    const VERSION    = '7.1.5';
     const DB_VERSION = 1;
 
     const OPTION_SERVER                  = 'acf_elasticsearch_server';
@@ -46,7 +46,7 @@ class Constants
     const STATUS_PRIVATE      = 'private';
     const INDEX_POST_STATUSES = [Constants::STATUS_PUBLISH, Constants::STATUS_PRIVATE];
 
-    const DEFAULT_POSTS_PER_PAGE = 100;
+    const DEFAULT_POSTS_PER_PAGE = 10;
     const DEFAULT_TERMS_PER_PAGE = 50;
     const DEFAULT_SITES_PER_PAGE = 50;
     const DEFAULT_MAPPING_TYPE   = 'document';

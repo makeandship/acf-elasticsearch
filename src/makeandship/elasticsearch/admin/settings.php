@@ -8,15 +8,8 @@ use makeandship\elasticsearch\settings\SettingsManager;
 if (!empty($_POST)) {
 
     // save incoming options
-    $server                  = esc_url($_POST['acf_elasticsearch_server']);
-    $primary_index           = trim($_POST['acf_elasticsearch_primary_index']);
-    $secondary_index         = trim($_POST['acf_elasticsearch_secondary_index']);
-    $private_primary_index   = trim($_POST['acf_elasticsearch_private_primary_index']);
-    $private_secondary_index = trim($_POST['acf_elasticsearch_private_secondary_index']);
     $read_timeout            = intval(trim($_POST['acf_elasticsearch_read_timeout']));
     $write_timeout           = intval(trim($_POST['acf_elasticsearch_write_timeout']));
-    $username                = trim($_POST['acf_elasticsearch_username']);
-    $password                = trim($_POST['acf_elasticsearch_password']);
     $post_types              = HtmlUtils::create_post_types();
     $capability              = trim($_POST['acf_elasticsearch_capability']);
     $search_fields           = HtmlUtils::create_search_fields();
@@ -26,15 +19,8 @@ if (!empty($_POST)) {
     $exclusion_field         = trim($_POST['acf_elasticsearch_exclusion_field']);
     $ids_to_exclude          = HtmlUtils::create_ids_from_slugs($slugs_to_exclude);
 
-    SettingsManager::get_instance()->set(Constants::OPTION_SERVER, $server);
-    SettingsManager::get_instance()->set(Constants::OPTION_PRIMARY_INDEX, $primary_index);
-    SettingsManager::get_instance()->set(Constants::OPTION_SECONDARY_INDEX, $secondary_index);
-    SettingsManager::get_instance()->set(Constants::OPTION_PRIVATE_PRIMARY_INDEX, $private_primary_index);
-    SettingsManager::get_instance()->set(Constants::OPTION_PRIVATE_SECONDARY_INDEX, $private_secondary_index);
     SettingsManager::get_instance()->set(Constants::OPTION_READ_TIMEOUT, $read_timeout);
     SettingsManager::get_instance()->set(Constants::OPTION_WRITE_TIMEOUT, $write_timeout);
-    SettingsManager::get_instance()->set(Constants::OPTION_USERNAME, $username);
-    SettingsManager::get_instance()->set(Constants::OPTION_PASSWORD, $password);
     SettingsManager::get_instance()->set(Constants::OPTION_POST_TYPES, $post_types);
     SettingsManager::get_instance()->set(Constants::OPTION_CAPABILITY, $capability);
     SettingsManager::get_instance()->set(Constants::OPTION_SEARCH_FIELDS, $search_fields);
