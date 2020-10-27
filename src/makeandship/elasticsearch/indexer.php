@@ -199,7 +199,8 @@ class Indexer
 
         // flush bulk indexing
         if ($this->bulk) {
-            $this->flush();
+            $response = $this->flush();
+            $this->log_flush_response($response);
         }
 
         // update status
@@ -237,24 +238,37 @@ class Indexer
 
         $after       = microtime(true);
         $search_time = ($after - $before) . " sec";
-        error_log("Gathering posts: " . $search_time);
+        Util::debug("Indexer#index_posts_singlesite", "Gathering posts: " . $search_time);
 
         // index documents and time
         $before = microtime(true);
 
+        Util::debug("Indexer#index_posts_singlesite", "Count of posts: " . count($posts));
+        $ids = array_map(function ($post) {
+            return Util::safely_get_attribute($post, 'ID');
+        }, $posts);
+        Util::debug("Indexer#index_posts_singlesite", "IDs of posts: " . implode($ids, ", "));
         $count = $this->add_or_update_documents($posts);
 
         // flush bulk indexing
         if ($this->bulk) {
-            $this->flush();
+            $response = $this->flush();
+            $this->log_flush_response($response);
         }
 
         $after       = microtime(true);
         $search_time = ($after - $before) . " sec";
-        error_log("Indexing: " . $search_time);
+        Util::debug("Indexer#index_posts_singlesite", "Indexing: " . $search_time);
 
         // update count
         $status['count'] = $status['count'] + $count;
+
+        // counts
+        $primary       = $status['index'] == "primary";
+        $private_index = $this->index_factory->create($primary, true);
+        if ($private_index) {
+            Util::debug("Indexer#index_posts_singlesite", "Current count: " . $private_index->count());
+        }
 
         if ($status['count'] >= $status['total']) {
             $secondary     = SettingsManager::get_instance()->get(Constants::OPTION_SECONDARY_INDEX);
@@ -289,10 +303,11 @@ class Indexer
 
         // flush bulk indexing
         if ($this->bulk) {
-            $this->flush();
+            $response = $this->flush();
+            $this->log_flush_response($response);
         }
 
-        error_log('Indexed ' . strval($count) . ' terms');
+        Util::debug("Indexer#index_taxonomies", "Indexed " . strval($count) . " terms");
 
         return $count;
     }
@@ -341,11 +356,14 @@ class Indexer
         $builder = $this->document_builder_factory->create($o);
 
         $indexable = $builder->is_indexable($o);
+        if (!$indexable) {
+            Util::debug("Indexer#add_or_update_document", Util::safely_get_attribute($o, 'ID') . " is not indexable");
+        }
 
         if ($indexable) {
             $private = $builder->is_private($o);
             if ($private) {
-                error_log("Document is private");
+                Util::debug("Indexer#add_or_update_document", "Document is private");
             }
 
             if (is_multisite()) {
@@ -440,7 +458,7 @@ class Indexer
                     $this->queues[$key] = array();
                 }
                 $this->queues[$key][] = $document;
-                error_log('Add ' . $document->getId() . ' to ' . $key);
+                Util::debug("Indexer#queue", "Add " . $document->getId() . " to " . $key);
 
                 if (!$this->indexes) {
                     $this->indexes = array();
@@ -459,19 +477,62 @@ class Indexer
      */
     public function flush()
     {
+        $response = array();
+
         if ($this->indexes && $this->queues) {
             foreach ($this->queues as $key => $documents) {
                 $index = $this->indexes[$key];
 
                 if ($index && $documents && count($documents) > 0) {
                     // add the documents
-                    $index->addDocuments($documents);
-                    $index->refresh();
-                    error_log('Added ' . count($documents) . ' to ' . $key);
+                    $add_documents_response = $index->addDocuments($documents);
+                    $index_response         = $index->refresh();
+                    Util::debug("Indexer#flush", "Added " . count($documents) . " to " . $key);
 
                     unset($this->queues[$key]);
+
+                    $response[$key] = array(
+                        'add_documents' => $this->get_status_from_response($add_documents_response),
+                        'index'         => $this->get_status_from_response($index_response),
+                    );
                 }
             }
+        }
+
+        return $response;
+    }
+
+    private function get_status_from_response($response)
+    {
+        if ($response) {
+            $status  = $response->getStatus();
+            $message = $response->getErrorMessage();
+
+            if ($status) {
+                return $status . ($message ? ": " . $message : "");
+            } else {
+                return $message ? $message : "";
+            }
+
+        }
+
+        return null;
+    }
+
+    private function log_flush_response($response)
+    {
+        if ($response) {
+            $messages = array();
+
+            foreach ($response as $name => $message) {
+                $methods = array();
+                foreach ($message as $method => $method_message) {
+                    $methods[] = $method . ': ' . $method_message;
+                }
+                $messages[] = $name . ': ' . implode($methods, ", ");
+            }
+
+            Util::debug("Indexer#flush", implode($messages, ", "));
         }
     }
 
