@@ -191,7 +191,7 @@ class Indexer
 
         $blog_id = $target_site['blog_id'];
         $page    = $target_site['page'];
-        $per     = Constants::DEFAULT_POSTS_PER_PAGE;
+        $per     = apply_filters('acf_elasticsearch_bulk_posts_per_page', Constants::DEFAULT_POSTS_PER_PAGE);
 
         // get and update posts
         $posts = $posts_manager->get_posts($blog_id, $page, $per);
@@ -229,7 +229,7 @@ class Indexer
 
         // find the next site to index (or next page in a site to index)
         $page = $status['page'];
-        $per  = Constants::DEFAULT_POSTS_PER_PAGE;
+        $per  = apply_filters('acf_elasticsearch_bulk_posts_per_page', Constants::DEFAULT_POSTS_PER_PAGE);
 
         // gather posts and time
         $before = microtime(true);
