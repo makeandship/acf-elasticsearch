@@ -363,7 +363,13 @@ class SettingsManager
     {
         $client_settings = $this->get_client_settings();
         $client          = new Client($client_settings);
-        return $client->getVersion();
+        try {
+            $version = $client->getVersion();
+            return $version;
+        } catch (\Elastica\Exception\Connection\HttpException $e) {
+            Util::debug("SettingsManager#get_elasticsearch_version", $e);
+            return null;
+        }
     }
 
     public function is_valid_post_type($post_type)

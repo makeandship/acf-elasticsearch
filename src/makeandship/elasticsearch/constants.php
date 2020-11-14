@@ -18,7 +18,7 @@ class Constants
     const DEFAULT_READ_TIMEOUT  = 30;
 
     // plugin
-    const VERSION    = '7.1.5';
+    const VERSION    = '7.1.6';
     const DB_VERSION = 1;
 
     const OPTION_SERVER                  = 'acf_elasticsearch_server';
