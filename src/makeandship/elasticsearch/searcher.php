@@ -45,7 +45,7 @@ class Searcher
 
             return $results;
         } catch (\Exception $ex) {
-            error_log($ex);
+            Util::debug('Searcher#search', $ex);
 
             Util::do_action('search_exception', $ex);
 
@@ -83,19 +83,19 @@ class Searcher
     {
         $query = new \Elastica\Query($args);
 
-        $query = Config::apply_filters('searcher_query', $query);
+        $query = Util::apply_filters('searcher_query', $query);
 
         try {
             $search = new \Elastica\Search($this->client);
             $search->addIndex($this->get_index());
 
-            $search = Config::apply_filters('searcher_search', $search, $query);
+            $search = Util::apply_filters('searcher_search', $search, $query);
 
             return $search->search($query);
         } catch (\Exception $ex) {
-            error_log($ex);
+            Util::debug('Searcher#query', $ex);
 
-            Config::do_action('searcher_exception', $ex);
+            Util::do_action('searcher_exception', $ex);
 
             return null;
         }

@@ -66,7 +66,7 @@ class Mapper
             );
         }
 
-        $properties = apply_filters('acf_elasticsearch_pre_create_mappings', $properties);
+        $properties = Util::apply_filters('pre_create_mappings', $properties);
 
         $this->properties = $properties;
 

@@ -12,7 +12,7 @@ class Util
     public static function apply_filters()
     {
         $args    = func_get_args();
-        $args[0] = 'acf-elasticsearch/' . $args[0];
+        $args[0] = 'acf_elasticsearch/' . $args[0];
 
         return call_user_func_array('apply_filters', $args);
     }
@@ -25,7 +25,7 @@ class Util
     public static function do_action()
     {
         $args    = func_get_args();
-        $args[0] = 'acf-elasticsearch/' . $args[0];
+        $args[0] = 'acf_elasticsearch/' . $args[0];
 
         return call_user_func_array('do_action', $args);
     }
@@ -68,7 +68,7 @@ class Util
 
     public static function get_facet_size()
     {
-        return Config::apply_filters('searcher_query_facet_size', 100);
+        return Util::apply_filters('searcher_query_facet_size', 100);
     }
 
     public static function debug($clazz, $message)

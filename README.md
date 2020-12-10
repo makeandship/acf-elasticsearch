@@ -58,20 +58,20 @@ brew services start elasticsearch
 
 6. Configuration
 
-Elasticsearch settings can be configured in constants in your wp-config.php or 
+Elasticsearch settings can be configured in constants in your wp-config.php or
 using environment variables.
 
 The following should be set
 
-* ES_URL - The URL to your elasticsearch e.g. https://elasticsearch.example.com:9200/
-* ES_USERNAME - Any username required to connect to elasticsearch
-* ES_PASSWORD - Any password required to connect to elasticsearch
-* ES_INDEX - An index name for the primary index
-* ES_SECONDARY_INDEX - An index name for the secondary index
-* ES_PRIVATE_INDEX - An index name for the private primary index
-* ES_PRIVATE_SECONDARY_INDEX - An index name for the private secondary index
+- ES_URL - The URL to your elasticsearch e.g. https://elasticsearch.example.com:9200/
+- ES_USERNAME - Any username required to connect to elasticsearch
+- ES_PASSWORD - Any password required to connect to elasticsearch
+- ES_INDEX - An index name for the primary index
+- ES_SECONDARY_INDEX - An index name for the secondary index
+- ES_PRIVATE_INDEX - An index name for the private primary index
+- ES_PRIVATE_SECONDARY_INDEX - An index name for the private secondary index
 
-The variables can also be set as individual files which are pointed to by a variable 
+The variables can also be set as individual files which are pointed to by a variable
 of the same name with suffix `_FILE` e.g. `ES_PASSWORD_FILE` to support secret
 injection via a vault.
 
@@ -181,3 +181,15 @@ $query = $query->freetext('foo')
 
 $result = $searcher->search($query->to_array());
 ```
+
+## Actions and Filters
+
+Applied via `Util::apply_filters` and `Util::do_action`
+
+- `acf_elasticsearch/bulk_posts_per_page' - controls re-index page size i.e. the number of posts indexed in each update
+- `acf_elasticsearch/pre_add_document' - update the content of a document being added to the public index
+- `acf_elasticsearch/pre_add_private_document' - update the content of a document being added to the private index
+- `acf_elasticsearch/pre_create_mappings' - update the content of mappings applied to a newly created elasticsearch index
+- `acf_elasticsearch/prepare_query' - update the contents of an search query before it is run against elasticsearch
+- `acf_elasticsearch/searcher_query' - update the contents of an elastica query before it is run against elasticsearch
+- `acf*elasticsearch/searcher\_\_search*' - update the contents of an elastica search before it is run against elasticsearch
