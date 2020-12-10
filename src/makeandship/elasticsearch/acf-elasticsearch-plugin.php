@@ -2,9 +2,9 @@
 
 namespace makeandship\elasticsearch;
 
-use makeandship\elasticsearch\settings\SettingsManager;
 use makeandship\elasticsearch\admin\UserInterfaceManager;
 use makeandship\elasticsearch\domain\PostsManager;
+use makeandship\elasticsearch\settings\SettingsManager;
 
 class AcfElasticsearchPlugin
 {
@@ -31,13 +31,13 @@ class AcfElasticsearchPlugin
     public function initialise_plugin_hooks()
     {
         // wordpress initialisation
-        add_action('admin_init', array( $this, 'initialise'));
-        add_action('admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts'));
+        add_action('admin_init', array($this, 'initialise'));
+        add_action('admin_enqueue_scripts', array($this, 'admin_enqueue_scripts'));
         add_action('admin_menu', array($this, 'initialise_menu'));
 
         // activation
-        register_activation_hook(__FILE__, array($this, 'activate' ));
-        register_deactivation_hook(__FILE__, array($this, 'deactivate' ));
+        register_activation_hook(__FILE__, array($this, 'activate'));
+        register_deactivation_hook(__FILE__, array($this, 'deactivate'));
     }
 
     public function initialise_index_hooks()
@@ -72,19 +72,19 @@ class AcfElasticsearchPlugin
         $indexer = new Indexer();
 
         foreach ($indexes as $index) {
-            $name = $index['name'];
+            $name          = $index['name'];
             $elastic_index = $indexer->create($name);
 
             $mapper = new Mapper();
             $result = $mapper->map($elastic_index);
         }
-        
+
         // extract message from result
         $message = 'Mappings were created successfully';
 
         // json response
         $json = json_encode(array(
-            'message' => $message
+            'message' => $message,
         ));
         die($json);
     }
@@ -94,13 +94,13 @@ class AcfElasticsearchPlugin
         $fresh = isset($_POST['fresh']) ? ($_POST['fresh'] === 'true') : false;
 
         $indexer = new Indexer(true); // use bulk indexing
-        $status = 0;
+        $status  = 0;
 
         $status = $indexer->index_posts($fresh);
 
         $response = array(
             'message' => 'Posts were indexed successfully',
-            'status' => $status
+            'status'  => $status,
         );
 
         $json = json_encode($response);
@@ -109,15 +109,15 @@ class AcfElasticsearchPlugin
 
     public function index_taxonomies()
     {
-        error_log('index_taxonomies()');
+        Util::debug('AcfElasticsearchPlugin#index_taxonomies', 'enter');
 
         // instantiate the index and current status
         $indexer = new Indexer(true);
-        $status = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
-        
+        $status  = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
+
         // index to primary
         $primary = SettingsManager::get_instance()->get(Constants::OPTION_PRIMARY_INDEX);
-        
+
         if ($primary) {
             $status['index'] = 'primary';
             SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
@@ -126,7 +126,7 @@ class AcfElasticsearchPlugin
 
         // index to secondary
         $secondary = SettingsManager::get_instance()->get(Constants::OPTION_SECONDARY_INDEX);
-        
+
         if ($secondary) {
             $status['index'] = 'secondary';
             SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
@@ -134,8 +134,8 @@ class AcfElasticsearchPlugin
         }
 
         $json = json_encode(array(
-            'message' => $count.' taxonomies were indexed successfully'
-            ));
+            'message' => $count . ' taxonomies were indexed successfully',
+        ));
         die($json);
     }
 
@@ -144,8 +144,8 @@ class AcfElasticsearchPlugin
         $this->create_mappings();
 
         $json = json_encode(array(
-            'message' => 'Index was cleared successfully'
-            ));
+            'message' => 'Index was cleared successfully',
+        ));
         die($json);
     }
 
@@ -160,6 +160,7 @@ class AcfElasticsearchPlugin
      */
     public function save_post($post_id)
     {
+        Util::debug('AcfElasticsearchPlugin#save_post', $post_id);
         // get the post to index
         if (is_object($post_id)) {
             $post = $post_id;
@@ -179,9 +180,11 @@ class AcfElasticsearchPlugin
 
         // index valid statuses
         if (in_array($post->post_status, Constants::INDEX_POST_STATUSES)) {
+            Util::debug('AcfElasticsearchPlugin#save_post', 'Add/update document: ' . $post_id);
             // index
             $this->indexer->add_or_update_document($post, true);
         } else {
+            Util::debug('AcfElasticsearchPlugin#save_post', 'Remove document: ' . $post_id);
             // remove
             $this->indexer->remove_document($post);
         }
@@ -192,6 +195,7 @@ class AcfElasticsearchPlugin
      */
     public function delete_post($post_id)
     {
+        Util::debug('AcfElasticsearchPlugin#delete_post', $post_id);
         $post = get_post($post_id);
         $this->indexer->remove_document($post);
     }
@@ -201,6 +205,7 @@ class AcfElasticsearchPlugin
      */
     public function trash_post($post_id)
     {
+        Util::debug('AcfElasticsearchPlugin#trash_post', $post_id);
         $this->delete_post($post_id);
     }
 
@@ -209,13 +214,16 @@ class AcfElasticsearchPlugin
      */
     public function transition_post_status($new_status, $old_status, $post)
     {
+        Util::debug('AcfElasticsearchPlugin#transition_post_status', $post_id);
         if (!$this->should_index_post($post)) {
             return;
         }
         if (in_array($new_status, Constants::INDEX_POST_STATUSES) && $new_status != $old_status) {
+            Util::debug('AcfElasticsearchPlugin#transition_post_status', 'Add/update document: ' . $post_id);
             $this->indexer->add_or_update_document($post, true);
         } else {
             if ($new_status != "publish" && $old_status != "publish") {
+                Util::debug('AcfElasticsearchPlugin#transition_post_status', 'Remove document: ' . $post_id);
                 $this->indexer->remove_document($post);
             }
         }
@@ -298,7 +306,6 @@ class AcfElasticsearchPlugin
 
     public function admin_enqueue_scripts()
     {
-        error_log('admin_enqueue_scripts');
         // add custom css and js
         $this->ui->enqueue_scripts();
     }
@@ -307,7 +314,7 @@ class AcfElasticsearchPlugin
     {
         $this->initialise_settings();
 
-        register_uninstall_hook(__FILE__, array($this, 'uninstall' ));
+        register_uninstall_hook(__FILE__, array($this, 'uninstall'));
     }
 
     public function deactivate()

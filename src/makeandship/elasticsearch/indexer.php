@@ -191,7 +191,7 @@ class Indexer
 
         $blog_id = $target_site['blog_id'];
         $page    = $target_site['page'];
-        $per     = apply_filters('acf_elasticsearch_bulk_posts_per_page', Constants::DEFAULT_POSTS_PER_PAGE);
+        $per     = Util::apply_filters('bulk_posts_per_page', Constants::DEFAULT_POSTS_PER_PAGE);
 
         // get and update posts
         $posts = $posts_manager->get_posts($blog_id, $page, $per);
@@ -229,7 +229,7 @@ class Indexer
 
         // find the next site to index (or next page in a site to index)
         $page = $status['page'];
-        $per  = apply_filters('acf_elasticsearch_bulk_posts_per_page', Constants::DEFAULT_POSTS_PER_PAGE);
+        $per  = Util::apply_filters('bulk_posts_per_page', Constants::DEFAULT_POSTS_PER_PAGE);
 
         // gather posts and time
         $before = microtime(true);
@@ -391,7 +391,7 @@ class Indexer
             if (isset($document) && !empty($document) &&
                 isset($id) && !empty($id)) {
                 if (!$private) {
-                    $document = apply_filters('acf_elasticsearch_pre_add_document', $document, $id);
+                    $document = Util::apply_filters('pre_add_document', $document, $id);
                     // index public documents in the public repository
                     $index = $this->index_factory->create($primary, false);
                     if ($index) {
@@ -406,7 +406,7 @@ class Indexer
                         // new documents add to the alternate index as well otherwise they are missed
                         $index = $this->index_factory->create(!$primary, false);
                         if ($index) {
-                            $private_document = apply_filters('acf_elasticsearch_pre_add_private_document', $private_document, $id);
+                            $private_document = Util::apply_filters('pre_add_private_document', $private_document, $id);
                             if ($this->bulk) {
                                 $this->queue($index, new \Elastica\Document($id, $private_document));
                             } else {
@@ -418,7 +418,7 @@ class Indexer
                 // index everything to private index
                 $index = $this->index_factory->create($primary, true);
                 if ($index) {
-                    $private_document = apply_filters('acf_elasticsearch_pre_add_private_document', $private_document, $id);
+                    $private_document = Util::apply_filters('pre_add_private_document', $private_document, $id);
                     if ($this->bulk) {
                         $this->queue($index, new \Elastica\Document($id, $private_document));
                     } else {
@@ -429,7 +429,7 @@ class Indexer
                     // new documents add to the alternate index as well otherwise they are missed
                     $index = $this->index_factory->create(!$primary, true);
                     if ($index) {
-                        $private_document = apply_filters('acf_elasticsearch_pre_add_private_document', $private_document, $id);
+                        $private_document = Util::apply_filters('pre_add_private_document', $private_document, $id);
                         if ($this->bulk) {
                             $this->queue($index, new \Elastica\Document($id, $private_document));
                         } else {
@@ -565,7 +565,7 @@ class Indexer
                     $primary_public->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
-                    error_log('Unable to delete from primary public index');
+                    Util::debug('Indexer#remove_document', 'Unable to delete from primary public index');
                 }
             }
 
@@ -575,7 +575,7 @@ class Indexer
                     $secondary_public->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
-                    error_log('Unable to delete from secondary public index');
+                    Util::debug('Indexer#remove_document', 'Unable to delete from secondary public index');
                 }
             }
 
@@ -585,7 +585,7 @@ class Indexer
                     $primary_private->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
-                    error_log('Unable to delete from primary private index');
+                    Util::debug('Indexer#remove_document', 'Unable to delete from primary private index');
                 }
             }
 
@@ -595,7 +595,7 @@ class Indexer
                     $secondary_private->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
-                    error_log('Unable to delete from secondary private index');
+                    Util::debug('Indexer#remove_document', 'Unable to delete from secondary private index');
                 }
             }
         }
