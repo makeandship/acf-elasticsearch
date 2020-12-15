@@ -214,16 +214,17 @@ class AcfElasticsearchPlugin
      */
     public function transition_post_status($new_status, $old_status, $post)
     {
-        Util::debug('AcfElasticsearchPlugin#transition_post_status', $post_id);
+        $post_id = Util::safely_get_attribute($post, 'ID');
+        Util::debug('AcfElasticsearchPlugin#transition_post_status', ($post_id ? $post_id : "Unknown post id"));
         if (!$this->should_index_post($post)) {
             return;
         }
         if (in_array($new_status, Constants::INDEX_POST_STATUSES) && $new_status != $old_status) {
-            Util::debug('AcfElasticsearchPlugin#transition_post_status', 'Add/update document: ' . $post_id);
+            Util::debug('AcfElasticsearchPlugin#transition_post_status', 'Add/update document: ' . ($post_id ? $post_id : "Unknown post id"));
             $this->indexer->add_or_update_document($post, true);
         } else {
             if ($new_status != "publish" && $old_status != "publish") {
-                Util::debug('AcfElasticsearchPlugin#transition_post_status', 'Remove document: ' . $post_id);
+                Util::debug('AcfElasticsearchPlugin#transition_post_status', 'Remove document: ' . ($post_id ? $post_id : "Unknown post id"));
                 $this->indexer->remove_document($post);
             }
         }
