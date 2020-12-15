@@ -341,6 +341,32 @@ class Indexer
     }
 
     /**
+     * Add a set of wordpress objects for a given term and taxonomy
+     *
+     * @param $term_id a term_id or array of term_ids that have changed
+     * @param $taxonomy of the changed term
+     */
+    public function add_or_update_documents_by_term($term_id, $taxonomy)
+    {
+        $count = 0;
+
+        if ($term_id && $taxonomy) {
+            $posts_manager = new PostsManager();
+            $posts         = $posts_manager->get_posts_by_term(null, $term_id, $taxonomy);
+
+            if ($posts && is_array($posts) && count($posts) > 0) {
+                foreach ($posts as $item) {
+                    $this->add_or_update_document($item);
+
+                    $count++;
+                }
+            }
+        }
+
+        return $count;
+    }
+
+    /**
      * Add a wordpress object to an index
      *
      * Supported objects are
