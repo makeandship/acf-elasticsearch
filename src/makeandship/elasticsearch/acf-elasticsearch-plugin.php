@@ -57,7 +57,7 @@ class AcfElasticsearchPlugin
         // taxonomies
         add_action('create_term', array(&$this, 'create_term'), 10, 3);
         add_action('edited_term', array(&$this, 'edit_term'), 10, 3);
-        add_action('delete_term', array(&$this, 'delete_term'), 10, 4);
+        add_action('delete_term', array(&$this, 'delete_term'), 10, 5);
         add_action('registered_taxonomy', array(&$this, 'registered_taxonomy'), 10, 3);
     }
 
@@ -269,15 +269,26 @@ class AcfElasticsearchPlugin
         }
 
         $this->indexer->add_or_update_document($term, true);
+
+        // re-index any impacted posts
+        $this->indexer->add_or_update_documents_by_term($term_id, $taxonomy);
     }
 
     /**
      *
      */
-    public function delete_term($term_id, $tt_id, $taxonomy, $deleted_term)
+    public function delete_term($term_id, $tt_id, $taxonomy, $deleted_term, $object_ids)
     {
         $term = get_term($term_id, $taxonomy);
         $this->indexer->remove_document($deleted_term);
+
+        // re-index impacted posts
+        if ($object_ids && is_array($object_ids) && count($object_ids)) {
+            foreach ($object_ids as $object_id) {
+                Util::debug('AcfElasticsearchPlugin#delete_term', 'Reindex ' . $object_id . ' after term delete');
+                $this->save_post($object_id);
+            }
+        }
     }
 
     /**

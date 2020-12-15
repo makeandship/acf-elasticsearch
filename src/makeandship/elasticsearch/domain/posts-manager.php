@@ -109,6 +109,22 @@ class PostsManager
         return $posts;
     }
 
+    function get_posts_by_term($blog_id, $term_id, $taxonomy)
+    {
+        if (isset($blog_id)) {
+            switch_to_blog($blog_id);
+        }
+
+        $args  = $this->get_post_args_by_term($term_id, $taxonomy);
+        $posts = get_posts($args);
+
+        if (isset($blog_id)) {
+            restore_current_blog();
+        }
+
+        return $posts;
+    }
+
     function get_count_post_args()
     {
         $post_types     = $this->get_valid_post_types();
@@ -139,6 +155,36 @@ class PostsManager
             'paged'          => $page,
             'orderby'        => array(
                 'ID' => 'ASC',
+            ),
+        );
+
+        return $args;
+    }
+
+    function get_post_args_by_term($term_id, $taxonomy)
+    {
+        $post_types     = $this->get_valid_post_types();
+        $post_status    = array('publish', 'private');
+        $ids_to_exclude = SettingsManager::get_instance()->get(Constants::OPTION_IDS_TO_EXCLUDE);
+
+        if (!is_array($term_id)) {
+            $term_id = [$term_id];
+        }
+
+        $args = array(
+            'post_type'   => $post_types,
+            'post_status' => $post_status,
+            'exclude'     => $ids_to_exclude,
+            'numberposts' => -1,
+            'orderby'     => array(
+                'ID' => 'ASC',
+            ),
+            'tax_query'   => array(
+                array(
+                    'taxonomy' => $taxonomy,
+                    'field'    => 'term_id',
+                    'terms'    => $term_id,
+                ),
             ),
         );
 
