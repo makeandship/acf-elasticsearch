@@ -90,8 +90,7 @@ class AcfElasticsearchPlugin
     }
 
     public function index_posts()
-    {
-        $fresh = isset($_POST['fresh']) ? ($_POST['fresh'] === 'true') : false;
+    {        $fresh = isset($_POST['fresh']) ? ($_POST['fresh'] === 'true') : false;
 
         $indexer = new Indexer(true); // use bulk indexing
         $status  = 0;
@@ -115,23 +114,7 @@ class AcfElasticsearchPlugin
         $indexer = new Indexer(true);
         $status  = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
 
-        // index to primary
-        $primary = SettingsManager::get_instance()->get(Constants::OPTION_PRIMARY_INDEX);
-
-        if ($primary) {
-            $status['index'] = 'primary';
-            SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
-            $count = $indexer->index_taxonomies();
-        }
-
-        // index to secondary
-        $secondary = SettingsManager::get_instance()->get(Constants::OPTION_SECONDARY_INDEX);
-
-        if ($secondary) {
-            $status['index'] = 'secondary';
-            SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
-            $count = $indexer->index_taxonomies();
-        }
+        $count = $indexer->index_taxonomies();
 
         $json = json_encode(array(
             'message' => $count . ' taxonomies were indexed successfully',
@@ -182,7 +165,7 @@ class AcfElasticsearchPlugin
         if (in_array($post->post_status, Constants::INDEX_POST_STATUSES)) {
             Util::debug('AcfElasticsearchPlugin#save_post', 'Add/update document: ' . $post_id);
             // index
-            $this->indexer->add_or_update_document($post, true);
+            $this->indexer->add_or_update_document($post);
         } else {
             Util::debug('AcfElasticsearchPlugin#save_post', 'Remove document: ' . $post_id);
             // remove
@@ -221,7 +204,7 @@ class AcfElasticsearchPlugin
         }
         if (in_array($new_status, Constants::INDEX_POST_STATUSES) && $new_status != $old_status) {
             Util::debug('AcfElasticsearchPlugin#transition_post_status', 'Add/update document: ' . ($post_id ? $post_id : "Unknown post id"));
-            $this->indexer->add_or_update_document($post, true);
+            $this->indexer->add_or_update_document($post);
         } else {
             if ($new_status != "publish" && $old_status != "publish") {
                 Util::debug('AcfElasticsearchPlugin#transition_post_status', 'Remove document: ' . ($post_id ? $post_id : "Unknown post id"));
@@ -252,7 +235,7 @@ class AcfElasticsearchPlugin
             return;
         }
 
-        $this->indexer->add_or_update_document($term, true);
+        $this->indexer->add_or_update_document($term);
     }
 
     /**
@@ -268,7 +251,7 @@ class AcfElasticsearchPlugin
             return;
         }
 
-        $this->indexer->add_or_update_document($term, true);
+        $this->indexer->add_or_update_document($term);
 
         // re-index any impacted posts
         $this->indexer->add_or_update_documents_by_term($term_id, $taxonomy);

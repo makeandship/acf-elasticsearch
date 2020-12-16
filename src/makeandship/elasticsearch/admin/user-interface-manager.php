@@ -7,33 +7,34 @@ use makeandship\elasticsearch\Constants;
 class UserInterfaceManager
 {
     const MENU_SPECIFICATION = array(
-        'page_icon' => 'icon-themes',
-        'page_title' => 'ACF Elasticsearch',
-        'menu_title' => 'ACF Elasticsearch',
-        'menu_icon' => 'dashicons-search',
-        'page_slug' => 'wp/admin/index.php',
-        'page_cap' => 'manage_options',
-        'page_type' => 'menu',
-        'page_parent' => '',
-        'page_position' => 100
+        'page_icon'     => 'icon-themes',
+        'page_title'    => 'ACF Elasticsearch',
+        'menu_title'    => 'ACF Elasticsearch',
+        'menu_icon'     => 'dashicons-search',
+        'page_slug'     => 'wp/admin/index.php',
+        'page_cap'      => 'manage_options',
+        'page_type'     => 'menu',
+        'page_parent'   => '',
+        'page_position' => 100,
     );
 
-    public function __construct($version, $db_version, $plugin)
+    function __construct($version, $db_version, $plugin)
     {
-        $this->version = $version;
+        $this->version    = $version;
         $this->db_version = $db_version;
-        $this->plugin = $plugin;
+        $this->plugin     = $plugin;
     }
 
-    public function initialise_options()
+    function initialise_options()
     {
-        $multisite = is_multisite();
+        $multisite       = is_multisite();
         $network_enabled = is_plugin_active_for_network(plugin_basename(__FILE__));
-        
-        if ($multisite) { // && $network_enabled
+
+        if ($multisite) {
+            // && $network_enabled
             add_site_option(Constants::VERSION, $this->version);
             add_site_option(Constants::DB_VERSION, $this->db_version);
-            
+
             add_site_option(Constants::OPTION_SERVER, '');
             add_site_option(Constants::OPTION_PRIMARY_INDEX, '');
             add_site_option(Constants::OPTION_SECONDARY_INDEX, '');
@@ -73,7 +74,7 @@ class UserInterfaceManager
         }
     }
 
-    public function initialise_settings()
+    function initialise_settings()
     {
         // add_settings_section( $id, $title, $callback, $page )
         add_settings_section(
@@ -82,7 +83,7 @@ class UserInterfaceManager
             array($this, 'render_section_settings'),
             'acf_elasticsearch_settings_page'
         );
-        
+
         // add_settings_field( $id, $title, $callback, $page, $section, $args )
         add_settings_field(
             'acf_elasticsearch_server',
@@ -90,7 +91,7 @@ class UserInterfaceManager
             array($this, 'render_option_server'),
             'acf_elasticsearch_settings_page',
             'acf_elasticsearch_settings'
-            
+
         );
         add_settings_field(
             'acf_elasticsearch_primary_index',
@@ -126,7 +127,7 @@ class UserInterfaceManager
             array($this, 'render_option_read_timeout'),
             'acf_elasticsearch_settings_page',
             'acf_elasticsearch_settings'
-            
+
         );
         add_settings_field(
             'acf_elasticsearch_write_timeout',
@@ -147,42 +148,42 @@ class UserInterfaceManager
         register_setting(
             'acf_elasticsearch_settings',
             'acf_elasticsearch_server',
-            array( $this, 'sanitize_server')
+            array($this, 'sanitize_server')
         );
         register_setting(
             'acf_elasticsearch_settings',
             'acf_elasticsearch_primary_index',
-            array( $this, 'sanitize_primary_index')
+            array($this, 'sanitize_primary_index')
         );
         register_setting(
             'acf_elasticsearch_settings',
             'acf_elasticsearch_secondary_index',
-            array( $this, 'sanitize_secondary_index')
+            array($this, 'sanitize_secondary_index')
         );
         register_setting(
             'acf_elasticsearch_settings',
             'acf_elasticsearch_private_primary_index',
-            array( $this, 'sanitize_private_primary_index')
+            array($this, 'sanitize_private_primary_index')
         );
         register_setting(
             'acf_elasticsearch_settings',
             'acf_elasticsearch_private_secondary_index',
-            array( $this, 'sanitize_private_secondary_index')
+            array($this, 'sanitize_private_secondary_index')
         );
         register_setting(
             'acf_elasticsearch_settings',
             'acf_elasticsearch_read_timeout',
-            array( $this, 'sanitize_read_timeout')
+            array($this, 'sanitize_read_timeout')
         );
         register_setting(
             'acf_elasticsearch_settings',
             'acf_elasticsearch_write_timeout',
-            array( $this, 'sanitize_write_timeout')
+            array($this, 'sanitize_write_timeout')
         );
         register_setting(
             'acf_elasticsearch_settings',
             'acf_elasticsearch_post_types',
-            array( $this, 'sanitize_post_types')
+            array($this, 'sanitize_post_types')
         );
 
         add_settings_section(
@@ -200,32 +201,32 @@ class UserInterfaceManager
         );
 
         /*
-        // register_setting( $option_group, $option_name, $sanitize_callback )
-        register_setting( 'multiple-sections-settings-group', 'test_multiple_sections_plugin_main_settings_arraykey', array($this, 'plugin_main_settings_validate') );
+    // register_setting( $option_group, $option_name, $sanitize_callback )
+    register_setting( 'multiple-sections-settings-group', 'test_multiple_sections_plugin_main_settings_arraykey', array($this, 'plugin_main_settings_validate') );
 
-        // add_settings_section( $id, $title, $callback, $page )
-        add_settings_section(
-            'additional-settings-section',
-            'Additional Settings',
-            array($this, 'print_additional_settings_section_info'),
-            'test-multiple-sections-plugin'
-        );
+    // add_settings_section( $id, $title, $callback, $page )
+    add_settings_section(
+    'additional-settings-section',
+    'Additional Settings',
+    array($this, 'print_additional_settings_section_info'),
+    'test-multiple-sections-plugin'
+    );
 
-        // add_settings_field( $id, $title, $callback, $page, $section, $args )
-        add_settings_field(
-            'another-setting',
-            'Another Setting',
-            array($this, 'create_input_another_setting'),
-            'test-multiple-sections-plugin',
-            'additional-settings-section'
-        );
+    // add_settings_field( $id, $title, $callback, $page, $section, $args )
+    add_settings_field(
+    'another-setting',
+    'Another Setting',
+    array($this, 'create_input_another_setting'),
+    'test-multiple-sections-plugin',
+    'additional-settings-section'
+    );
 
-        // register_setting( $option_group, $option_name, $sanitize_callback )
-        register_setting( 'multiple-sections-settings-group', 'test_multiple_sections_plugin_additonal_settings_arraykey', array($this, 'plugin_additional_settings_validate') );
-        */
+    // register_setting( $option_group, $option_name, $sanitize_callback )
+    register_setting( 'multiple-sections-settings-group', 'test_multiple_sections_plugin_additonal_settings_arraykey', array($this, 'plugin_additional_settings_validate') );
+     */
     }
 
-    public function initialise_menu()
+    function initialise_menu()
     {
         $this->menu = add_options_page(
             UserInterfaceManager::MENU_SPECIFICATION['page_title'],
@@ -236,64 +237,62 @@ class UserInterfaceManager
         );
     }
 
-    public function render_settings_page()
+    function render_settings_page()
     {
         include 'settings.php';
     }
 
-    public function sanitize_server($input)
+    function sanitize_server($input)
     {
         return esc_url($input);
     }
 
-    public function sanitize_primary_index($input)
+    function sanitize_primary_index($input)
     {
         return trim($input);
     }
 
-    public function sanitize_secondary_index($input)
+    function sanitize_secondary_index($input)
     {
         return trim($input);
     }
 
-    public function sanitize_private_primary_index($input)
+    function sanitize_private_primary_index($input)
     {
         return trim($input);
     }
 
-    public function sanitize_private_secondary_index($input)
+    function sanitize_private_secondary_index($input)
     {
         return trim($input);
     }
 
-    public function sanitize_write_timeout($input)
+    function sanitize_write_timeout($input)
     {
         return intval($input);
     }
 
-    public function sanitize_read_timeout($input)
+    function sanitize_read_timeout($input)
     {
         return intval($input);
     }
 
-    public function sanitize_post_types($input)
+    function sanitize_post_types($input)
     {
         return $input;
     }
 
-    
-
-    public function render_field($type, $name, $attributes)
+    function render_field($type, $name, $attributes)
     {
         $html = null;
         switch ($type) {
             case 'text':
                 $html = [
-                    '<input type="text" name="'.$name.'"',
+                    '<input type="text" name="' . $name . '"',
                 ];
 
                 foreach ($attributes as $attr_name => $attr_value) {
-                    $html[] = ' '.$attr_name.'="'.$attr_value.'"';
+                    $html[] = ' ' . $attr_name . '="' . $attr_value . '"';
                 }
 
                 $html[] = '>';
@@ -305,18 +304,19 @@ class UserInterfaceManager
         return $html;
     }
 
-    public function enqueue_scripts()
+    function enqueue_scripts()
     {
-        $styles = plugins_url('acf-elasticsearch/css/style.css');
+        $styles  = plugins_url('acf-elasticsearch/css/style.css');
         $scripts = plugins_url('acf-elasticsearch/js/main.js');
-        
+
         wp_register_style('acf-elasticsearch', $styles, null, '0.0.3');
         wp_enqueue_style('acf-elasticsearch');
-        wp_register_script('acf-elasticsearch', $scripts, array('jquery'), '0.1.9');
+        wp_register_script('acf-elasticsearch', $scripts, array('jquery'), '0.2.1');
         wp_enqueue_script('acf-elasticsearch');
 
         wp_localize_script('acf-elasticsearch', 'acfElasticsearchManager', array(
-            'ajaxUrl' => admin_url('admin-ajax.php')
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce'   => wp_create_nonce('ajax-nonce'),
         ));
     }
 }

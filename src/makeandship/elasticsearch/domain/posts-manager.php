@@ -39,7 +39,6 @@ class PostsManager
             'page'      => 1,
             'count'     => 0,
             'total'     => $total,
-            'index'     => 'primary',
             'completed' => false,
         );
 
@@ -63,7 +62,6 @@ class PostsManager
                 'count'   => 0,
                 'total'   => $total,
                 'blog_id' => $site->blog_id,
-                'index'   => 'primary',
             );
         }
 
