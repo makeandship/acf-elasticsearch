@@ -74,7 +74,7 @@ class Util
     public static function debug($clazz, $message)
     {
         if (WP_DEBUG) {
-            if (is_object($message)) {
+            if (is_object($message) || is_array($message)) {
                 $message = print_r($message, true);
             }
 

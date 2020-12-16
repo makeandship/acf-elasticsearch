@@ -53,7 +53,7 @@ class SettingsManager
                     'ES_URL',
                 ),
             ));
-            $this->settings[Constants::OPTION_PRIMARY_INDEX] = $this->get_option_from_config(array(
+            $this->settings[Constants::OPTION_INDEX] = $this->get_option_from_config(array(
                 'const' => array(
                     'ES_INDEX',
                 ),
@@ -61,28 +61,12 @@ class SettingsManager
                     'ES_INDEX',
                 ),
             ));
-            $this->settings[Constants::OPTION_SECONDARY_INDEX] = $this->get_option_from_config(array(
-                'const' => array(
-                    'ES_SECONDARY_INDEX',
-                ),
-                'env'   => array(
-                    'ES_SECONDARY_INDEX',
-                ),
-            ));
-            $this->settings[Constants::OPTION_PRIVATE_PRIMARY_INDEX] = $this->get_option_from_config(array(
+            $this->settings[Constants::OPTION_PRIVATE_INDEX] = $this->get_option_from_config(array(
                 'const' => array(
                     'ES_PRIVATE_INDEX',
                 ),
                 'env'   => array(
                     'ES_PRIVATE_INDEX',
-                ),
-            ));
-            $this->settings[Constants::OPTION_PRIVATE_SECONDARY_INDEX] = $this->get_option_from_config(array(
-                'const' => array(
-                    'ES_PRIVATE_SECONDARY_INDEX',
-                ),
-                'env'   => array(
-                    'ES_PRIVATE_SECONDARY_INDEX',
                 ),
             ));
             $this->settings[Constants::OPTION_READ_TIMEOUT]  = $this->get_option(Constants::OPTION_READ_TIMEOUT);
@@ -141,10 +125,8 @@ class SettingsManager
         if ($name) {
             if (in_array($name, [
                 Constants::OPTION_SERVER,
-                Constants::OPTION_PRIMARY_INDEX,
-                Constants::OPTION_SECONDARY_INDEX,
-                Constants::OPTION_PRIVATE_PRIMARY_INDEX,
-                Constants::OPTION_PRIVATE_SECONDARY_INDEX,
+                Constants::OPTION_INDEX,
+                Constants::OPTION_PRIVATE_INDEX,
                 Constants::OPTION_READ_TIMEOUT,
                 Constants::OPTION_WRITE_TIMEOUT,
                 Constants::OPTION_INDEX_STATUS,
@@ -301,42 +283,20 @@ class SettingsManager
     public function get_indexes()
     {
         $indexes = array();
-        // public primary index
-        $primary = $this->get(Constants::OPTION_PRIMARY_INDEX);
-        if ($primary) {
+        // public index
+        $public_index = $this->get(Constants::OPTION_INDEX);
+        if ($public_index) {
             $indexes[] = array(
-                'name'   => $primary,
-                'type'   => 'primary',
+                'name'   => $public_index,
                 'public' => true,
             );
         }
 
-        // public secondary index
-        $secondary = $this->get(Constants::OPTION_SECONDARY_INDEX);
-        if ($secondary) {
+        // private index
+        $private_index = $this->get(Constants::OPTION_PRIVATE_INDEX);
+        if ($private_index) {
             $indexes[] = array(
-                'name'   => $secondary,
-                'type'   => 'secondary',
-                'public' => true,
-            );
-        }
-
-        // private primary index
-        $private_primary = $this->get(Constants::OPTION_PRIVATE_PRIMARY_INDEX);
-        if ($private_primary) {
-            $indexes[] = array(
-                'name'   => $private_primary,
-                'type'   => 'primary',
-                'public' => false,
-            );
-        }
-
-        // private secondary index
-        $private_secondary = $this->get(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
-        if ($private_secondary) {
-            $indexes[] = array(
-                'name'   => $private_secondary,
-                'type'   => 'secondary',
+                'name'   => $private_index,
                 'public' => false,
             );
         }

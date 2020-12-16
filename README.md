@@ -66,10 +66,8 @@ The following should be set
 - ES_URL - The URL to your elasticsearch e.g. https://elasticsearch.example.com:9200/
 - ES_USERNAME - Any username required to connect to elasticsearch
 - ES_PASSWORD - Any password required to connect to elasticsearch
-- ES_INDEX - An index name for the primary index
-- ES_SECONDARY_INDEX - An index name for the secondary index
-- ES_PRIVATE_INDEX - An index name for the private primary index
-- ES_PRIVATE_SECONDARY_INDEX - An index name for the private secondary index
+- ES_INDEX - An index name for the public index
+- ES_PRIVATE_INDEX - An index name for the private index
 
 The variables can also be set as individual files which are pointed to by a variable
 of the same name with suffix `_FILE` e.g. `ES_PASSWORD_FILE` to support secret
@@ -192,4 +190,6 @@ Applied via `Util::apply_filters` and `Util::do_action`
 - `acf_elasticsearch/pre_create_mappings' - update the content of mappings applied to a newly created elasticsearch index
 - `acf_elasticsearch/prepare_query' - update the contents of an search query before it is run against elasticsearch
 - `acf_elasticsearch/searcher_query' - update the contents of an elastica query before it is run against elasticsearch
-- `acf*elasticsearch/searcher\_\_search*' - update the contents of an elastica search before it is run against elasticsearch
+- `acf_elasticsearch/searcher_search' - update the contents of an elastica search before it is run against elasticsearch
+- `acf_elasticsearch/index_shards' - update the number of shards for the index
+- `acf_elasticsearch/index_replicas' - update the number of replicas for the index

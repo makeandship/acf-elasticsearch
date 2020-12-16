@@ -178,6 +178,30 @@ class HtmlUtils
         return implode($html, PHP_EOL);
     }
 
+    public static function render_readonly_status($label, $key, $fn = null)
+    {
+        $status = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
+        $value  = Util::safely_get_attribute($status, $key);
+
+        // transform if a function was given
+        if ($fn) {
+            $value = call_user_func($fn, $value);
+        }
+
+        $html = [
+            '<div class="acf-elasticsearch-row">',
+            '	<div class="twocol">',
+            '		<label for="">' . $label . '</label>',
+            '	</div>',
+            '	<div class="tencol last" id="acf-elasticsearch-' . $key . '">',
+            '		' . $value,
+            '	</div>',
+            '</div>',
+        ];
+
+        return implode($html, PHP_EOL);
+    }
+
     public static function render_readonly_setting($label, $config, $missing = '', $options = array())
     {
         $mask = Util::safely_get_attribute($options, 'mask');

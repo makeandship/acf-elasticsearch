@@ -1,8 +1,7 @@
-<?php 
+<?php
 namespace makeandship\elasticsearch;
 
 use makeandship\elasticsearch\settings\SettingsManager;
-
 use \Elastica\Client;
 
 class IndexFactory
@@ -17,7 +16,7 @@ class IndexFactory
         }
     }
 
-    public function get_client($writable=false)
+    public function get_client($writable = false)
     {
         $writable_key = strval($writable);
 
@@ -25,17 +24,17 @@ class IndexFactory
             return self::$clients[$writable_key];
         } else {
             $client_settings = SettingsManager::get_instance()->get_client_settings();
-            
+
             if ($writable) {
                 $client_settings[Constants::SETTING_TIMEOUT] =
-                    SettingsManager::get_instance()->get(Constants::OPTION_WRITE_TIMEOUT) ?
-                    SettingsManager::get_instance()->get(Constants::OPTION_WRITE_TIMEOUT) :
-                    Constants::DEFAULT_WRITE_TIMEOUT;
+                SettingsManager::get_instance()->get(Constants::OPTION_WRITE_TIMEOUT) ?
+                SettingsManager::get_instance()->get(Constants::OPTION_WRITE_TIMEOUT) :
+                Constants::DEFAULT_WRITE_TIMEOUT;
             } else {
                 $client_settings[Constants::SETTING_TIMEOUT] =
-                    SettingsManager::get_instance()->get(Constants::OPTION_READ_TIMEOUT) ?
-                    SettingsManager::get_instance()->get(Constants::OPTION_READ_TIMEOUT) :
-                    Constants::DEFAULT_READ_TIMEOUT;
+                SettingsManager::get_instance()->get(Constants::OPTION_READ_TIMEOUT) ?
+                SettingsManager::get_instance()->get(Constants::OPTION_READ_TIMEOUT) :
+                Constants::DEFAULT_READ_TIMEOUT;
             }
 
             $client = new Client($client_settings);
@@ -49,17 +48,15 @@ class IndexFactory
         }
     }
 
-    final public function create($primary, $private, $writable=false) 
+    final public function create($private, $writable = false)
     {
-        
+
         if ($private) {
-            $name = $primary ?
-                SettingsManager::get_instance()->get(Constants::OPTION_PRIVATE_PRIMARY_INDEX) :
-                SettingsManager::get_instance()->get(Constants::OPTION_PRIVATE_SECONDARY_INDEX);
+            $name =
+            SettingsManager::get_instance()->get(Constants::OPTION_PRIVATE_INDEX);
         } else {
-            $name = $primary ?
-                SettingsManager::get_instance()->get(Constants::OPTION_PRIMARY_INDEX) :
-                SettingsManager::get_instance()->get(Constants::OPTION_SECONDARY_INDEX);
+            $name =
+            SettingsManager::get_instance()->get(Constants::OPTION_INDEX);
         }
 
         if (self::$indexes) {
@@ -70,10 +67,10 @@ class IndexFactory
         }
 
         $client = $this->get_client($writable);
-        
+
         if (isset($client)) {
             if ($name) {
-                $index = $client->getIndex($name);
+                $index                = $client->getIndex($name);
                 self::$indexes[$name] = $index;
 
                 return $index;

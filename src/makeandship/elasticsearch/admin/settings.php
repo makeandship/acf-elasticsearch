@@ -8,16 +8,16 @@ use makeandship\elasticsearch\settings\SettingsManager;
 if (!empty($_POST)) {
 
     // save incoming options
-    $read_timeout            = intval(trim($_POST['acf_elasticsearch_read_timeout']));
-    $write_timeout           = intval(trim($_POST['acf_elasticsearch_write_timeout']));
-    $post_types              = HtmlUtils::create_post_types();
-    $capability              = trim($_POST['acf_elasticsearch_capability']);
-    $search_fields           = HtmlUtils::create_search_fields();
-    $weightings              = HtmlUtils::create_weightings();
-    $fuzziness               = intval(trim($_POST['acf_elasticsearch_fuzziness']));
-    $slugs_to_exclude        = HtmlUtils::create_slugs_to_exclude();
-    $exclusion_field         = trim($_POST['acf_elasticsearch_exclusion_field']);
-    $ids_to_exclude          = HtmlUtils::create_ids_from_slugs($slugs_to_exclude);
+    $read_timeout     = intval(trim($_POST['acf_elasticsearch_read_timeout']));
+    $write_timeout    = intval(trim($_POST['acf_elasticsearch_write_timeout']));
+    $post_types       = HtmlUtils::create_post_types();
+    $capability       = trim($_POST['acf_elasticsearch_capability']);
+    $search_fields    = HtmlUtils::create_search_fields();
+    $weightings       = HtmlUtils::create_weightings();
+    $fuzziness        = intval(trim($_POST['acf_elasticsearch_fuzziness']));
+    $slugs_to_exclude = HtmlUtils::create_slugs_to_exclude();
+    $exclusion_field  = trim($_POST['acf_elasticsearch_exclusion_field']);
+    $ids_to_exclude   = HtmlUtils::create_ids_from_slugs($slugs_to_exclude);
 
     SettingsManager::get_instance()->set(Constants::OPTION_READ_TIMEOUT, $read_timeout);
     SettingsManager::get_instance()->set(Constants::OPTION_WRITE_TIMEOUT, $write_timeout);
@@ -99,18 +99,6 @@ echo HtmlUtils::render_readonly_setting(
     'Define constant or environment variable "ES_INDEX" or point to a file with "ES_INDEX_FILE"'
 );
 echo HtmlUtils::render_readonly_setting(
-    'Secondary Index',
-    array(
-        'const' => array(
-            'ES_SECONDARY_INDEX',
-        ),
-        'env'   => array(
-            'ES_SECONDARY_INDEX',
-        ),
-    ),
-    'Define constant or environment variable "ES_SECONDARY_INDEX" or point to a file with "ES_SECONDARY_INDEX_FILE"'
-);
-echo HtmlUtils::render_readonly_setting(
     'Private Primary Index',
     array(
         'const' => array(
@@ -121,18 +109,6 @@ echo HtmlUtils::render_readonly_setting(
         ),
     ),
     'Define constant or environment variable "ES_PRIVATE_INDEX" or point to a file with "ES_PRIVATE_INDEX_FILE"'
-);
-echo HtmlUtils::render_readonly_setting(
-    'Private Secondary Index',
-    array(
-        'const' => array(
-            'ES_PRIVATE_SECONDARY_INDEX',
-        ),
-        'env'   => array(
-            'ES_PRIVATE_SECONDARY_INDEX',
-        ),
-    ),
-    'Define constant or environment variable "ES_PRIVATE_SECONDARY_INDEX" or point to a file with "ES_PRIVATE_SECONDARY_INDEX_FILE"'
 );
 echo HtmlUtils::render_field(
     'Read Timeout',
@@ -248,6 +224,25 @@ echo HtmlUtils::render_buttons([
                 <div class="inside acf-fields -left">
                     <div class="acf-elasticsearch-container">
                         <?php
+echo HtmlUtils::render_readonly_status(
+    'Next page',
+    'page'
+);
+echo HtmlUtils::render_readonly_status(
+    'Current count',
+    'count'
+);
+echo HtmlUtils::render_readonly_status(
+    'Total to index',
+    'total'
+);
+echo HtmlUtils::render_readonly_status(
+    'Completed',
+    'completed',
+    function ($completed) {
+        return $completed ? 'Yes' : 'No';
+    }
+);
 echo HtmlUtils::render_buttons([
     array(
         'value' => 'Index posts',

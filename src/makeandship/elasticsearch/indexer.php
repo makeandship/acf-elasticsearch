@@ -30,8 +30,8 @@ class Indexer
     {
         $errors = array();
 
-        $shards   = Constants::DEFAULT_SHARDS;
-        $replicas = Constants::DEFAULT_REPLICAS;
+        $shards   = Util::apply_filters('index_shards', Constants::DEFAULT_SHARDS);
+        $replicas = Util::apply_filters('index_replicas', Constants::DEFAULT_REPLICAS);
 
         // elastic client to the cluster/server
         $client_settings = SettingsManager::get_instance()->get_client_settings();
@@ -166,25 +166,14 @@ class Indexer
         }
 
         // find the next site to index (or next page in a site to index)
-        $target_site   = null;
-        $completed     = false;
-        $secondary     = SettingsManager::get_instance()->get(Constants::OPTION_SECONDARY_INDEX);
-        $use_secondary = isset($secondary) && !empty($secondary);
+        $target_site = null;
+        $completed   = false;
+
         foreach ($status as $site_status) {
             $completed = true;
             if ($site_status['count'] < $site_status['total']) {
                 $target_site = $site_status;
                 $completed   = false;
-                break;
-            } elseif ($site_status['index'] == 'primary' && $use_secondary) {
-                $target_site = array(
-                    'page'    => 1,
-                    'count'   => 0,
-                    'total'   => $site_status['total'],
-                    'blog_id' => $site_status['blog_id'],
-                    'index'   => 'secondary',
-                );
-                $completed = false;
                 break;
             }
         }
@@ -209,6 +198,7 @@ class Indexer
         $target_site['count'] = $target_site['count'] + $count;
         $status[$blog_id]     = $target_site;
         $status['completed']  = $completed;
+
         SettingsManager::get_instance()->set(Constants::OPTION_INDEX_STATUS, $status);
 
         return $status;
@@ -264,27 +254,14 @@ class Indexer
         $status['count'] = $status['count'] + $count;
 
         // counts
-        $primary       = $status['index'] == "primary";
-        $private_index = $this->index_factory->create($primary, true);
+        $private_index = $this->index_factory->create(true);
         if ($private_index) {
             Util::debug("Indexer#index_posts_singlesite", "Current count: " . $private_index->count());
         }
 
         if ($status['count'] >= $status['total']) {
-            $secondary     = SettingsManager::get_instance()->get(Constants::OPTION_SECONDARY_INDEX);
-            $use_secondary = isset($secondary) && !empty($secondary);
-
-            if ($status['index'] == "primary" && $use_secondary) {
-                $status = array(
-                    'page'      => 1,
-                    'count'     => 0,
-                    'total'     => $status['total'],
-                    'index'     => 'secondary',
-                    'completed' => false,
-                );
-            } else {
-                $status['completed'] = true;
-            }
+            $status['count']     = $status['total'];
+            $status['completed'] = true;
         } else {
             // only update page if we're not complete
             $status['page'] = $page + 1;
@@ -376,7 +353,7 @@ class Indexer
      *
      * @param $o the wordpress object to add
      */
-    public function add_or_update_document($o, $new = false)
+    public function add_or_update_document($o)
     {
         $status  = SettingsManager::get_instance()->get(Constants::OPTION_INDEX_STATUS);
         $builder = $this->document_builder_factory->create($o);
@@ -394,9 +371,6 @@ class Indexer
 
             if (is_multisite()) {
                 $blog_id = get_current_blog_id();
-                $primary = $status[$blog_id]['index'] == "primary";
-            } else {
-                $primary = $status['index'] == "primary";
             }
 
             $private_fields = $builder->has_private_fields();
@@ -419,7 +393,7 @@ class Indexer
                 if (!$private) {
                     $document = Util::apply_filters('pre_add_document', $document, $id);
                     // index public documents in the public repository
-                    $index = $this->index_factory->create($primary, false);
+                    $index = $this->index_factory->create(false);
                     if ($index) {
                         if ($this->bulk) {
                             $this->queue($index, new \Elastica\Document($id, $document));
@@ -427,40 +401,15 @@ class Indexer
                             $index->addDocument(new \Elastica\Document($id, $document));
                         }
                     }
-
-                    if ($new) {
-                        // new documents add to the alternate index as well otherwise they are missed
-                        $index = $this->index_factory->create(!$primary, false);
-                        if ($index) {
-                            $private_document = Util::apply_filters('pre_add_private_document', $private_document, $id);
-                            if ($this->bulk) {
-                                $this->queue($index, new \Elastica\Document($id, $private_document));
-                            } else {
-                                $index->addDocument(new \Elastica\Document($id, $private_document));
-                            }
-                        }
-                    }
                 }
                 // index everything to private index
-                $index = $this->index_factory->create($primary, true);
+                $index = $this->index_factory->create(true);
                 if ($index) {
                     $private_document = Util::apply_filters('pre_add_private_document', $private_document, $id);
                     if ($this->bulk) {
                         $this->queue($index, new \Elastica\Document($id, $private_document));
                     } else {
                         $index->addDocument(new \Elastica\Document($id, $private_document));
-                    }
-                }
-                if ($new) {
-                    // new documents add to the alternate index as well otherwise they are missed
-                    $index = $this->index_factory->create(!$primary, true);
-                    if ($index) {
-                        $private_document = Util::apply_filters('pre_add_private_document', $private_document, $id);
-                        if ($this->bulk) {
-                            $this->queue($index, new \Elastica\Document($id, $private_document));
-                        } else {
-                            $index->addDocument(new \Elastica\Document($id, $private_document));
-                        }
                     }
                 }
             }
@@ -584,44 +533,23 @@ class Indexer
         if (isset($o) && !empty($o) &&
             isset($id) && !empty($id)) {
             // attempt to clear from all types - post_status = private won't be available
-
-            $primary_public = $this->index_factory->create(true, false);
-            if ($primary_public) {
+            $public_index = $this->index_factory->create(false);
+            if ($public_index) {
                 try {
-                    $primary_public->deleteById($id);
+                    $public_index->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
-                    Util::debug('Indexer#remove_document', 'Unable to delete from primary public index');
+                    Util::debug('Indexer#remove_document', 'Unable to delete from public index');
                 }
             }
 
-            $secondary_public = $this->index_factory->create(false, false);
-            if ($secondary_public) {
+            $private_index = $this->index_factory->create(true);
+            if ($private_index) {
                 try {
-                    $secondary_public->deleteById($id);
+                    $private_index->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
-                    Util::debug('Indexer#remove_document', 'Unable to delete from secondary public index');
-                }
-            }
-
-            $primary_private = $this->index_factory->create(true, true);
-            if ($primary_private) {
-                try {
-                    $primary_private->deleteById($id);
-                } catch (\Elastica\Exception\NotFoundException $ex) {
-                    // ignore
-                    Util::debug('Indexer#remove_document', 'Unable to delete from primary private index');
-                }
-            }
-
-            $secondary_private = $this->index_factory->create(true, true);
-            if ($secondary_private) {
-                try {
-                    $secondary_private->deleteById($id);
-                } catch (\Elastica\Exception\NotFoundException $ex) {
-                    // ignore
-                    Util::debug('Indexer#remove_document', 'Unable to delete from secondary private index');
+                    Util::debug('Indexer#remove_document', 'Unable to delete from private index');
                 }
             }
         }
