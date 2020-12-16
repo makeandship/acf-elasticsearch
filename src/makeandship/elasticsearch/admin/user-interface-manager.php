@@ -35,12 +35,6 @@ class UserInterfaceManager
             add_site_option(Constants::VERSION, $this->version);
             add_site_option(Constants::DB_VERSION, $this->db_version);
 
-            add_site_option(Constants::OPTION_SERVER, '');
-            add_site_option(Constants::OPTION_PRIMARY_INDEX, '');
-            add_site_option(Constants::OPTION_SECONDARY_INDEX, '');
-            add_site_option(Constants::OPTION_PRIVATE_PRIMARY_INDEX, '');
-            add_site_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX, '');
-
             add_site_option(Constants::OPTION_READ_TIMEOUT, 30);
             add_site_option(Constants::OPTION_WRITE_TIMEOUT, 30);
 
@@ -56,10 +50,6 @@ class UserInterfaceManager
             add_option(Constants::DB_VERSION, $this->db_version);
 
             add_option(Constants::OPTION_SERVER, '');
-            add_option(Constants::OPTION_PRIMARY_INDEX, '');
-            add_option(Constants::OPTION_SECONDARY_INDEX, '');
-            add_option(Constants::OPTION_PRIVATE_PRIMARY_INDEX, '');
-            add_option(Constants::OPTION_PRIVATE_SECONDARY_INDEX, '');
 
             add_option(Constants::OPTION_READ_TIMEOUT, 30);
             add_option(Constants::OPTION_WRITE_TIMEOUT, 30);
@@ -84,43 +74,6 @@ class UserInterfaceManager
             'acf_elasticsearch_settings_page'
         );
 
-        // add_settings_field( $id, $title, $callback, $page, $section, $args )
-        add_settings_field(
-            'acf_elasticsearch_server',
-            'Server',
-            array($this, 'render_option_server'),
-            'acf_elasticsearch_settings_page',
-            'acf_elasticsearch_settings'
-
-        );
-        add_settings_field(
-            'acf_elasticsearch_primary_index',
-            'Primary Index',
-            array($this, 'render_option_primary_index'),
-            'acf_elasticsearch_settings_page',
-            'acf_elasticsearch_settings'
-        );
-        add_settings_field(
-            'acf_elasticsearch_secondary_index',
-            'Secondary Index',
-            array($this, 'render_option_secondary_index'),
-            'acf_elasticsearch_settings_page',
-            'acf_elasticsearch_settings'
-        );
-        add_settings_field(
-            'acf_elasticsearch_private_primary_index',
-            'Private Primary Index',
-            array($this, 'render_option_private_primary_index'),
-            'acf_elasticsearch_settings_page',
-            'acf_elasticsearch_settings'
-        );
-        add_settings_field(
-            'acf_elasticsearch_private_secondary_index',
-            'Private Secondary Index',
-            array($this, 'render_option_private_secondary_index'),
-            'acf_elasticsearch_settings_page',
-            'acf_elasticsearch_settings'
-        );
         add_settings_field(
             'acf_elasticsearch_read_timeout',
             'Read Timeout',
@@ -144,32 +97,6 @@ class UserInterfaceManager
             'acf_elasticsearch_settings'
         );
 
-        // register_setting( $option_group, $option_name, $sanitize_callback )
-        register_setting(
-            'acf_elasticsearch_settings',
-            'acf_elasticsearch_server',
-            array($this, 'sanitize_server')
-        );
-        register_setting(
-            'acf_elasticsearch_settings',
-            'acf_elasticsearch_primary_index',
-            array($this, 'sanitize_primary_index')
-        );
-        register_setting(
-            'acf_elasticsearch_settings',
-            'acf_elasticsearch_secondary_index',
-            array($this, 'sanitize_secondary_index')
-        );
-        register_setting(
-            'acf_elasticsearch_settings',
-            'acf_elasticsearch_private_primary_index',
-            array($this, 'sanitize_private_primary_index')
-        );
-        register_setting(
-            'acf_elasticsearch_settings',
-            'acf_elasticsearch_private_secondary_index',
-            array($this, 'sanitize_private_secondary_index')
-        );
         register_setting(
             'acf_elasticsearch_settings',
             'acf_elasticsearch_read_timeout',
@@ -199,31 +126,6 @@ class UserInterfaceManager
             array($this, 'render_section_index'),
             'acf_elasticsearch_index_page'
         );
-
-        /*
-    // register_setting( $option_group, $option_name, $sanitize_callback )
-    register_setting( 'multiple-sections-settings-group', 'test_multiple_sections_plugin_main_settings_arraykey', array($this, 'plugin_main_settings_validate') );
-
-    // add_settings_section( $id, $title, $callback, $page )
-    add_settings_section(
-    'additional-settings-section',
-    'Additional Settings',
-    array($this, 'print_additional_settings_section_info'),
-    'test-multiple-sections-plugin'
-    );
-
-    // add_settings_field( $id, $title, $callback, $page, $section, $args )
-    add_settings_field(
-    'another-setting',
-    'Another Setting',
-    array($this, 'create_input_another_setting'),
-    'test-multiple-sections-plugin',
-    'additional-settings-section'
-    );
-
-    // register_setting( $option_group, $option_name, $sanitize_callback )
-    register_setting( 'multiple-sections-settings-group', 'test_multiple_sections_plugin_additonal_settings_arraykey', array($this, 'plugin_additional_settings_validate') );
-     */
     }
 
     function initialise_menu()
@@ -240,31 +142,6 @@ class UserInterfaceManager
     function render_settings_page()
     {
         include 'settings.php';
-    }
-
-    function sanitize_server($input)
-    {
-        return esc_url($input);
-    }
-
-    function sanitize_primary_index($input)
-    {
-        return trim($input);
-    }
-
-    function sanitize_secondary_index($input)
-    {
-        return trim($input);
-    }
-
-    function sanitize_private_primary_index($input)
-    {
-        return trim($input);
-    }
-
-    function sanitize_private_secondary_index($input)
-    {
-        return trim($input);
     }
 
     function sanitize_write_timeout($input)
