@@ -90,7 +90,8 @@ class AcfElasticsearchPlugin
     }
 
     public function index_posts()
-    {        $fresh = isset($_POST['fresh']) ? ($_POST['fresh'] === 'true') : false;
+    {
+        $fresh = isset($_POST['fresh']) ? ($_POST['fresh'] === 'true') : false;
 
         $indexer = new Indexer(true); // use bulk indexing
         $status  = 0;
