@@ -66,10 +66,8 @@ The following should be set
 - ES_URL - The URL to your elasticsearch e.g. https://elasticsearch.example.com:9200/
 - ES_USERNAME - Any username required to connect to elasticsearch
 - ES_PASSWORD - Any password required to connect to elasticsearch
-- ES_INDEX - An index name for the primary index
-- ES_SECONDARY_INDEX - An index name for the secondary index
-- ES_PRIVATE_INDEX - An index name for the private primary index
-- ES_PRIVATE_SECONDARY_INDEX - An index name for the private secondary index
+- ES_INDEX - An index name for the public index
+- ES_PRIVATE_INDEX - An index name for the private index
 
 The variables can also be set as individual files which are pointed to by a variable
 of the same name with suffix `_FILE` e.g. `ES_PASSWORD_FILE` to support secret
