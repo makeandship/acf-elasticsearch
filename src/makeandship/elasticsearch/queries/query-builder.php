@@ -14,20 +14,21 @@ class QueryBuilder
         $settings_manager = SettingsManager::get_instance();
         $this->post_types = $settings_manager->get_valid_post_types();
 
-        $this->freetext         = null;
-        $this->fuzziness        = null;
-        $this->weights          = null;
-        $this->post_types       = null;
-        $this->categories       = null;
-        $this->taxonomies       = null;
-        $this->counts           = null;
-        $this->from             = null;
-        $this->size             = null;
-        $this->sorts            = null;
-        $this->search_fields    = null;
-        $this->return_fields    = null;
-        $this->aggregate_fields = null;
-        $this->zero_aggregates  = false;
+        $this->freetext           = null;
+        $this->fuzziness          = null;
+        $this->weights            = null;
+        $this->post_types         = null;
+        $this->categories         = null;
+        $this->exclude_categories = null;
+        $this->taxonomies         = null;
+        $this->counts             = null;
+        $this->from               = null;
+        $this->size               = null;
+        $this->sorts              = null;
+        $this->search_fields      = null;
+        $this->return_fields      = null;
+        $this->aggregate_fields   = null;
+        $this->zero_aggregates    = false;
 
         $this->set_plugin_defaults();
     }
@@ -112,6 +113,13 @@ class QueryBuilder
     public function for_categories($categories)
     {
         $this->categories = $categories;
+
+        return $this;
+    }
+
+    public function without_categories($exclude_categories)
+    {
+        $this->exclude_categories = $exclude_categories;
 
         return $this;
     }
@@ -204,6 +212,10 @@ class QueryBuilder
         $highlights = $this->build_highlights();
         $query      = array_merge($query, $highlights);
 
+        if (WP_DEBUG) {
+            error_log('makeandship/elasticsearch/queries/QueryBuilder#toarray: query: ' . json_encode($query));
+        }
+
         return $query;
     }
 
@@ -273,16 +285,82 @@ class QueryBuilder
         if ($this->categories) {
             $categories = $this->ensure_categories($this->categories);
 
-            $query_field_filters['filter'] = array();
+            if (!array_key_exists('filter', $query_field_filters)) {
+                $query_field_filters['filter'] = array();
+            }
 
             if ($categories && count($categories) > 0) {
-                $query_field_filters['filter']['bool'] = array();
+                if (!array_key_exists('bool', $query_field_filters['filter'])) {
+                    $query_field_filters['filter']['bool'] = array();
+                }
 
                 // e.g. 'category' => ['and' => ...]
                 foreach ($categories as $field => $operations) {
                     // e.g. 'and' => ['acute-care']
                     foreach ($operations as $operation => $filters) {
                         $bool_operator = $operation === 'or' ? 'should' : 'must';
+
+                        if (!array_key_exists($bool_operator, $query_field_filters['filter']['bool'])) {
+                            $query_field_filters['filter']['bool'][$bool_operator] = array();
+                        }
+
+                        foreach ($filters as $filter) {
+                            if (strpos($field, ".") !== false) {
+                                $nested_filter = array();
+                                $paths         = explode(".", $field);
+
+                                $keys           = array_keys($paths);
+                                $last_index     = end($keys);
+                                $current_filter = &$nested_filter;
+                                foreach ($paths as $index => $path) {
+                                    if ($index === $last_index) {
+                                        $current_filter['term'] = array(
+                                            $field => $filter,
+                                        );
+                                    } else {
+                                        $current_filter = array(
+                                            "nested" => array(
+                                                "path"  => $path,
+                                                "query" => array(),
+                                            ),
+                                        );
+                                        $current_filter = &$current_filter['nested']['query'];
+                                    }
+                                }
+                                $query_field_filters['filter']['bool'][$bool_operator][] = $nested_filter;
+                            } else {
+                                // category is held as a simple term so uses a term query
+                                // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-term-query.html
+                                $query_field_filters['filter']['bool'][$bool_operator][] = array(
+                                    'term' => array(
+                                        $field => $filter,
+                                    ),
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // exclude using taxonomy entries
+        if ($this->exclude_categories) {
+            $exclude_categories = $this->ensure_categories($this->exclude_categories);
+
+            if (!array_key_exists('filter', $query_field_filters)) {
+                $query_field_filters['filter'] = array();
+            }
+
+            if ($exclude_categories && count($exclude_categories) > 0) {
+                if (!array_key_exists('bool', $query_field_filters['filter'])) {
+                    $query_field_filters['filter']['bool'] = array();
+                }
+
+                // e.g. 'category' => ['and' => ...]
+                foreach ($exclude_categories as $field => $operations) {
+                    // e.g. 'and' => ['acute-care']
+                    foreach ($operations as $operation => $filters) {
+                        $bool_operator = 'must_not';
 
                         if (!array_key_exists($bool_operator, $query_field_filters['filter']['bool'])) {
                             $query_field_filters['filter']['bool'][$bool_operator] = array();
