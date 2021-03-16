@@ -212,7 +212,9 @@ class QueryBuilder
         $highlights = $this->build_highlights();
         $query      = array_merge($query, $highlights);
 
-        error_log(json_encode($query));
+        if (WP_DEBUG) {
+            error_log('makeandship/elasticsearch/queries/QueryBuilder#toarray: query: ' . json_encode($query));
+        }
 
         return $query;
     }
