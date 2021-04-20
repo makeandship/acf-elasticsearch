@@ -188,6 +188,7 @@ Applied via `Util::apply_filters` and `Util::do_action`
 - `acf_elasticsearch/pre_add_document' - update the content of a document being added to the public index
 - `acf_elasticsearch/pre_add_private_document' - update the content of a document being added to the private index
 - `acf_elasticsearch/pre_create_mappings' - update the content of mappings applied to a newly created elasticsearch index
+- `acf_elasticsearch/pre_create_index' - update the content of the settings applied to a newly created elasticsearch index
 - `acf_elasticsearch/prepare_query' - update the contents of an search query before it is run against elasticsearch
 - `acf_elasticsearch/searcher_query' - update the contents of an elastica query before it is run against elasticsearch
 - `acf_elasticsearch/searcher_search' - update the contents of an elastica search before it is run against elasticsearch

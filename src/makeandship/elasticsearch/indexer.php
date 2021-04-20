@@ -99,6 +99,8 @@ class Indexer
             ),
         );
 
+        $settings = Util::apply_filters('pre_create_index', $settings);
+
         // create the index
         try {
             $response = $index->create($settings);
