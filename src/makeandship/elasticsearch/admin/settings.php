@@ -130,6 +130,15 @@ echo HtmlUtils::render_field(
         'value'       => 30,
     )
 );
+echo HtmlUtils::render_field(
+    'Mapping Timeout (Seconds)',
+    'acf_elasticsearch_mapping_timeout',
+    array(
+        'class'       => 'short',
+        'placeholder' => '',
+        'value'       => 90,
+    )
+);
 echo HtmlUtils::render_post_type_choices(
     'Post Types'
 );
@@ -186,15 +195,6 @@ echo HtmlUtils::render_field(
         'class'       => 'short',
         'placeholder' => '',
         'value'       => 1,
-    )
-);
-echo HtmlUtils::render_field(
-    'Mapping timeout(s)',
-    'acf_elasticsearch_mapping_timeout',
-    array(
-        'class'       => 'short',
-        'placeholder' => '',
-        'value'       => 90,
     )
 );
 echo HtmlUtils::render_buttons([
