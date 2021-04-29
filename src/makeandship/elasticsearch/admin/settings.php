@@ -18,6 +18,7 @@ if (!empty($_POST)) {
     $slugs_to_exclude = HtmlUtils::create_slugs_to_exclude();
     $exclusion_field  = trim($_POST['acf_elasticsearch_exclusion_field']);
     $ids_to_exclude   = HtmlUtils::create_ids_from_slugs($slugs_to_exclude);
+    $mapping_timeout  = intval(trim($_POST['acf_elasticsearch_mapping_timeout']));
 
     SettingsManager::get_instance()->set(Constants::OPTION_READ_TIMEOUT, $read_timeout);
     SettingsManager::get_instance()->set(Constants::OPTION_WRITE_TIMEOUT, $write_timeout);
@@ -29,6 +30,7 @@ if (!empty($_POST)) {
     SettingsManager::get_instance()->set(Constants::OPTION_SLUGS_TO_EXCLUDE, $slugs_to_exclude);
     SettingsManager::get_instance()->set(Constants::OPTION_EXCLUSION_FIELD, $exclusion_field);
     SettingsManager::get_instance()->set(Constants::OPTION_IDS_TO_EXCLUDE, $ids_to_exclude);
+    SettingsManager::get_instance()->set(Constants::OPTION_MAPPING_TIMEOUT, $mapping_timeout);
 }
 ?>
     <h1>ACF Elasticsearch</h1>
@@ -184,6 +186,15 @@ echo HtmlUtils::render_field(
         'class'       => 'short',
         'placeholder' => '',
         'value'       => 1,
+    )
+);
+echo HtmlUtils::render_field(
+    'Mapping timeout(s)',
+    'acf_elasticsearch_mapping_timeout',
+    array(
+        'class'       => 'short',
+        'placeholder' => '',
+        'value'       => 90,
     )
 );
 echo HtmlUtils::render_buttons([

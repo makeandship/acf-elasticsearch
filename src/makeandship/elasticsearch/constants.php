@@ -18,7 +18,7 @@ class Constants
     const DEFAULT_READ_TIMEOUT  = 30;
 
     // plugin
-    const VERSION    = '7.3.3';
+    const VERSION    = '7.3.4';
     const DB_VERSION = 1;
 
     const OPTION_SERVER                = 'acf_elasticsearch_server';
@@ -38,6 +38,7 @@ class Constants
     const OPTION_EXCLUSION_FIELD       = 'acf_elasticsearch_exclusion_field';
     const OPTION_IDS_TO_EXCLUDE        = 'acf_elasticsearch_ids_to_exclude';
     const OPTION_ELASTICSEARCH_VERSION = 'acf_elasticsearch_cluster_version';
+    const OPTION_MAPPING_TIMEOUT       = 'acf_elasticsearch_mapping_timeout';
 
     // indexer
     const STATUS_PUBLISH      = 'publish';
