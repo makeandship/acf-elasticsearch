@@ -96,6 +96,7 @@ class SettingsManager
             $this->settings[Constants::OPTION_SLUGS_TO_EXCLUDE]      = $this->get_option(Constants::OPTION_SLUGS_TO_EXCLUDE);
             $this->settings[Constants::OPTION_EXCLUSION_FIELD]       = $this->get_option(Constants::OPTION_EXCLUSION_FIELD);
             $this->settings[Constants::OPTION_IDS_TO_EXCLUDE]        = $this->get_option(Constants::OPTION_IDS_TO_EXCLUDE);
+            $this->settings[Constants::OPTION_MAPPING_TIMEOUT]       = $this->get_option(Constants::OPTION_MAPPING_TIMEOUT);
             $this->settings[Constants::OPTION_ELASTICSEARCH_VERSION] = $this->get_elasticseach_version();
         }
 
@@ -141,6 +142,7 @@ class SettingsManager
                 Constants::OPTION_EXCLUSION_FIELD,
                 Constants::OPTION_IDS_TO_EXCLUDE,
                 Constants::OPTION_ELASTICSEARCH_VERSION,
+                Constants::OPTION_MAPPING_TIMEOUT,
             ])) {
                 return true;
             }

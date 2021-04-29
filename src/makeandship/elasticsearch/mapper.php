@@ -76,9 +76,11 @@ class Mapper
     private function create_mapping($index, $properties)
     {
         if (isset($properties)) {
+            $mapping_timeout = intval(SettingsManager::get_instance()->get(Constants::OPTION_MAPPING_TIMEOUT));
+            $params = array('master_timeout' => $mapping_timeout.'s');
             // create mappings for the public primary index if required
             $mapping = new Mapping($properties);
-            $mapping->send($index);
+            $mapping->send($index, $params);
         }
     }
 }
