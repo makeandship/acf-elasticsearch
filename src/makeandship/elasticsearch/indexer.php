@@ -13,6 +13,9 @@ class Indexer
 {
     public function __construct($bulk = false)
     {
+        // mapping
+        $this->properties = null;
+
         // factories
         $this->document_builder_factory = new DocumentBuilderFactory();
         $this->index_factory            = new IndexFactory();
@@ -21,6 +24,9 @@ class Indexer
         // bulk indexing
         $this->queues  = array();
         $this->indexes = array();
+
+        // factory to manage individual mappers
+        $this->mapping_builder_factory = new MappingBuilderFactory();
     }
 
     /**
@@ -103,7 +109,18 @@ class Indexer
 
         // create the index
         try {
-            $response = $index->create($settings);
+            $timeout = intval(SettingsManager::get_instance()->get(Constants::OPTION_MAPPING_TIMEOUT));
+            $params = array('master_timeout' => $timeout.'s');
+            $properties = $this->create_properties();
+
+            $body = array(
+                'settings' => $settings['settings'],
+                'mappings' => array(
+                    'properties' => $properties
+                )
+            );
+
+            $response = $index->create($body, $params);
         } catch (\Exception $ex) {
             // likely index doesn't exist
             $errors[] = $ex;
@@ -555,5 +572,52 @@ class Indexer
                 }
             }
         }
+    }
+
+    private function create_properties()
+    {
+        if ($this->properties) {
+            return $this->properties;
+        }
+
+        // create mappings for each post type
+        $post_types = $this->post_types = SettingsManager::get_instance()->get_post_types();
+
+        // mapping builder
+        $post_mapping_builder = $this->mapping_builder_factory->create('WP_Post');
+        $term_mapping_builder = $this->mapping_builder_factory->create('WP_Term');
+        $site_mapping_builder = $this->mapping_builder_factory->create('WP_Site');
+
+        $properties = array();
+
+        foreach ($post_types as $post_type) {
+            $properties = array_merge(
+                $properties,
+                $post_mapping_builder->build($post_type, true)
+            );
+        }
+
+        // create mappings for each taxonomy
+        $taxonomies = get_taxonomies();
+        foreach ($taxonomies as $taxonomy) {
+            $properties = array_merge(
+                $properties,
+                $term_mapping_builder->build($taxonomy)
+            );
+        }
+
+        // create mappings for sites if this is a multisite
+        if (is_multisite()) {
+            $properties = array_merge(
+                $properties,
+                $site_mapping_builder->build()
+            );
+        }
+
+        $properties = Util::apply_filters('pre_create_mappings', $properties);
+
+        $this->properties = $properties;
+
+        return $properties;
     }
 }

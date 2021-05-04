@@ -73,10 +73,7 @@ class AcfElasticsearchPlugin
 
         foreach ($indexes as $index) {
             $name          = $index['name'];
-            $elastic_index = $indexer->create($name);
-
-            $mapper = new Mapper();
-            $result = $mapper->map($elastic_index);
+            $indexer->create($name);
         }
 
         // extract message from result
