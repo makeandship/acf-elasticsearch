@@ -108,7 +108,7 @@ class AcfElasticsearchPlugin
 
     public function index_taxonomies()
     {
-        Util::debug('AcfElasticsearchPlugin#index_taxonomies', 'enter');
+        Log::debug('AcfElasticsearchPlugin#index_taxonomies: enter');
 
         // instantiate the index and current status
         $indexer = new Indexer(true);
@@ -144,7 +144,7 @@ class AcfElasticsearchPlugin
     public function save_post($post_id)
     {
         Log::start('AcfElasticsearchPlugin#save_post');
-        Util::debug('AcfElasticsearchPlugin#save_post', $post_id);
+        Log::debug('AcfElasticsearchPlugin#save_post: ' . $post_id);
         // get the post to index
         if (is_object($post_id)) {
             $post = $post_id;
@@ -164,11 +164,11 @@ class AcfElasticsearchPlugin
 
         // index valid statuses
         if (in_array($post->post_status, Constants::INDEX_POST_STATUSES)) {
-            Util::debug('AcfElasticsearchPlugin#save_post', 'Add/update document: ' . $post_id);
+            Log::debug('AcfElasticsearchPlugin#save_post: Add/update document: ' . $post_id);
             // index
             $this->indexer->add_or_update_document($post);
         } else {
-            Util::debug('AcfElasticsearchPlugin#save_post', 'Remove document: ' . $post_id);
+            Log::debug('AcfElasticsearchPlugin#save_post: Remove document: ' . $post_id);
             // remove
             $this->indexer->remove_document($post);
         }
@@ -180,7 +180,7 @@ class AcfElasticsearchPlugin
      */
     public function delete_post($post_id)
     {
-        Util::debug('AcfElasticsearchPlugin#delete_post', $post_id);
+        Log::debug('AcfElasticsearchPlugin#delete_post: ' . $post_id);
         $post = get_post($post_id);
         $this->indexer->remove_document($post);
     }
@@ -190,7 +190,7 @@ class AcfElasticsearchPlugin
      */
     public function trash_post($post_id)
     {
-        Util::debug('AcfElasticsearchPlugin#trash_post', $post_id);
+        Log::debug('AcfElasticsearchPlugin#trash_post:' . $post_id);
         $this->delete_post($post_id);
     }
 
@@ -200,16 +200,16 @@ class AcfElasticsearchPlugin
     public function transition_post_status($new_status, $old_status, $post)
     {
         $post_id = Util::safely_get_attribute($post, 'ID');
-        Util::debug('AcfElasticsearchPlugin#transition_post_status', ($post_id ? $post_id : "Unknown post id"));
+        Log::debug('AcfElasticsearchPlugin#transition_post_status: ' . ($post_id ? $post_id : "Unknown post id"));
         if (!$this->should_index_post($post)) {
             return;
         }
         if (in_array($new_status, Constants::INDEX_POST_STATUSES) && $new_status != $old_status) {
-            Util::debug('AcfElasticsearchPlugin#transition_post_status', 'Add/update document: ' . ($post_id ? $post_id : "Unknown post id"));
+            Log::debug('AcfElasticsearchPlugin#transition_post_status: Add/update document: ' . ($post_id ? $post_id : "Unknown post id"));
             $this->indexer->add_or_update_document($post);
         } else {
             if ($new_status != "publish" && $old_status != "publish") {
-                Util::debug('AcfElasticsearchPlugin#transition_post_status', 'Remove document: ' . ($post_id ? $post_id : "Unknown post id"));
+                Log::debug('AcfElasticsearchPlugin#transition_post_status: Remove document: ' . ($post_id ? $post_id : "Unknown post id"));
                 $this->indexer->remove_document($post);
             }
         }
@@ -270,7 +270,7 @@ class AcfElasticsearchPlugin
         // re-index impacted posts
         if ($object_ids && is_array($object_ids) && count($object_ids)) {
             foreach ($object_ids as $object_id) {
-                Util::debug('AcfElasticsearchPlugin#delete_term', 'Reindex ' . $object_id . ' after term delete');
+                Log::debug('AcfElasticsearchPlugin#delete_term: Reindex ' . $object_id . ' after term delete');
                 $this->save_post($object_id);
             }
         }
