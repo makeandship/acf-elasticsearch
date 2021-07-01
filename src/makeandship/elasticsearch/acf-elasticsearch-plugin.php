@@ -6,6 +6,8 @@ use makeandship\elasticsearch\admin\UserInterfaceManager;
 use makeandship\elasticsearch\domain\PostsManager;
 use makeandship\elasticsearch\settings\SettingsManager;
 
+use makeandship\logging\Log;
+
 class AcfElasticsearchPlugin
 {
     public function __construct()
@@ -141,6 +143,7 @@ class AcfElasticsearchPlugin
      */
     public function save_post($post_id)
     {
+        Log::start('AcfElasticsearchPlugin#save_post');
         Util::debug('AcfElasticsearchPlugin#save_post', $post_id);
         // get the post to index
         if (is_object($post_id)) {
@@ -169,6 +172,7 @@ class AcfElasticsearchPlugin
             // remove
             $this->indexer->remove_document($post);
         }
+        Log::finish('AcfElasticsearchPlugin#save_post');
     }
 
     /**
