@@ -9,6 +9,8 @@ use makeandship\elasticsearch\settings\SettingsManager;
 use \Elastica\Client;
 use \Elastica\Exception\ResponseException;
 
+use makeandship\logging\Log;
+
 class Indexer
 {
     public function __construct($bulk = false)
@@ -241,22 +243,15 @@ class Indexer
         $per  = Util::apply_filters('bulk_posts_per_page', Constants::DEFAULT_POSTS_PER_PAGE);
 
         // gather posts and time
-        $before = microtime(true);
+        Log::start('Indexer#index_posts_singlesite');
 
         $posts = $posts_manager->get_posts(null, $page, $per);
 
-        $after       = microtime(true);
-        $search_time = ($after - $before) . " sec";
-        Util::debug("Indexer#index_posts_singlesite", "Gathering posts: " . $search_time);
-
-        // index documents and time
-        $before = microtime(true);
-
-        Util::debug("Indexer#index_posts_singlesite", "Count of posts: " . count($posts));
+        Log::debug("Indexer#index_posts_singlesite: Count of posts: " . count($posts));
         $ids = array_map(function ($post) {
             return Util::safely_get_attribute($post, 'ID');
         }, $posts);
-        Util::debug("Indexer#index_posts_singlesite", "IDs of posts: " . implode($ids, ", "));
+        Log::debug("Indexer#index_posts_singlesite: IDs of posts: " . implode($ids, ", "));
         $count = $this->add_or_update_documents($posts);
 
         // flush bulk indexing
@@ -265,9 +260,7 @@ class Indexer
             $this->log_flush_response($response);
         }
 
-        $after       = microtime(true);
-        $search_time = ($after - $before) . " sec";
-        Util::debug("Indexer#index_posts_singlesite", "Indexing: " . $search_time);
+        Log::finish('Indexer#index_posts_singlesite');
 
         // update count
         $status['count'] = $status['count'] + $count;
@@ -275,7 +268,7 @@ class Indexer
         // counts
         $private_index = $this->index_factory->create(true);
         if ($private_index) {
-            Util::debug("Indexer#index_posts_singlesite", "Current count: " . $private_index->count());
+            Log::debug("Indexer#index_posts_singlesite: Current count: " . $private_index->count());
         }
 
         if ($status['count'] >= $status['total']) {
@@ -303,7 +296,7 @@ class Indexer
             $this->log_flush_response($response);
         }
 
-        Util::debug("Indexer#index_taxonomies", "Indexed " . strval($count) . " terms");
+        Log::debug("Indexer#index_taxonomies: Indexed " . strval($count) . " terms");
 
         return $count;
     }
@@ -379,13 +372,13 @@ class Indexer
 
         $indexable = $builder->is_indexable($o);
         if (!$indexable) {
-            Util::debug("Indexer#add_or_update_document", Util::safely_get_attribute($o, 'ID') . " is not indexable");
+            Log::debug("Indexer#add_or_update_document: " . Util::safely_get_attribute($o, 'ID') . " is not indexable");
         }
 
         if ($indexable) {
             $private = $builder->is_private($o);
             if ($private) {
-                Util::debug("Indexer#add_or_update_document", "Document is private");
+                Log::debug("Indexer#add_or_update_document: Document is private");
             }
 
             if (is_multisite()) {
@@ -452,7 +445,7 @@ class Indexer
                     $this->queues[$key] = array();
                 }
                 $this->queues[$key][] = $document;
-                Util::debug("Indexer#queue", "Add " . $document->getId() . " to " . $key);
+                Log::debug("Indexer#queue: Add " . $document->getId() . " to " . $key);
 
                 if (!$this->indexes) {
                     $this->indexes = array();
@@ -481,7 +474,7 @@ class Indexer
                     // add the documents
                     $add_documents_response = $index->addDocuments($documents);
                     $index_response         = $index->refresh();
-                    Util::debug("Indexer#flush", "Added " . count($documents) . " to " . $key);
+                    Log::debug("Indexer#flush: Added " . count($documents) . " to " . $key);
 
                     unset($this->queues[$key]);
 
@@ -526,7 +519,7 @@ class Indexer
                 $messages[] = $name . ': ' . implode($methods, ", ");
             }
 
-            Util::debug("Indexer#flush", implode($messages, ", "));
+            Log::debug("Indexer#flush: " . implode($messages, ", "));
         }
     }
 
@@ -558,7 +551,7 @@ class Indexer
                     $public_index->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
-                    Util::debug('Indexer#remove_document', 'Unable to delete from public index');
+                    Log::debug('Indexer#remove_document: Unable to delete from public index');
                 }
             }
 
@@ -568,7 +561,7 @@ class Indexer
                     $private_index->deleteById($id);
                 } catch (\Elastica\Exception\NotFoundException $ex) {
                     // ignore
-                    Util::debug('Indexer#remove_document', 'Unable to delete from private index');
+                    Log::debug('Indexer#remove_document: Unable to delete from private index');
                 }
             }
         }

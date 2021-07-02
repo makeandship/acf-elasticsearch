@@ -5,6 +5,8 @@ use makeandship\elasticsearch\settings\SettingsManager;
 use makeandship\elasticsearch\transformer\SearchTransformer;
 use \Elastica\Client;
 
+use makeandship\logging\Log;
+
 /**
  * Run searches against the backing Elasticsearch server configured in the plugin settings
  **/
@@ -45,7 +47,7 @@ class Searcher
 
             return $results;
         } catch (\Exception $ex) {
-            Util::debug('Searcher#search', $ex);
+            Log::debug('Searcher#search: ' . $ex);
 
             Util::do_action('search_exception', $ex);
 
@@ -70,7 +72,7 @@ class Searcher
 
             return $search->search($query);
         } catch (\Exception $ex) {
-            Util::debug('Searcher#query', $ex);
+            Log::debug('Searcher#query: ' . $ex);
 
             Util::do_action('searcher_exception', $ex);
 

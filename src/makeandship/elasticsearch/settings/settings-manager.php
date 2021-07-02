@@ -6,6 +6,8 @@ use makeandship\elasticsearch\Constants;
 use makeandship\elasticsearch\Util;
 use \Elastica\Client;
 
+use makeandship\logging\Log;
+
 class SettingsManager
 {
     protected static $instance = null;
@@ -329,7 +331,7 @@ class SettingsManager
             $version = $client->getVersion();
             return $version;
         } catch (\Elastica\Exception\Connection\HttpException $e) {
-            Util::debug("SettingsManager#get_elasticsearch_version", $e);
+            Log::debug("SettingsManager#get_elasticsearch_version: " . $e);
             return null;
         }
     }
