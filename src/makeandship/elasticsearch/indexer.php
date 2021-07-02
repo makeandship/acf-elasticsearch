@@ -243,16 +243,9 @@ class Indexer
         $per  = Util::apply_filters('bulk_posts_per_page', Constants::DEFAULT_POSTS_PER_PAGE);
 
         // gather posts and time
-        $before = microtime(true);
+        Log::start('Indexer#index_posts_singlesite');
 
         $posts = $posts_manager->get_posts(null, $page, $per);
-
-        $after       = microtime(true);
-        $search_time = ($after - $before) . " sec";
-        Log::debug("Indexer#index_posts_singlesite: Gathering posts: " . $search_time);
-
-        // index documents and time
-        $before = microtime(true);
 
         Log::debug("Indexer#index_posts_singlesite: Count of posts: " . count($posts));
         $ids = array_map(function ($post) {
@@ -267,9 +260,7 @@ class Indexer
             $this->log_flush_response($response);
         }
 
-        $after       = microtime(true);
-        $search_time = ($after - $before) . " sec";
-        Log::debug("Indexer#index_posts_singlesite: Indexing: " . $search_time);
+        Log::finish('Indexer#index_posts_singlesite');
 
         // update count
         $status['count'] = $status['count'] + $count;

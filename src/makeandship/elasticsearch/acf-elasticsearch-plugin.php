@@ -180,9 +180,11 @@ class AcfElasticsearchPlugin
      */
     public function delete_post($post_id)
     {
+        Log::start('AcfElasticsearchPlugin#delete_post');
         Log::debug('AcfElasticsearchPlugin#delete_post: ' . $post_id);
         $post = get_post($post_id);
         $this->indexer->remove_document($post);
+        Log::finish('AcfElasticsearchPlugin#delete_post');
     }
 
     /**
