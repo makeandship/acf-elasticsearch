@@ -5,6 +5,7 @@ namespace makeandship\elasticsearch\queries;
 use makeandship\elasticsearch\Constants;
 use makeandship\elasticsearch\settings\SettingsManager;
 use makeandship\elasticsearch\Util;
+use makeandship\logging\Log;
 
 class QueryBuilder
 {
@@ -212,9 +213,7 @@ class QueryBuilder
         $highlights = $this->build_highlights();
         $query      = array_merge($query, $highlights);
 
-        if (WP_DEBUG) {
-            error_log('makeandship/elasticsearch/queries/QueryBuilder#toarray: query: ' . json_encode($query));
-        }
+        Log::debug('makeandship/elasticsearch/queries/QueryBuilder#toarray: query: ' . json_encode($query));
 
         return $query;
     }
