@@ -9,7 +9,6 @@ class PostsManager
 {
     const EXCLUDE_POST_TYPES = array(
         'revision',
-        'attachment',
         'json_consumer',
         'nav_menu',
         'nav_menu_item',
@@ -126,7 +125,7 @@ class PostsManager
     function get_count_post_args()
     {
         $post_types     = $this->get_valid_post_types();
-        $post_status    = array('publish', 'private');
+        $post_status    = array('publish', 'private', 'inherit');
         $ids_to_exclude = SettingsManager::get_instance()->get(Constants::OPTION_IDS_TO_EXCLUDE);
 
         $args = array(
@@ -142,7 +141,7 @@ class PostsManager
     function get_paginated_post_args($page, $per)
     {
         $post_types     = $this->get_valid_post_types();
-        $post_status    = array('publish', 'private');
+        $post_status    = array('publish', 'private', 'inherit');
         $ids_to_exclude = SettingsManager::get_instance()->get(Constants::OPTION_IDS_TO_EXCLUDE);
 
         $args = array(
@@ -162,7 +161,7 @@ class PostsManager
     function get_post_args_by_term($term_id, $taxonomy)
     {
         $post_types     = $this->get_valid_post_types();
-        $post_status    = array('publish', 'private');
+        $post_status    = array('publish', 'private', 'inherit');
         $ids_to_exclude = SettingsManager::get_instance()->get(Constants::OPTION_IDS_TO_EXCLUDE);
 
         if (!is_array($term_id)) {

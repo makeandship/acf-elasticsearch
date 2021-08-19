@@ -46,6 +46,10 @@ class PostDocumentBuilder extends DocumentBuilder
     public function is_indexable($post)
     {
         if ($post) {
+            if ($post->post_type === 'attachment' && self::is_orphaned_media($post)) {
+                return false;
+            }
+
             $post_id = $post->ID;
 
             // check if the exclusion field is set
@@ -388,5 +392,15 @@ class PostDocumentBuilder extends DocumentBuilder
     public function get_mapping_type($post)
     {
         return Constants::DEFAULT_MAPPING_TYPE;
+    }
+
+    /**
+     * Check if an attachment is orphaned media
+     */
+    public static function is_orphaned_media($attachment) 
+    {
+        $post = get_post($attachment->post_parent);
+        $live = $post && ($post->post_status === 'publish' || $post->post_status === 'private');
+        return !$live;
     }
 }

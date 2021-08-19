@@ -100,7 +100,7 @@ class SettingsHelper
 		foreach ($types as $type) {
 			$tobject = get_post_type_object($type);
 
-			if (!$tobject->exclude_from_search && $type != 'attachment') {
+			if (!$tobject->exclude_from_search) {
 				$available[] = $type;
 			}
 		}

@@ -11,7 +11,6 @@ abstract class MappingBuilder
 
     const EXCLUDE_POST_TYPES = array(
         'revision',
-        'attachment',
         'json_consumer',
         'nav_menu',
         'nav_menu_item',
