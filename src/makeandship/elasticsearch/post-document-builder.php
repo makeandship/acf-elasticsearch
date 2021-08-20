@@ -17,7 +17,10 @@ class PostDocumentBuilder extends DocumentBuilder
      */
     public function is_private($post)
     {
-        if ($post->post_status === 'private') {
+        if ($post->post_type === 'attachment' && $post->post_parent) {
+            $parent = get_post($post->post_parent);
+            return $parent && $parent->post_status === 'private';
+        } elseif ($post->post_status === 'private') {
             return true;
         } else {
             return false;
@@ -46,6 +49,10 @@ class PostDocumentBuilder extends DocumentBuilder
     public function is_indexable($post)
     {
         if ($post) {
+            if ($post->post_type === 'attachment' && self::is_orphaned_media($post)) {
+                return false;
+            }
+
             $post_id = $post->ID;
 
             // check if the exclusion field is set
@@ -86,6 +93,11 @@ class PostDocumentBuilder extends DocumentBuilder
                 if ($name === 'link') {
                     $link             = get_permalink($post->ID);
                     $document['link'] = $link;
+                } elseif ($name === 'parent_id') {
+                    $document['parent_id'] = $post->post_parent;
+                } elseif ($name === 'parent_title') {
+                    $parent = get_post($post->post_parent);
+                    $document['parent_title'] = $parent ? $parent -> post_title : null;
                 } else {
                     $value = $post->{$name};
 
@@ -388,5 +400,16 @@ class PostDocumentBuilder extends DocumentBuilder
     public function get_mapping_type($post)
     {
         return Constants::DEFAULT_MAPPING_TYPE;
+    }
+
+    /**
+     * Check if an attachment is orphaned media
+     */
+    public static function is_orphaned_media($attachment) 
+    {
+        $post = get_post($attachment->post_parent);
+        $orphaned = !$post || ($post->post_status !== 'publish' && $post->post_status !== 'private');
+        $orphaned = Util::apply_filters('is_orphaned_media', $attachment);
+        return $orphaned;
     }
 }

@@ -18,7 +18,7 @@ class Constants
     const DEFAULT_READ_TIMEOUT  = 30;
 
     // plugin
-    const VERSION    = '7.3.8';
+    const VERSION    = '7.4.0';
     const DB_VERSION = 1;
 
     const OPTION_SERVER                = 'acf_elasticsearch_server';
@@ -53,7 +53,6 @@ class Constants
     // always ignore these post types
     const EXCLUDE_POST_TYPES = array(
         'revision',
-        'attachment',
         'json_consumer',
         'nav_menu',
         'nav_menu_item',
