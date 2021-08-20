@@ -18,6 +18,15 @@ class PostMappingBuilder extends MappingBuilder
             'suggest'  => true,
             'sortable' => true,
         ),
+        'parent_title'    => array(
+            'type'     => 'text',
+            'suggest'  => true,
+            'sortable' => true,
+        ),
+        'parent_id'    => array(
+            'type'  => 'long',
+            'index' => true,
+        ),
         'post_type'     => array(
             'type'  => 'keyword',
             'index' => true,

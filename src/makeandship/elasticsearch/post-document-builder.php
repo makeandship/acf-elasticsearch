@@ -17,7 +17,10 @@ class PostDocumentBuilder extends DocumentBuilder
      */
     public function is_private($post)
     {
-        if ($post->post_status === 'private') {
+        if ($post->post_type === 'attachment' && $post->post_parent) {
+            $parent = get_post($post->post_parent);
+            return $parent && $parent->post_status === 'private';
+        } elseif ($post->post_status === 'private') {
             return true;
         } else {
             return false;
@@ -90,6 +93,11 @@ class PostDocumentBuilder extends DocumentBuilder
                 if ($name === 'link') {
                     $link             = get_permalink($post->ID);
                     $document['link'] = $link;
+                } elseif ($name === 'parent_id') {
+                    $document['parent_id'] = $post->post_parent;
+                } elseif ($name === 'parent_title') {
+                    $parent = get_post($post->post_parent);
+                    $document['parent_title'] = $parent ? $parent -> post_title : null;
                 } else {
                     $value = $post->{$name};
 
@@ -400,7 +408,8 @@ class PostDocumentBuilder extends DocumentBuilder
     public static function is_orphaned_media($attachment) 
     {
         $post = get_post($attachment->post_parent);
-        $live = $post && ($post->post_status === 'publish' || $post->post_status === 'private');
-        return !$live;
+        $orphaned = !$post || ($post->post_status !== 'publish' && $post->post_status !== 'private');
+        $orphaned = Util::apply_filters('is_orphaned_media', $attachment);
+        return $orphaned;
     }
 }
