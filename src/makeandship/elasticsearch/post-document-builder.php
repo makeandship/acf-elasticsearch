@@ -409,7 +409,7 @@ class PostDocumentBuilder extends DocumentBuilder
     {
         $post = get_post($attachment->post_parent);
         $orphaned = !$post || ($post->post_status !== 'publish' && $post->post_status !== 'private');
-        $orphaned = Util::apply_filters('is_orphaned_media', $attachment);
+        $orphaned = Util::apply_filters('is_orphaned_media', $orphaned, $attachment);
         return $orphaned;
     }
 }
