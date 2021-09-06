@@ -3,9 +3,8 @@ namespace makeandship\elasticsearch;
 
 use makeandship\elasticsearch\settings\SettingsManager;
 use makeandship\elasticsearch\transformer\SearchTransformer;
-use \Elastica\Client;
-
 use makeandship\logging\Log;
+use \Elastica\Client;
 
 /**
  * Run searches against the backing Elasticsearch server configured in the plugin settings
@@ -34,24 +33,50 @@ class Searcher
     {
         $args = Util::apply_filters('prepare_query', $args);
 
-        $query = new \Elastica\Query($args);
+        $use_cache = Util::apply_filters('use_search_cache', true);
+        Log::debug('Searcher#search: Use search cache: ' . $use_cache);
 
-        try {
-            $search = new \Elastica\Search($this->client);
-            $search->addIndex($this->get_index());
+        if ($use_cache) {
+            $serialized = serialize($args);
+            $cache_key  = 'search_' . md5($serialized);
+            Log::debug('Searcher#search: Cache key: ' . $cache_key);
 
-            $response = $search->search($query);
+            $results = get_transient($cache_key);
+        } else {
+            $results = null;
+        }
 
-            $transformer = new SearchTransformer();
-            $results     = $transformer->transform($response);
-
+        if ($results) {
+            Log::debug('Searcher#search: Using cached results');
             return $results;
-        } catch (\Exception $ex) {
-            Log::debug('Searcher#search: ' . $ex);
+        } else {
+            Log::debug('Searcher#search: Generating results ...');
+            $query = new \Elastica\Query($args);
 
-            Util::do_action('search_exception', $ex);
+            try {
+                $search = new \Elastica\Search($this->client);
+                $search->addIndex($this->get_index());
 
-            return null;
+                $response = $search->search($query);
+
+                $transformer = new SearchTransformer();
+                $results     = $transformer->transform($response);
+
+                if ($use_cache && $results) {
+                    $cache_expiry = Util::apply_filters('search_cache_expiry', 3600); // 1 hr
+                    Log::debug('Searcher#search: Cache expiry: ' . $cache_expiry);
+
+                    set_transient($cache_key, $results, $cache_expiry);
+                }
+
+                return $results;
+            } catch (\Exception $ex) {
+                Log::debug('Searcher#search: ' . $ex);
+
+                Util::do_action('search_exception', $ex);
+
+                return null;
+            }
         }
     }
 
