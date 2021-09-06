@@ -63,7 +63,7 @@ class Searcher
                 $results     = $transformer->transform($response);
 
                 if ($use_cache && $results) {
-                    $cache_expiry = Util::apply_filters('cache_expiry', 3600); // 1 hr
+                    $cache_expiry = Util::apply_filters('search_cache_expiry', 3600); // 1 hr
                     Log::debug('Searcher#search: Cache expiry: ' . $cache_expiry);
 
                     set_transient($cache_key, $results, $cache_expiry);

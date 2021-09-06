@@ -194,3 +194,5 @@ Applied via `Util::apply_filters` and `Util::do_action`
 - `acf_elasticsearch/searcher_search' - update the contents of an elastica search before it is run against elasticsearch
 - `acf_elasticsearch/index_shards' - update the number of shards for the index
 - `acf_elasticsearch/index_replicas' - update the number of replicas for the index
+- `acf_elasticsearch/use_search_cache' - determines whether to cache search results (default true)
+- `acf_elasticsearch/search_cache_expiry' - determines the time in seconds to use for a TTL (default 1hr - 3600)
