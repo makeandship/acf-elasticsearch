@@ -177,48 +177,42 @@ class QueryBuilder
 
     public function to_array()
     {
-        $query = array(
-            'query' => array(
-                'bool' => array(
-                    'must' => array(),
-                ),
-            ),
-        );
+        $query = array();
 
         // freetext, fuzziness and weightings are used together for the built query
-        $query_text                     = $this->build_text_query();
-        $query['query']['bool']['must'] = array_merge($query['query']['bool']['must'], $query_text);
+        $query_text = $this->build_text_query();
+        $query      = $this->apply_text_query($query, $query_text);
 
         // post types and taxonomies filter the query results
-        $query_filters          = $this->build_filters();
-        $query['query']['bool'] = array_merge($query['query']['bool'], $query_filters);
+        $query_filters = $this->build_filters();
+        $query         = $this->apply_filters($query, $query_filters);
 
         // aggregations to count results by post types and taxonomy entries
-        $aggregations  = $this->build_aggregations();
-        $query['aggs'] = $aggregations;
+        $aggregations = $this->build_aggregations();
+        $query        = $this->apply_aggregations($query, $aggregations);
 
         // pagination
         $pagination = $this->build_pagination();
-        $query      = array_merge($query, $pagination);
+        $query      = $this->apply_pagination($query, $pagination);
 
         // sorting
         $sorts = $this->build_sorts();
-        $query = array_merge($query, $sorts);
+        $query = $this->apply_sorts($query, $sorts);
 
         // fields
         $fields = $this->build_fields();
-        $query  = array_merge($query, $fields);
+        $query  = $this->apply_fields($query, $fields);
 
         // highlights
         $highlights = $this->build_highlights();
-        $query      = array_merge($query, $highlights);
+        $query      = $this->apply_highlights($query, $highlights);
 
         Log::debug('makeandship/elasticsearch/queries/QueryBuilder#toarray: query: ' . json_encode($query));
 
         return $query;
     }
 
-    private function build_text_query()
+    protected function build_text_query()
     {
         $query_text = array();
 
@@ -276,7 +270,24 @@ class QueryBuilder
         return $query_text;
     }
 
-    private function build_filters()
+    protected function apply_text_query($query, $query_text)
+    {
+        if (!array_key_exists('query', $query)) {
+            $query['query'] = array();
+        }
+        if (!array_key_exists('bool', $query['query'])) {
+            $query['query']['bool'] = array();
+        }
+        if (!array_key_exists('must', $query['query']['bool'])) {
+            $query['query']['bool']['must'] = array();
+        }
+
+        $query['query']['bool']['must'] = array_merge($query['query']['bool']['must'], $query_text);
+
+        return $query;
+    }
+
+    protected function build_filters()
     {
         $query_field_filters = array();
 
@@ -466,6 +477,20 @@ class QueryBuilder
         return $query_field_filters;
     }
 
+    protected function apply_filters($query, $query_filters)
+    {
+        if (!array_key_exists('query', $query)) {
+            $query['query'] = array();
+        }
+        if (!array_key_exists('bool', $query['query'])) {
+            $query['query']['bool'] = array();
+        }
+
+        $query['query']['bool'] = array_merge($query['query']['bool'], $query_filters);
+
+        return $query;
+    }
+
     /**
      * Ensure categories are int he correct shape
      *
@@ -486,7 +511,7 @@ class QueryBuilder
      *   ]
      * ]
      */
-    private function ensure_categories($categories)
+    protected function ensure_categories($categories)
     {
         return $categories;
     }
@@ -513,7 +538,7 @@ class QueryBuilder
      *     }
      * }
      */
-    private function build_aggregations()
+    protected function build_aggregations()
     {
         $aggregations = array();
 
@@ -550,6 +575,13 @@ class QueryBuilder
         return $aggregations;
     }
 
+    protected function apply_aggregations($query, $aggregations)
+    {
+        $query['aggs'] = $aggregations;
+
+        return $query;
+    }
+
     /**
      * Build a single aggregation
      *
@@ -557,7 +589,7 @@ class QueryBuilder
      * @param $count the maximum terms to return
      * @param $min_count boolean whether to use a 0 min count
      */
-    private function build_aggregation($key, $count, $min_count)
+    protected function build_aggregation($key, $count, $min_count)
     {
         if ($key) {
             $aggregations = array();
@@ -620,7 +652,7 @@ class QueryBuilder
         return array();
     }
 
-    private function build_pagination()
+    protected function build_pagination()
     {
         $pagination = array();
 
@@ -633,6 +665,12 @@ class QueryBuilder
         }
 
         return $pagination;
+    }
+
+    protected function apply_pagination($query, $pagination)
+    {
+        $query = array_merge($query, $pagination);
+        return $query;
     }
 
     /**
@@ -648,7 +686,7 @@ class QueryBuilder
      *
      * _score is used for no sort
      */
-    private function build_sorts()
+    protected function build_sorts()
     {
         $sorts = array();
 
@@ -671,13 +709,19 @@ class QueryBuilder
 
         return $sorts;
     }
+    protected function apply_sorts($query, $sorts)
+    {
+        $query = array_merge($query, $sorts);
+
+        return $query;
+    }
 
     /**
      * Build query body to control which fields are returned
      *
      * @return array for the source attribute
      */
-    private function build_fields()
+    protected function build_fields()
     {
         $fields = array();
 
@@ -688,12 +732,19 @@ class QueryBuilder
         return $fields;
     }
 
+    protected function apply_fields($query, $fields)
+    {
+        $query = array_merge($query, $fields);
+
+        return $query;
+    }
+
     /**
      * Build query body to control which fields are checked for highlights
      *
      * @return array for the highlight attribute
      */
-    private function build_highlights()
+    protected function build_highlights()
     {
         $highlights = array();
 
@@ -710,5 +761,12 @@ class QueryBuilder
         }
 
         return $highlights;
+    }
+
+    protected function apply_highlights($query, $highlights)
+    {
+        $query = array_merge($query, $highlights);
+
+        return $query;
     }
 }
