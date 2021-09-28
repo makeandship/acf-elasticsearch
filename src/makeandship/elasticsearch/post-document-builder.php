@@ -130,7 +130,7 @@ class PostDocumentBuilder extends DocumentBuilder
 
             // acf fields
             if (class_exists('acf')) {
-                $template = $this->get_page_template($post);
+                $template = $this->get_template($post);
 
                 if (!$template) {
                     // field groups for default template
