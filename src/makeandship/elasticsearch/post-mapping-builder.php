@@ -18,12 +18,12 @@ class PostMappingBuilder extends MappingBuilder
             'suggest'  => true,
             'sortable' => true,
         ),
-        'parent_title'    => array(
+        'parent_title'  => array(
             'type'     => 'text',
             'suggest'  => true,
             'sortable' => true,
         ),
-        'parent_id'    => array(
+        'parent_id'     => array(
             'type'  => 'long',
             'index' => true,
         ),
@@ -115,6 +115,81 @@ class PostMappingBuilder extends MappingBuilder
         }
 
         return $properties;
+    }
+
+    /**
+     *
+     */
+    function build_templates($post_type, $cascade = false)
+    {
+        $settings_manager = SettingsManager::get_instance();
+        if (!$settings_manager->is_valid_post_type($post_type)) {
+            return array();
+        }
+
+        $properties = array();
+
+        // acf fields
+        if (class_exists('acf')) {
+            $templates = $this->get_templates_for_post_type($post_type);
+            foreach ($templates as $template) {
+
+                // field groups for this post type
+                $args = array(
+                    'post_type'     => $post_type,
+                    'page_template' => $template,
+                );
+                $field_groups = acf_get_field_groups($args);
+
+                if (isset($field_groups) && !empty($field_groups)) {
+                    foreach ($field_groups as $field_group) {
+                        $field_group_id = $field_group['ID'];
+                        if ($field_group_id) {
+                            $fields = acf_get_fields($field_group_id);
+
+                            foreach ($fields as $field) {
+                                $field_properties = $this->build_acf_field($field, $cascade);
+                                $properties       = array_merge(
+                                    $properties,
+                                    $field_properties
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $properties;
+    }
+
+    function get_templates_for_post_type($post_type)
+    {
+        global $wpdb;
+        $sql = "
+            SELECT
+                distinct pm.meta_value as template
+            FROM
+                {$wpdb->postmeta} pm,
+                {$wpdb->posts} p
+            WHERE
+                p.ID = pm.post_id
+            AND p.post_type = 'articles'
+            AND p.post_status IN ('publish','private','draft')
+            AND pm.meta_key='_wp_page_template'
+            AND pm.meta_value != 'default'
+        ";
+
+        $results = $wpdb->get_results($sql, ARRAY_A);
+
+        $templates = array();
+        foreach ($results as $result) {
+            $template = Util::safely_get_attribute($result, 'template');
+
+            $templates[] = $template;
+        }
+
+        return $templates;
     }
 
     function build_field($field, $options, $cascade = false)

@@ -6,10 +6,9 @@ use makeandship\elasticsearch\Constants;
 use makeandship\elasticsearch\domain\PostsManager;
 use makeandship\elasticsearch\domain\TaxonomiesManager;
 use makeandship\elasticsearch\settings\SettingsManager;
+use makeandship\logging\Log;
 use \Elastica\Client;
 use \Elastica\Exception\ResponseException;
-
-use makeandship\logging\Log;
 
 class Indexer
 {
@@ -111,15 +110,15 @@ class Indexer
 
         // create the index
         try {
-            $timeout = intval(SettingsManager::get_instance()->get(Constants::OPTION_MAPPING_TIMEOUT));
-            $params = array('master_timeout' => $timeout.'s');
+            $timeout    = intval(SettingsManager::get_instance()->get(Constants::OPTION_MAPPING_TIMEOUT));
+            $params     = array('master_timeout' => $timeout . 's');
             $properties = $this->create_properties();
 
             $body = array(
                 'settings' => $settings['settings'],
                 'mappings' => array(
-                    'properties' => $properties
-                )
+                    'properties' => $properties,
+                ),
             );
 
             $response = $index->create($body, $params);
@@ -587,6 +586,13 @@ class Indexer
             $properties = array_merge(
                 $properties,
                 $post_mapping_builder->build($post_type, true)
+            );
+        }
+
+        foreach ($post_types as $post_type) {
+            $properties = array_merge(
+                $properties,
+                $post_mapping_builder->build_templates($post_type, true)
             );
         }
 
