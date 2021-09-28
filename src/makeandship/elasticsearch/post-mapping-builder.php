@@ -137,8 +137,10 @@ class PostMappingBuilder extends MappingBuilder
                 // field groups for this post type
                 $args = array(
                     'post_type'     => $post_type,
+                    'post_template' => $template,
                     'page_template' => $template,
                 );
+
                 $field_groups = acf_get_field_groups($args);
 
                 if (isset($field_groups) && !empty($field_groups)) {
@@ -287,9 +289,9 @@ class PostMappingBuilder extends MappingBuilder
                         break;
 
                     case 'group':
-                        $props['type']       = 'nested';
                         $props['properties'] = array();
                         unset($props['index']);
+                        unset($props['type']);
 
                         foreach ($field['sub_fields'] as $sub_field) {
                             $sub_field_name  = $sub_field['name'];
@@ -305,7 +307,8 @@ class PostMappingBuilder extends MappingBuilder
                         break;
 
                     case 'image':
-                        $props['type']       = 'nested';
+                        unset($props['type']);
+
                         $props['properties'] = array(
                             'filename'    => array(
                                 'type'  => 'text',
@@ -372,11 +375,12 @@ class PostMappingBuilder extends MappingBuilder
                         break;
 
                     case 'relationship':
+                        unset($props['type']);
+
                         $post_type = Util::safely_get_attribute($field, 'post_type');
                         if ($cascade && $post_type && is_array($post_type) && count($post_type) === 1) {
                             $post_type = $post_type[0];
 
-                            $props['type']       = 'nested';
                             $props['properties'] = $this->build($post_type, false);
                             unset($props['index']);
                         } else {
@@ -388,12 +392,14 @@ class PostMappingBuilder extends MappingBuilder
                         break;
 
                     case 'repeater':
-                        $props['type']       = 'nested';
                         $props['properties'] = array();
                         unset($props['index']);
+                        unset($props['type']);
 
                         foreach ($field['sub_fields'] as $sub_field) {
-                            $sub_field_name  = $sub_field['name'];
+                            $sub_field_type = Util::safely_get_attribute($sub_field, 'type');
+
+                            $sub_field_name  = Util::safely_get_attribute($sub_field, 'name');
                             $sub_field_props = $this->build_acf_field($sub_field, $cascade);
 
                             if (isset($sub_field_props) && !empty($sub_field_props)) {
