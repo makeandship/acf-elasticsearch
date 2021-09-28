@@ -151,7 +151,7 @@ class PostsManager
             'posts_per_page' => $per,
             'paged'          => $page,
             'orderby'        => array(
-                'ID' => 'ASC',
+                'ID' => 'DESC',
             ),
         );
 

@@ -408,7 +408,7 @@ class PostDocumentBuilder extends DocumentBuilder
     /**
      * Get the template of a post
      */
-    public function get_template($post)
+    public function get_page_template($post)
     {
         $id = Util::safely_get_attribute($post, 'ID');
         return get_post_meta($id, '_wp_page_template');
