@@ -49,6 +49,13 @@ class Mapper
             );
         }
 
+        foreach ($post_types as $post_type) {
+            $properties = array_merge(
+                $properties,
+                $post_mapping_builder->build_templates($post_type, true)
+            );
+        }
+
         // create mappings for each taxonomy
         $taxonomies = get_taxonomies();
         foreach ($taxonomies as $taxonomy) {
@@ -77,7 +84,7 @@ class Mapper
     {
         if (isset($properties)) {
             $mapping_timeout = intval(SettingsManager::get_instance()->get(Constants::OPTION_MAPPING_TIMEOUT));
-            $params = array('master_timeout' => $mapping_timeout.'s');
+            $params          = array('master_timeout' => $mapping_timeout . 's');
             // create mappings for the public primary index if required
             $mapping = new Mapping($properties);
             $mapping->send($index, $params);

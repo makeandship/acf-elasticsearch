@@ -18,12 +18,12 @@ class PostMappingBuilder extends MappingBuilder
             'suggest'  => true,
             'sortable' => true,
         ),
-        'parent_title'    => array(
+        'parent_title'  => array(
             'type'     => 'text',
             'suggest'  => true,
             'sortable' => true,
         ),
-        'parent_id'    => array(
+        'parent_id'     => array(
             'type'  => 'long',
             'index' => true,
         ),
@@ -115,6 +115,83 @@ class PostMappingBuilder extends MappingBuilder
         }
 
         return $properties;
+    }
+
+    /**
+     *
+     */
+    function build_templates($post_type, $cascade = false)
+    {
+        $settings_manager = SettingsManager::get_instance();
+        if (!$settings_manager->is_valid_post_type($post_type)) {
+            return array();
+        }
+
+        $properties = array();
+
+        // acf fields
+        if (class_exists('acf')) {
+            $templates = $this->get_templates_for_post_type($post_type);
+            foreach ($templates as $template) {
+
+                // field groups for this post type
+                $args = array(
+                    'post_type'     => $post_type,
+                    'post_template' => $template,
+                    'page_template' => $template,
+                );
+
+                $field_groups = acf_get_field_groups($args);
+
+                if (isset($field_groups) && !empty($field_groups)) {
+                    foreach ($field_groups as $field_group) {
+                        $field_group_id = $field_group['ID'];
+                        if ($field_group_id) {
+                            $fields = acf_get_fields($field_group_id);
+
+                            foreach ($fields as $field) {
+                                $field_properties = $this->build_acf_field($field, $cascade);
+                                $properties       = array_merge(
+                                    $properties,
+                                    $field_properties
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $properties;
+    }
+
+    function get_templates_for_post_type($post_type)
+    {
+        global $wpdb;
+        $sql = "
+            SELECT
+                distinct pm.meta_value as template
+            FROM
+                {$wpdb->postmeta} pm,
+                {$wpdb->posts} p
+            WHERE
+                p.ID = pm.post_id
+            AND p.post_type = 'articles'
+            AND p.post_status IN ('publish','private','draft')
+            AND pm.meta_key='_wp_page_template'
+            AND pm.meta_value != 'default'
+        ";
+
+        $results = $wpdb->get_results($sql, ARRAY_A);
+
+        $templates = array();
+        foreach ($results as $result) {
+            $template = Util::safely_get_attribute($result, 'template');
+
+            $templates[] = $template;
+        }
+
+        return $templates;
     }
 
     function build_field($field, $options, $cascade = false)
@@ -212,9 +289,9 @@ class PostMappingBuilder extends MappingBuilder
                         break;
 
                     case 'group':
-                        $props['type']       = 'nested';
                         $props['properties'] = array();
                         unset($props['index']);
+                        unset($props['type']);
 
                         foreach ($field['sub_fields'] as $sub_field) {
                             $sub_field_name  = $sub_field['name'];
@@ -230,7 +307,8 @@ class PostMappingBuilder extends MappingBuilder
                         break;
 
                     case 'image':
-                        $props['type']       = 'nested';
+                        unset($props['type']);
+
                         $props['properties'] = array(
                             'filename'    => array(
                                 'type'  => 'text',
@@ -297,11 +375,12 @@ class PostMappingBuilder extends MappingBuilder
                         break;
 
                     case 'relationship':
+                        unset($props['type']);
+
                         $post_type = Util::safely_get_attribute($field, 'post_type');
                         if ($cascade && $post_type && is_array($post_type) && count($post_type) === 1) {
                             $post_type = $post_type[0];
 
-                            $props['type']       = 'nested';
                             $props['properties'] = $this->build($post_type, false);
                             unset($props['index']);
                         } else {
@@ -313,12 +392,14 @@ class PostMappingBuilder extends MappingBuilder
                         break;
 
                     case 'repeater':
-                        $props['type']       = 'nested';
                         $props['properties'] = array();
                         unset($props['index']);
+                        unset($props['type']);
 
                         foreach ($field['sub_fields'] as $sub_field) {
-                            $sub_field_name  = $sub_field['name'];
+                            $sub_field_type = Util::safely_get_attribute($sub_field, 'type');
+
+                            $sub_field_name  = Util::safely_get_attribute($sub_field, 'name');
                             $sub_field_props = $this->build_acf_field($sub_field, $cascade);
 
                             if (isset($sub_field_props) && !empty($sub_field_props)) {

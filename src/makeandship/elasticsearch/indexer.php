@@ -6,10 +6,9 @@ use makeandship\elasticsearch\Constants;
 use makeandship\elasticsearch\domain\PostsManager;
 use makeandship\elasticsearch\domain\TaxonomiesManager;
 use makeandship\elasticsearch\settings\SettingsManager;
+use makeandship\logging\Log;
 use \Elastica\Client;
 use \Elastica\Exception\ResponseException;
-
-use makeandship\logging\Log;
 
 class Indexer
 {
@@ -111,21 +110,25 @@ class Indexer
 
         // create the index
         try {
-            $timeout = intval(SettingsManager::get_instance()->get(Constants::OPTION_MAPPING_TIMEOUT));
-            $params = array('master_timeout' => $timeout.'s');
+            $timeout    = intval(SettingsManager::get_instance()->get(Constants::OPTION_MAPPING_TIMEOUT));
+            $params     = array('master_timeout' => $timeout . 's');
             $properties = $this->create_properties();
 
             $body = array(
                 'settings' => $settings['settings'],
                 'mappings' => array(
-                    'properties' => $properties
-                )
+                    'properties' => $properties,
+                ),
             );
+
+            Log::debug('Indexer#create: body:' . PHP_EOL . json_encode($body, JSON_PRETTY_PRINT));
 
             $response = $index->create($body, $params);
         } catch (\Exception $ex) {
+            Log::debug('Indexer#create: ex: ' . $ex->getMessage());
+
             // likely index doesn't exist
-            $errors[] = $ex;
+            $errors[] = $ex->getMessage();
         }
 
         if (isset($errors) && !empty($errors)) {
@@ -590,6 +593,13 @@ class Indexer
             );
         }
 
+        foreach ($post_types as $post_type) {
+            $properties = array_merge(
+                $properties,
+                $post_mapping_builder->build_templates($post_type, true)
+            );
+        }
+
         // create mappings for each taxonomy
         $taxonomies = get_taxonomies();
         foreach ($taxonomies as $taxonomy) {
@@ -608,6 +618,7 @@ class Indexer
         }
 
         $properties = Util::apply_filters('pre_create_mappings', $properties);
+        Log::debug('Indexer#create_properties\nMappings (after filter): ' . PHP_EOL . json_encode($properties, JSON_PRETTY_PRINT));
 
         $this->properties = $properties;
 

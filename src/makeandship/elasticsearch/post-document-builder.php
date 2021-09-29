@@ -96,8 +96,8 @@ class PostDocumentBuilder extends DocumentBuilder
                 } elseif ($name === 'parent_id') {
                     $document['parent_id'] = $post->post_parent;
                 } elseif ($name === 'parent_title') {
-                    $parent = get_post($post->post_parent);
-                    $document['parent_title'] = $parent ? $parent -> post_title : null;
+                    $parent                   = get_post($post->post_parent);
+                    $document['parent_title'] = $parent ? $parent->post_title : null;
                 } else {
                     $value = $post->{$name};
 
@@ -130,13 +130,34 @@ class PostDocumentBuilder extends DocumentBuilder
 
             // acf fields
             if (class_exists('acf')) {
-                // field groups for this post type
-                $args = array(
-                    'post_type'     => $post_type,
-                    'post_template' => 'default',
-                    'page_template' => 'default',
-                );
-                $field_groups = acf_get_field_groups($args);
+                $field_groups = array();
+
+                $templates = $this->get_page_templates($post);
+
+                $has_templates = $templates && is_array($templates) && count($templates) > 0;
+                if ($has_templates) {
+                    foreach ($templates as $template) {
+                        // field groups for default template
+                        $args = array(
+                            'post_type'     => $post_type,
+                            'post_template' => $template,
+                            'page_template' => $template,
+                        );
+
+                        $template_field_groups = acf_get_field_groups($args);
+                        if ($template_field_groups) {
+                            $field_groups = array_merge($field_groups, $template_field_groups);
+                        }
+                    }
+                } else {
+                    $args = array(
+                        'post_type'     => $post_type,
+                        'post_template' => 'default',
+                        'page_template' => 'default',
+                    );
+
+                    $field_groups = acf_get_field_groups($args);
+                }
 
                 if (isset($field_groups) && !empty($field_groups)) {
                     foreach ($field_groups as $field_group) {
@@ -395,6 +416,21 @@ class PostDocumentBuilder extends DocumentBuilder
     }
 
     /**
+     * Get the template of a post
+     */
+    public function get_page_templates($post)
+    {
+        $id        = Util::safely_get_attribute($post, 'ID');
+        $templates = get_post_meta($id, '_wp_page_template');
+
+        if ($templates && is_array($templates) && count($templates)) {
+            return $templates;
+        }
+
+        return null;
+    }
+
+    /**
      * Get the document mapping type - used for indexing into elastic search
      */
     public function get_mapping_type($post)
@@ -405,9 +441,9 @@ class PostDocumentBuilder extends DocumentBuilder
     /**
      * Check if an attachment is orphaned media
      */
-    public static function is_orphaned_media($attachment) 
+    public static function is_orphaned_media($attachment)
     {
-        $post = get_post($attachment->post_parent);
+        $post     = get_post($attachment->post_parent);
         $orphaned = !$post || ($post->post_status !== 'publish' && $post->post_status !== 'private');
         $orphaned = Util::apply_filters('is_orphaned_media', $orphaned, $attachment);
         return $orphaned;
