@@ -5,7 +5,6 @@ namespace makeandship\elasticsearch;
 use makeandship\elasticsearch\admin\UserInterfaceManager;
 use makeandship\elasticsearch\domain\PostsManager;
 use makeandship\elasticsearch\settings\SettingsManager;
-
 use makeandship\logging\Log;
 
 class AcfElasticsearchPlugin
@@ -52,6 +51,7 @@ class AcfElasticsearchPlugin
 
         // posts
         add_action('save_post', array(&$this, 'save_post'), 20, 1); // after acf fields save - 15
+        add_action('add_attachment', array(&$this, 'save_post'), 20, 1); // after acf fields save - 15
         add_action('delete_post', array(&$this, 'delete_post'));
         add_action('trash_post', array(&$this, 'delete_post'));
         add_action('transition_post_status', array(&$this, 'transition_post_status'), 10, 3);
@@ -75,7 +75,7 @@ class AcfElasticsearchPlugin
         $indexer = new Indexer();
 
         foreach ($indexes as $index) {
-            $name          = $index['name'];
+            $name = $index['name'];
             $indexer->create($name);
         }
 
@@ -171,7 +171,13 @@ class AcfElasticsearchPlugin
         }
 
         // index valid statuses
-        if (in_array($post->post_status, Constants::INDEX_POST_STATUSES)) {
+        $post_type   = Util::safely_get_attribute($post, 'post_type');
+        $post_status = Util::safely_get_attribute($post, 'post_status');
+
+        $has_valid_status            = in_array($post_status, Constants::INDEX_POST_STATUSES);
+        $has_valid_attachment_status = $post_type === 'attachment' && $post_status === 'inherit';
+
+        if ($has_valid_status || $has_valid_attachment_status) {
             Log::debug('AcfElasticsearchPlugin#save_post: Add/update document: ' . $post_id);
             // index
             $this->indexer->add_or_update_document($post);
