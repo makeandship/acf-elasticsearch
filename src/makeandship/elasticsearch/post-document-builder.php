@@ -443,12 +443,16 @@ class PostDocumentBuilder extends DocumentBuilder
      */
     public function is_orphaned_media($attachment)
     {
+        $post_type   = Util::safely_get_attribute($attachment, 'post_type');
         $post_parent = Util::safely_get_attribute($attachment, 'post_parent');
         $post        = get_post($post_parent);
         $post_status = Util::safely_get_attribute($post, 'post_status');
 
         // allow draft for newly creating documents
-        $is_available = $post && ($post_status === 'publish' || $post_status === 'private' || $post_parent === 'draft');
+        $is_valid_existing = ($post_status === 'publish' || $post_status === 'private');
+        $is_valid_creating = ($post_status === 'draft' && $post_type === 'attachment');
+
+        $is_available = $post && ($is_valid_existing || $is_valid_creating);
 
         $orphaned = !$is_available;
 
