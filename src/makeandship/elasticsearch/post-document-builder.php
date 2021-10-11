@@ -49,7 +49,7 @@ class PostDocumentBuilder extends DocumentBuilder
     public function is_indexable($post)
     {
         if ($post) {
-            if ($post->post_type === 'attachment' && self::is_orphaned_media($post)) {
+            if ($post->post_type === 'attachment' && $this->is_orphaned_media($post)) {
                 return false;
             }
 
@@ -441,11 +441,20 @@ class PostDocumentBuilder extends DocumentBuilder
     /**
      * Check if an attachment is orphaned media
      */
-    public static function is_orphaned_media($attachment)
+    public function is_orphaned_media($attachment)
     {
-        $post     = get_post($attachment->post_parent);
-        $orphaned = !$post || ($post->post_status !== 'publish' && $post->post_status !== 'private');
+        $post_parent = Util::safely_get_attribute($attachment, 'post_parent');
+        $post        = get_post($post_parent);
+        $post_status = Util::safely_get_attribute($post, 'post_status');
+
+        // allow draft for newly creating documents
+        $is_available = $post && ($post_status === 'publish' || $post_status === 'private' || $post_parent === 'draft');
+
+        $orphaned = !$is_available;
+
+        // allow more thorough check in theme
         $orphaned = Util::apply_filters('is_orphaned_media', $orphaned, $attachment);
+
         return $orphaned;
     }
 }
