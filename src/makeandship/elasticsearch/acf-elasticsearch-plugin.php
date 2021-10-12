@@ -196,6 +196,23 @@ class AcfElasticsearchPlugin
     {
         Log::start('AcfElasticsearchPlugin#delete_post');
         Log::debug('AcfElasticsearchPlugin#delete_post: ' . $post_id);
+        $children = get_children(array(
+            'post_parent' => $post_id,
+            'post_type'   => 'attachment',
+        ));
+        foreach ($children as $child) {
+            if (!is_object($child)) {
+                $child = get_post($child);
+            }
+            $post_type = Util::safely_get_attribute($child, 'post_type');
+            $child_id  = Util::safely_get_attribute($child, 'ID');
+
+            if ($post_type === 'attachment') {
+                Log::debug('AcfElasticsearchPlugin#delete_post: Remove child: ' . $child_id);
+                $this->indexer->remove_document($child);
+            }
+        }
+
         $post = get_post($post_id);
         $this->indexer->remove_document($post);
         Log::finish('AcfElasticsearchPlugin#delete_post');
@@ -221,15 +238,24 @@ class AcfElasticsearchPlugin
         $post_id = Util::safely_get_attribute($post, 'ID');
         Log::debug('AcfElasticsearchPlugin#transition_post_status: ' . ($post_id ? $post_id : "Unknown post id"));
         if (!$this->should_index_post($post)) {
+            Log::debug('AcfElasticsearchPlugin#transition_post_status: skip indexing ...');
+
             return;
         }
         if (in_array($new_status, Constants::INDEX_POST_STATUSES) && $new_status != $old_status) {
             Log::debug('AcfElasticsearchPlugin#transition_post_status: Add/update document: ' . ($post_id ? $post_id : "Unknown post id"));
             $this->indexer->add_or_update_document($post);
         } else {
-            if ($new_status != "publish" && $old_status != "publish") {
+            $is_publish    = ($new_status == "publish" || $new_status == "private");
+            $was_published = ($old_status == "publish" || $old_status == "private");
+            Log::debug("AcfElasticsearchPlugin#transition_post_status: " .
+                "is_publish: " . ($is_publish ? "Y" : "N") . ", " .
+                "was_published: " . ($was_published ? "Y" : "N"));
+
+            if ($was_published && !$is_publish) {
+                // moving from indexed to not indexes
                 Log::debug('AcfElasticsearchPlugin#transition_post_status: Remove document: ' . ($post_id ? $post_id : "Unknown post id"));
-                $this->indexer->remove_document($post);
+                $this->delete_post($post_id);
             }
         }
         Log::finish('AcfElasticsearchPlugin#transition_post_status');
@@ -241,7 +267,10 @@ class AcfElasticsearchPlugin
     public function should_index_post($post)
     {
         $manager = new PostsManager();
-        return $manager->valid($post->post_type);
+        $valid   = $manager->valid($post->post_type);
+        Log::debug('AcfElasticsearchPlugin#should_index_post: valid: ' . $valid);
+
+        return $valid;
     }
 
     /**
