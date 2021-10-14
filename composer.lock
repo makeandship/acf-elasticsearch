@@ -1282,7 +1282,7 @@
                 "shasum": ""
             },
             "require": {
-                "php": "^8.0",
+                "php": "^7.0|^8.0",
                 "phpdocumentor/reflection-common": "^1.0.0",
                 "phpdocumentor/type-resolver": "^0.4.0",
                 "webmozart/assert": "^1.0"
@@ -1333,7 +1333,7 @@
                 "shasum": ""
             },
             "require": {
-                "php": "^5.5 || ^8.0",
+                "php": "^5.5 || ^7.0 || ^8.0",
                 "phpdocumentor/reflection-common": "^1.0"
             },
             "require-dev": {
@@ -1381,7 +1381,7 @@
             },
             "require": {
                 "doctrine/instantiator": "^1.0.2",
-                "php": "^5.3|^8.0",
+                "php": "^5.3|^7.0|^8.0",
                 "phpdocumentor/reflection-docblock": "^2.0|^3.0.2|^4.0",
                 "sebastian/comparator": "^1.1|^2.0|^3.0",
                 "sebastian/recursion-context": "^1.0|^2.0|^3.0"
@@ -1696,7 +1696,7 @@
                 "myclabs/deep-copy": "^1.6.1",
                 "phar-io/manifest": "^1.0.1",
                 "phar-io/version": "^1.0",
-                "php": "^8.0",
+                "php": "^7.0|^8.0",
                 "phpspec/prophecy": "^1.7",
                 "phpunit/php-code-coverage": "^5.3",
                 "phpunit/php-file-iterator": "^1.4.3",
@@ -1773,7 +1773,7 @@
             },
             "require": {
                 "doctrine/instantiator": "^1.0.5",
-                "php": "^8.0",
+                "php": "^7.0|^8.0",
                 "phpunit/php-text-template": "^1.2.1",
                 "sebastian/exporter": "^3.1"
             },
