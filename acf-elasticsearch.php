@@ -3,7 +3,7 @@
 Plugin Name: ACF Elasticsearch
 Plugin URI:  https://www/makeandship.com/blog/acf-elasticsearch
 Description: Elasticsearch integration for ACF-based wordpress sites
-Version:     7.4.11
+Version:     7.4.12
 Author:      Make and Ship Limited
 Author URI:  https://www.makeandship.com/
 License:     MIT
