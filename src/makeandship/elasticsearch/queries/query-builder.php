@@ -38,7 +38,7 @@ class QueryBuilder
     {
         // set fuzziness, weights and post_types
         $this->fuzziness     = intval(SettingsManager::get_instance()->get(Constants::OPTION_FUZZINESS));
-        $this->post_types    = SettingsManager::get_instance()->get_post_types();
+        $this->post_types    = null;
         $this->weights       = SettingsManager::get_instance()->get(Constants::OPTION_WEIGHTINGS);
         $this->search_fields = SettingsManager::get_instance()->get(Constants::OPTION_SEARCH_FIELDS);
     }
