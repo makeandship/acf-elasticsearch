@@ -254,7 +254,7 @@ class Indexer
         $ids = array_map(function ($post) {
             return Util::safely_get_attribute($post, 'ID');
         }, $posts);
-        Log::debug("Indexer#index_posts_singlesite: IDs of posts: " . implode($ids, ", "));
+        Log::debug("Indexer#index_posts_singlesite: IDs of posts: " . implode(", ", $ids));
         $count = $this->add_or_update_documents($posts);
 
         // flush bulk indexing
@@ -519,10 +519,10 @@ class Indexer
                 foreach ($message as $method => $method_message) {
                     $methods[] = $method . ': ' . $method_message;
                 }
-                $messages[] = $name . ': ' . implode($methods, ", ");
+                $messages[] = $name . ': ' . implode(", ", $methods);
             }
 
-            Log::debug("Indexer#flush: " . implode($messages, ", "));
+            Log::debug("Indexer#flush: " . implode(", ", $messages));
         }
     }
 
