@@ -80,7 +80,7 @@ class SearchTransformer
                         default:
                             // extract sub-aggregation into a key of e.g. parent.child
                             if ($value && is_array($value) && count($value) > 0) {
-                                $maybe_name = implode(array($name, $key), ".");
+                                $maybe_name = implode(".", array($name, $key));
                                 $maybe_an_agg = $this->transform_aggs($maybe_name, $value);
 
                                 if ($maybe_an_agg) {

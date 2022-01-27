@@ -43,7 +43,7 @@ class HtmlUtils
             ];
         }
 
-        return implode($html, PHP_EOL);
+        return implode(PHP_EOL, $html);
     }
 
     public static function render_text_field($name, $args)
@@ -78,7 +78,7 @@ class HtmlUtils
 
         $html[] = '/>';
 
-        return implode($html, PHP_EOL);
+        return implode(PHP_EOL, $html);
     }
 
     public static function render_buttons($buttons)
@@ -95,7 +95,7 @@ class HtmlUtils
         $html[] = '	</div>';
         $html[] = '</div>';
 
-        return implode($html, PHP_EOL);
+        return implode(PHP_EOL, $html);
     }
 
     public static function render_button($args)
@@ -110,7 +110,7 @@ class HtmlUtils
 
         $html[] = '/>';
 
-        return implode($html, PHP_EOL);
+        return implode(PHP_EOL, $html);
     }
 
     public static function render_post_type_choices($label)
@@ -142,7 +142,7 @@ class HtmlUtils
             $first = false;
         }
 
-        return implode($html, PHP_EOL);
+        return implode(PHP_EOL, $html);
     }
 
     public static function render_checkbox($args)
@@ -165,7 +165,7 @@ class HtmlUtils
 
         $html[] = '</label>';
 
-        return implode($html, PHP_EOL);
+        return implode(PHP_EOL, $html);
     }
 
     public static function render_textarea_field($name, $args)
@@ -175,7 +175,7 @@ class HtmlUtils
 
         $html[] = '<textarea name="' . $name . '" class="' . $clazz . '">' . $value . '</textarea>';
 
-        return implode($html, PHP_EOL);
+        return implode(PHP_EOL, $html);
     }
 
     public static function render_readonly_status($label, $key, $fn = null)
@@ -199,7 +199,7 @@ class HtmlUtils
             '</div>',
         ];
 
-        return implode($html, PHP_EOL);
+        return implode(PHP_EOL, $html);
     }
 
     public static function render_readonly_setting($label, $config, $missing = '', $options = array())
@@ -226,7 +226,7 @@ class HtmlUtils
             '</div>',
         ];
 
-        return implode($html, PHP_EOL);
+        return implode(PHP_EOL, $html);
     }
 
     public static function create_post_types()
